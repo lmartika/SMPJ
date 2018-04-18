@@ -19,6 +19,7 @@ class QCDPFJet : public QCDPFJetBTag {
      void setMulti(int fncand, int fchm, int fnhm, int fphm, int felm, int fmum, int fcm) {ncand_ = fncand; chm_ = fchm; nhm_ = fnhm; phm_ = fphm; elm_ = felm; mum_ = fmum; cm_ = fcm; }
      void setBeta(float fbeta) {beta_ = fbeta;}
      void setBetaStar(float fbetaStar) {betaStar_ = fbetaStar;}
+     void setBetaPrime(float fbetaPrime) {betaPrime_ = fbetaPrime;}
      void setHFFrac(float fhf_hf, float fhf_phf) {hf_hf_ = fhf_hf; hf_phf_ = fhf_phf;}
      void setHFMulti(int fhf_hm, int fhf_phm) {hf_hm_ = fhf_hm; hf_phm_ = fhf_phm;}
      void setVtxInfo(int mpuTrk, int mlvTrk, int mjtTrk) { mpuTrk_ = mpuTrk; mlvTrk_ = mlvTrk; mjtTrk_ = mjtTrk;} // Juska
@@ -39,6 +40,7 @@ class QCDPFJet : public QCDPFJetBTag {
      //------------ Get methods ------------------------------
      float beta()     const {return beta_;}
      float betaStar() const {return betaStar_;}
+     float betaPrime() const {return betaPrime_;}
      float chf()      const {return chf_;}
      float nhf()      const {return nhf_;}
      float nemf()      const {return nemf_;}
@@ -104,6 +106,8 @@ class QCDPFJet : public QCDPFJetBTag {
      float beta_;
      //---- fraction of track pt NOT coming from the signal vertex ---
      float betaStar_;
+     //---- fraction of track pt NOT coming from the signal vertex, removed by chs ---
+     float betaPrime_;
      //----- PF Particles ----//
 //     std::vector<LorentzVector> pfParticles_;
 

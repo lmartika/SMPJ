@@ -56,14 +56,7 @@ process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 #! Input
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-inFiles = cms.untracked.vstring(
-#'file:00430D8B-320F-E611-BC64-02163E00EA8C.root'
-#/afs/cern.ch/work/e/eeren/public/04E758F7-34F9-E411-AFF0-002618FDA259.root'
-#'root://eoscms.cern.ch//eos/cms/store/mc/RunIISpring16DR80/QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8/AODSIM/PUSpring16_magnetOn_80X_mcRun2_asymptotic_2016_v3-v1/00000/1276C35E-EA0F-E611-8336-02163E00F718.root'
-#'root://cms-xrd-global.cern.ch//store/mc/RunIISpring16DR80/QCD_Pt_1400to1800_TuneCUETP8M1_13TeV_pythia8/AODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1/60000/381409B5-9B08-E611-98F3-0025905B85A0.root'
-#'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16DR80Premix/QCD_Pt_300to470_TuneCUETP8M1_13TeV_pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/110000/02CD261D-10A9-E611-8521-FA163E5CAE75.root'
-'file:C0345CF6-8CCF-E611-9D99-0025905B8592.root'
-   )
+inFiles = cms.untracked.vstring('root://cms-xrd-global.cern.ch//store/mc/RunIISummer16DR80Premix/QCD_Pt_50to80_TuneCUETP8M1_13TeV_pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/110000/027FCB24-9FAC-E611-8B7F-ECF4BBE1BE70.root')
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(700))
 process.source = cms.Source("PoolSource", fileNames = inFiles )
