@@ -353,13 +353,34 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   Handle<GenJetCollection>  genjets;
   if (mIsMCarlo) {
     event.getByToken(mGenJetsName,genjets);
+    //bool switchB=0;
+    //bool switchC=0;
+
+    //edm::Handle<reco::GenParticleCollection> genParticles;
+    //event.getByToken(mgenParticles, genParticles);
+
+    //for (auto i = 0u; i < genParticles->size (); ++i) {
+    //  const GenParticle & genIt = (*genParticles)[i];
+    //  cout << "parton " << i << " pdgid " << genIt.pdgId() << " status " << genIt.status() << endl;
+    //  int pdgId = genIt.pdgId();
+    //  double DeltaR=deltaR(genIt.p4().eta(),genIt.p4().phi(),i_gen->eta(),i_gen->phi());
+    //  double DeltaRmin=0.3;
+    //  if (DeltaR < DeltaRmin ){
+    //    DeltaRmin=DeltaR;
+    //    if(abs(pdgId)==5){ jetFlavour=5; switchB=true;}
+    //    if(abs(pdgId)==4){ jetFlavour=4; switchC=true;}
+    //    if(abs(pdgId)<=3 && abs(pdgId)>=1){ jetFlavour=1; }
+    //    if(abs(pdgId)==21){ jetFlavour=21; }
+    //  }      
+    //  if (switchB) {jetFlavour=5;}
+    //  if (switchC && !switchB) {jetFlavour=4;}
+    //}
     for(GenJetCollection::const_iterator i_gen = genjets->begin(); i_gen != genjets->end(); i_gen++) {
       if (i_gen->pt() > mMinGenPt && fabs(i_gen->y()) < mMaxY) {
         mGenJets.push_back(i_gen->p4());
 
         //ADD FLAVOUR AT GEN LEVEL
         int FlavourGen = getMatchedPartonGen(event,i_gen);
-        //if(FlavourGen<-100) cout<<FlavourGen<<" "<<i_gen->pt()<<" "<<i_gen->eta()<<" "<<i_gen->phi()<<endl;
         GenFlavour.push_back(FlavourGen);
         cout << "Genjet " << int(i_gen-genjets->begin()) << " partonflav " << getMatchedPartonGen(event,i_gen) << endl;
       }
@@ -375,6 +396,10 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       GenHadronFlavour.push_back(FlavourGenHadron);
       cout << "Genjet " << counter << " partonflav " << aInfo.getPartonFlavour() << " hadronflav " << aInfo.getHadronFlavour() << endl;
       ++counter;
+      auto &parts = aInfo.getPartons();
+      for ( auto pa = parts.begin(); pa != parts.end(); ++pa ) {
+        cout << "  " << (*pa)->pdgId() << " " << (*pa)->status() << endl;
+      }
     }
 
     //Physics Definition Gen Level
@@ -388,6 +413,11 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       int FlavourGenHadronPhysicsDef = aInfo.getPartonFlavour();
       GenPartonFlavourPhysicsDef.push_back(FlavourGenHadronPhysicsDef);
       cout << "Genjet " << counter << " partonflav " << aInfo.getPartonFlavour() << " hadronflav " << aInfo.getHadronFlavour() << endl;
+      ++counter;
+      auto &parts = aInfo.getPartons();
+      for ( auto pa = parts.begin(); pa != parts.end(); ++pa ) {
+        cout << "  " << (*pa)->pdgId() << " " << (*pa)->status() << endl;
+      }
     }
   }
   
@@ -610,10 +640,10 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     if (mIsMCarlo && mUseGenInfo) {
       cout << "Parton flav " << i_pfjetchs->partonFlavour() << endl;
       cout << "Hadron flav " << i_pfjetchs->hadronFlavour() << endl;
-      cout << "Gen parton available " << bool(i_pfjetchs->genParton() != NULL) << endl;
       partonFlavour = i_pfjetchs->partonFlavour();
       hadronFlavour = i_pfjetchs->hadronFlavour();
       if (i_pfjetchs->genParton() != NULL) partonFlavourPhysicsDef = i_pfjetchs->genParton()->pdgId(); //it is not always defined!!
+      cout << "Gen parton " << partonFlavourPhysicsDef << endl;
     }
     qcdpfjetchs.setFlavour(partonFlavour,hadronFlavour,partonFlavourPhysicsDef);
     
@@ -696,6 +726,7 @@ int ProcessedTreeProducerBTag::getMatchedPartonGen(edm::Event const& event,GenJe
 
   for (size_t i = 0; i < genParticles->size (); ++i) {
     const GenParticle & genIt = (*genParticles)[i];
+    cout << "parton " << i << " pdgid " << genIt.pdgId() << " status " << genIt.status() << endl;
     int pdgId = genIt.pdgId();
     double DeltaR=deltaR(genIt.p4().eta(),genIt.p4().phi(),i_gen->eta(),i_gen->phi());
     double DeltaRmin=0.3;
