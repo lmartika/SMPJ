@@ -127,8 +127,5 @@ class QCDPFJetBTag : public QCDJet {
      float DeepCSVb_, DeepCSVc_, DeepCSVl_, DeepCSVbb_, DeepCSVcc_, DeepCSVbN_,
            DeepCSVcN_, DeepCSVlN_, DeepCSVbbN_, DeepCSVccN_,  DeepCSVbP_, DeepCSVcP_,
            DeepCSVlP_, DeepCSVbbP_, DeepCSVccP_;
-
-     
-
-    };
+};
 #endif

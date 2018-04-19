@@ -361,26 +361,33 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
         int FlavourGen = getMatchedPartonGen(event,i_gen);
         //if(FlavourGen<-100) cout<<FlavourGen<<" "<<i_gen->pt()<<" "<<i_gen->eta()<<" "<<i_gen->phi()<<endl;
         GenFlavour.push_back(FlavourGen);
+        cout << "Genjet " << int(i_gen-genjets->begin()) << " partonflav " << getMatchedPartonGen(event,i_gen) << endl;
       }
     }
 
     edm::Handle<reco::JetFlavourInfoMatchingCollection> theJetFlavourInfos;
     event.getByToken(jetFlavourInfosToken_, theJetFlavourInfos );
     
+    int counter = 0;
     for ( reco::JetFlavourInfoMatchingCollection::const_iterator j  = theJetFlavourInfos->begin();j != theJetFlavourInfos->end();++j ) {
       reco::JetFlavourInfo aInfo = (*j).second;
       int FlavourGenHadron = aInfo.getHadronFlavour();
       GenHadronFlavour.push_back(FlavourGenHadron);
+      cout << "Genjet " << counter << " partonflav " << aInfo.getPartonFlavour() << " hadronflav " << aInfo.getHadronFlavour() << endl;
+      ++counter;
     }
 
     //Physics Definition Gen Level
     edm::Handle<reco::JetFlavourInfoMatchingCollection> theJetFlavourInfosPhysicsDef;
     event.getByToken(jetFlavourInfosTokenPhysicsDef_, theJetFlavourInfosPhysicsDef );
-    
+
+    counter = 0;
+    cout << "Physdef" << endl;    
     for ( reco::JetFlavourInfoMatchingCollection::const_iterator j  = theJetFlavourInfosPhysicsDef->begin();j != theJetFlavourInfosPhysicsDef->end();++j ) {
       reco::JetFlavourInfo aInfo = (*j).second;
       int FlavourGenHadronPhysicsDef = aInfo.getPartonFlavour();
       GenPartonFlavourPhysicsDef.push_back(FlavourGenHadronPhysicsDef);
+      cout << "Genjet " << counter << " partonflav " << aInfo.getPartonFlavour() << " hadronflav " << aInfo.getHadronFlavour() << endl;
     }
   }
   
@@ -601,6 +608,9 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     float partonFlavourPhysicsDef=-100;
     float hadronFlavour=-100;
     if (mIsMCarlo && mUseGenInfo) {
+      cout << "Parton flav " << i_pfjetchs->partonFlavour() << endl;
+      cout << "Hadron flav " << i_pfjetchs->hadronFlavour() << endl;
+      cout << "Gen parton available " << bool(i_pfjetchs->genParton() != NULL) << endl;
       partonFlavour = i_pfjetchs->partonFlavour();
       hadronFlavour = i_pfjetchs->hadronFlavour();
       if (i_pfjetchs->genParton() != NULL) partonFlavourPhysicsDef = i_pfjetchs->genParton()->pdgId(); //it is not always defined!!

@@ -115,11 +115,7 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     //---- CORRECTORS ----------------------
     const JetCorrector *mPFJEC;
     // ---- non CHS jet uncertainty ------ //
-    //JetCorrectionUncertainty *mPFUnc;
-    // ---- non CHS jet uncertainty ------ //
     JetCorrectionUncertainty *mPFUncCHS;
-    //------- non CHS jet uncertainty sources -------- //
-    //std::vector<JetCorrectionUncertainty*> mPFUncSrc;
     // -------- CHS jet uncertainty sources -------- //
     std::vector<JetCorrectionUncertainty*> mPFUncSrcCHS;
 

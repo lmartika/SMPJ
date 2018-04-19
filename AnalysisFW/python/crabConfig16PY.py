@@ -9,7 +9,7 @@ config.General.transferLogs = False
 config.General.workArea = 'runs'
 
 #config.section_("JobType")
-config.JobType.psetName = 'ProcessedTreeProducerPY.py'
+config.JobType.psetName = 'ProcessedTreeProducer16PY.py'
 config.JobType.pluginName = 'Analysis'
 #config.outputFiles = ['DATA_ProcessedTreeProducer_2.root']
 #config.Data.runRange = '193093-193999'
