@@ -71,9 +71,9 @@ process.TFileService.fileName=cms.string('DATA.root')
 #! Input
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-inFiles = cms.untracked.vstring( '/store/mc/RunIIFall17DRPremix/QCD_Pt-15to7000_TuneCUETHS1_Flat_13TeV_herwigpp/AODSIM/94X_mc2017_realistic_v10-v1/50000/1CA13DB5-76E5-E711-BA54-5065F38142E1.root' )
+inFiles = cms.untracked.vstring( '/store/mc/RunIIFall17DRPremix/QCD_Pt-15to7000_TuneCUETHS1_Flat_13TeV_herwigpp/AODSIM/94X_mc2017_realistic_v10-v1/50000/1461FC6C-A0EC-E711-9E52-0CC47A4D7658.root' )
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(200))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
 process.source = cms.Source("PoolSource", fileNames = inFiles )
 
 ## Modified version of jetToolBox from https://github.com/cms-jet/jetToolbox
