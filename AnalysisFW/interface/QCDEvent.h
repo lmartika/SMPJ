@@ -20,7 +20,11 @@ class QCDEvent
       //------------ Destructor -------------------------------
       ~QCDEvent();
       //------------ Set methods ------------------------------
-      void setPFMET(const QCDMET& fPFMET)                         {PFMet_ = fPFMET;}
+      void setPFMET(const QCDMET& fPFMET,const QCDMET& fPFMETt0pc, const QCDMET& fPFMETt0pct1) {
+        PFMet_ = fPFMET;
+        PFMetT0pc_ = fPFMETt0pc;
+        PFMetT0pcT1_ = fPFMETt0pct1;
+      }
       void setEvtHdr(const QCDEventHdr& fEvtHdr)                  {EvtHdr_ = fEvtHdr;}
       void setPFJetsCHS(const std::vector<QCDPFJet>& fPFJetsCHS);
 
@@ -68,7 +72,9 @@ class QCDEvent
       //---- event header (contains all the event info) --------------
       QCDEventHdr                              EvtHdr_;
       //---- PF met object -------------------------------------------
-      QCDMET                                   PFMet_;
+      QCDMET                                   PFMet_; // T1, implicit
+      QCDMET                                   PFMetT0pc_;
+      QCDMET                                   PFMetT0pcT1_;
       //---- trigger decision vector ---------------------------------
       std::vector<int>                         TriggerDecision_;
       //---- L1 prescale vector --------------------------------------

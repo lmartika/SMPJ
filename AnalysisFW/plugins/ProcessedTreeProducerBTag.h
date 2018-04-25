@@ -54,62 +54,51 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
       return j1.ptCor() > j2.ptCor();
     }
     //---- configurable parameters --------
-    bool   mIsMCarlo;
     bool   mAK4;
-    bool   mUseGenInfo;
     bool   mPrintTriggerMenu;
-    //bool   isPFJecUncSet_ 
-    bool   isPFJecUncSetCHS_;
-    int    mGoodVtxNdof,mMinNPFJets;
+    bool   isPFJecUncSetCHS_; // Not to be set by the user
+    int    mGoodVtxNdof;
     double mGoodVtxZ;
-    double mMinPFPt,mMinPFFatPt,mMaxPFFatEta,mMinGenPt,mMaxY,mMinJJMass, mMinPFPtThirdJet;
-    std::string mPFJECservice;
-    std::string mPFPayloadName;
+    int    mMinNPFJets;
+    double mMinPFPt,mMinPFPtThirdJet,mMinGenPt,mMaxY,mMinJJMass;
     std::string mPFPayloadNameCHS;
-    std::string pfpujetid;
-    std::string pfchsjetpuid;
+    std::string mRunYear;
+    std::string mPFJetPUIDCHS;
 
-    // unc file for non CHS jet ---- //
-    //std::string mPFJECUncSrc;
     // unc file for CHS jet ---- //
     std::string mPFJECUncSrcCHS;
     std::vector<std::string> mPFJECUncSrcNames;
-    std::vector<std::string> mBDiscriminators;
-    // ---- non CHS jet input tag ----- //
     edm::EDGetTokenT<reco::VertexCollection> mOfflineVertices;
     edm::EDGetTokenT<reco::BeamSpot> mBeamSpot;
-    //edm::EDGetTokenT<edm::View<pat::Jet> >mPFJetsName;
     edm::EDGetTokenT<edm::View<pat::Jet> >mPFJetsNameCHS;
-    edm::EDGetTokenT<GenEventInfoProduct> mhEventInfo;
     edm::EDGetTokenT<edm::ValueMap<float>> qgToken;
-    // ----CHS jet input tag ----- //
-    //edm::InputTag mPFJetsName;
-    //edm::InputTag mPFJetsNameCHS;
-
     edm::EDGetTokenT<double> mSrcCaloRho;
     edm::EDGetTokenT<double> mSrcPFRho;
-    //edm::InputTag triggerResultsTag_;
-    //edm::InputTag triggerEventTag_;
-    //edm::InputTag mPFMET;
-    edm::EDGetTokenT<pat::METCollection> mPFMET;
+    //---- MET -----------------------------
+    edm::EDGetTokenT<pat::METCollection> mPFMETt1;
+    edm::EDGetTokenT<pat::METCollection> mPFMETt0pc;
+    edm::EDGetTokenT<pat::METCollection> mPFMETt0pct1;
+    //---- GEN -----------------------------
+    bool   mIsMCarlo;
+    bool   mUseGenInfo;
+    int    mMCType;
     edm::EDGetTokenT<GenJetCollection> mGenJetsName;
-    edm::EDGetTokenT<reco::GenParticleCollection> mgenParticles;
-    //edm::InputTag mHBHENoiseFilter;
+    edm::EDGetTokenT<reco::GenParticleCollection> mGenParticles;
+    edm::EDGetTokenT<GenEventInfoProduct> mEventInfo;
+    edm::EDGetTokenT<std::vector<PileupSummaryInfo> > mSrcPU;
+    edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> jetFlavourInfosToken_;
+    edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> jetFlavourInfosTokenPhysicsDef_;
     //---- TRIGGER -------------------------
     std::string   processName_;
     std::vector<std::string> triggerNames_;
-    std::vector<unsigned int> triggerIndex_;
-    //edm::InputTag mSrcPU;
+    std::vector<std::string> goodTriggerNames_; // Not to be set by the user
+    std::vector<unsigned int> triggerIndex_; // Not to be set by the user
     edm::EDGetTokenT<edm::TriggerResults> triggerResultsTag_;
     edm::EDGetTokenT<trigger::TriggerEvent> triggerEventTag_;
     edm::EDGetTokenT<bool> mHBHENoiseFilterResultLabel;
     edm::EDGetTokenT<bool> mHBHENoiseFilterResultNoMinZLabel;
-    edm::EDGetTokenT<std::vector<PileupSummaryInfo> > mSrcPU;
     edm::Handle<edm::TriggerResults>   triggerResultsHandle_;
     edm::Handle<trigger::TriggerEvent> triggerEventHandle_;
-    //hadron jet definition
-    edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> jetFlavourInfosToken_;
-    edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> jetFlavourInfosTokenPhysicsDef_;
 
     HLTConfigProvider hltConfig_;
     //---- CORRECTORS ----------------------

@@ -286,28 +286,28 @@ process.hltFilter = cms.EDFilter( 'HLTHighLevel',
                                   andOr              = cms.bool(True), #----- True = OR, False = AND between the HLTPaths
                                   throw              = cms.bool(False) )
 
-##MET Filters
-process.load('RecoMET.METFilters.CSCTightHaloFilter_cfi')
+#MET Filters
+process.load('RecoMET.METFilters.primaryVertexFilter_cfi')
+process.load('RecoMET.METFilters.globalTightHalo2016Filter_cfi')
 process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
 process.load('CommonTools.RecoAlgos.HBHENoiseFilter_cfi')
-process.HBHENoiseFilterResultProducerNoMinZ = process.HBHENoiseFilterResultProducer.clone(minZeros = cms.int32(99999))
-process.load('RecoMET.METFilters.trackingFailureFilter_cfi')
 process.load('RecoMET.METFilters.EcalDeadCellTriggerPrimitiveFilter_cfi')
-process.load('RecoMET.METFilters.primaryVertexFilter_cfi')
-process.load('RecoMET.METFilters.ecalBadCalibFilter_cfi')
-process.load('RecoMET.METFilters.eeBadScFilter_cfi')
 process.load('RecoMET.METFilters.BadChargedCandidateFilter_cfi')
 process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
-process.load('RecoMET.METFilters.globalTightHalo2016Filter_cfi')
+process.load('RecoMET.METFilters.eeBadScFilter_cfi')
+process.load('RecoMET.METFilters.ecalBadCalibFilter_cfi')
 
-process.goodVertices = cms.EDFilter( "VertexSelector",
-                                     filter = cms.bool(False),
-                                     src = cms.InputTag("offlinePrimaryVertices"),
-                                     cut = cms.string("!isFake && ndof >= 4 && abs(z) <= 24 && position.rho <= 2") )
+process.allMetFilterPaths=cms.Sequence( process.primaryVertexFilter*
+                                        process.globalTightHalo2016Filter*
+                                        process.HBHENoiseFilter*
+                                        process.HBHENoiseIsoFilter*
+                                        process.EcalDeadCellTriggerPrimitiveFilter*
+                                        process.BadPFMuonFilter*
+                                        process.BadChargedCandidateFilter*
+                                        process.eeBadScFilter*
+                                        process.ecalBadCalibFilter )
 
-process.allFilterPaths=cms.Sequence( process.goodVertices*
-                                     process.trackingFailureFilter*
-                                     process.hltFilter*
+process.allFilterPaths=cms.Sequence( process.hltFilter*
                                      process.HBHENoiseFilterResultProducer*
                                      process.HBHENoiseFilterResultProducerNoMinZ*
                                      process.HBHENoiseFilter*

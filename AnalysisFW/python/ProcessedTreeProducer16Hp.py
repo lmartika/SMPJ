@@ -258,17 +258,16 @@ process.genJetFlavourInfosPhysicsDef = ak4JetFlavourInfos.clone(
     partons = cms.InputTag("selectedHadronsAndPartons","physicsPartons"),
 )
 
-#fillPhysicsDefinition
-# partons = cms.InputTag("selectedHadronsAndPartons","algorithmicPartons"),
-
 process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                ## jet collections ###########################
+                               AK4                       = cms.untracked.bool(True),
                                pfjetschs                 = cms.InputTag('selectedPatJetsAK4PFCHS'),
                                pfpujetid                 = cms.string('AK4PFpileupJetIdEvaluator:fullDiscriminant'),
                                pfchsjetpuid              = cms.string('AK4PFCHSpileupJetIdEvaluator:fullDiscriminant'),
                                ## MET collection ####
-                               pfmet                     = cms.InputTag('patMETs'),
-                               genjets                   = cms.untracked.InputTag('ak4GenJetsNoNu'),
+                               pfmetT1                   = cms.InputTag('patMETs'),
+                               pfmetT0pc                 = cms.InputTag('patMETsT0pc'),
+                               pfmetT0pcT1               = cms.InputTag('patMETsT0pcT1'),
                                ## database entry for the uncertainties ######
                                PFPayloadNameCHS          = cms.string('AK4PFchs'),
                                jecUncSrcCHS              = cms.string(''),
@@ -289,33 +288,16 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                minNPFJets                = cms.int32(1),
                                minGenPt                  = cms.untracked.double(20),
                                minJJMass                 = cms.double(-1),
+                               ## trigger ###################################
+                               triggerName               = cms.vstring(''), 
+                               ## gen services ##############################
                                isMCarlo                  = cms.untracked.bool(True),
                                useGenInfo                = cms.untracked.bool(True),
-                               AK4                       = cms.untracked.bool(True),
-                               ## trigger ###################################
-                               printTriggerMenu          = cms.untracked.bool(False),
-                               processName               = cms.string('HLT'),
-                               triggerName               = cms.vstring(''), 
-                               triggerResults  = cms.InputTag("TriggerResults","","HLT"),
-                               triggerEvent    = cms.InputTag("hltTriggerSummaryAOD","","HLT"),
-                               ## jec services ##############################
-                               EventInfo       = cms.InputTag("generator"),
-                               GenParticles    = cms.InputTag("genParticles"),
-                               jetFlavourInfos = cms.InputTag("genJetFlavourInfos"),
-                               jetFlavourInfosPhysicsDef = cms.InputTag("genJetFlavourInfosPhysicsDef"),
-                               HBHENoiseFilterResultLabel = cms.InputTag("HBHENoiseFilterResultProducer", "HBHENoiseFilterResult"),
-                               HBHENoiseFilterResultNoMinZLabel = cms.InputTag("HBHENoiseFilterResultProducerNoMinZ", "HBHENoiseFilterResult") )
-                               ## gen services ##############################
-
-#jetToolbox( process, 'ak8', 'ak8JetSubs','CHS')
-
-#process.ak8 = process.ak4.clone(
-#	pfjetschs       = cms.InputTag('selectedPatJetsAK8PFCHS'),
-#	pfpujetid       = cms.string('AK8PFpileupJetIdEvaluator:fullDiscriminant'),
-#	pfchsjetpuid    = cms.string('AK8PFCHSpileupJetIdEvaluator:fullDiscriminant'),
-#    PFPayloadNameCHS= cms.string('AK8PFchs'),
-#	AK4             = cms.untracked.bool(False),
-#)
+                               EventInfo       = cms.untracked.InputTag("generator"),
+                               genjets         = cms.untracked.InputTag(genJetCollection),
+                               GenParticles    = cms.untracked.InputTag(genParticleCollection),
+                               jetFlavourInfos = cms.untracked.InputTag("genJetFlavourInfos"),
+                               jetFlavourInfosPhysicsDef = cms.untracked.InputTag("genJetFlavourInfosPhysicsDef") )
 
 #jetToolbox( process, 'ak7', 'ak7JetSubs','CHS')
 #
@@ -327,47 +309,39 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
 #	AK4             = cms.untracked.bool(False),
 #)
 
-process.goodVertices = cms.EDFilter( "VertexSelector",
-                                     filter = cms.bool(False),
-                                     src = cms.InputTag("offlinePrimaryVertices"),
-                                     cut = cms.string("!isFake && ndof >= 4 && abs(z) <= 24 && position.rho <= 2") )
-
-##MET Filters
-process.load('RecoMET.METFilters.CSCTightHaloFilter_cfi')
+#MET Filters
+process.load('RecoMET.METFilters.primaryVertexFilter_cfi')
+process.load('RecoMET.METFilters.globalTightHalo2016Filter_cfi')
 process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
 process.load('CommonTools.RecoAlgos.HBHENoiseFilter_cfi')
-process.HBHENoiseFilterResultProducerNoMinZ = process.HBHENoiseFilterResultProducer.clone(minZeros = cms.int32(99999))
-
-process.load('RecoMET.METFilters.trackingFailureFilter_cfi')
 process.load('RecoMET.METFilters.EcalDeadCellTriggerPrimitiveFilter_cfi')
-process.load('RecoMET.METFilters.eeBadScFilter_cfi')
 process.load('RecoMET.METFilters.BadChargedCandidateFilter_cfi')
 process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
-process.load('RecoMET.METFilters.globalTightHalo2016Filter_cfi')
+#process.load('RecoMET.METFilters.eeBadScFilter_cfi')
 
-process.allMetFilterPaths=cms.Sequence( process.HBHENoiseFilter*
+process.allMetFilterPaths=cms.Sequence( process.primaryVertexFilter*
+                                        process.globalTightHalo2016Filter*
+                                        process.HBHENoiseFilter*
                                         process.HBHENoiseIsoFilter*
                                         process.EcalDeadCellTriggerPrimitiveFilter*
-                                        process.eeBadScFilter*
                                         process.BadPFMuonFilter*
-                                        process.BadChargedCandidateFilter*
-                                        process.globalTightHalo2016Filter )
+                                        process.BadChargedCandidateFilter )
+                                        #process.eeBadScFilter* # Not in MC
 
 ##Type1 patMET Producer
 process.load("JetMETCorrections.Type1MET.correctionTermsPfMetType0PFCandidate_cff")
 process.load('PhysicsTools.PatAlgos.producersLayer1.metProducer_cfi')
 process.patMETs.addGenMET = cms.bool(False)
-## Choose to use Type0 MET instead
-process.patMETs.metSource = cms.InputTag("pfMetT0pc")
+process.patMETs.metSource = cms.InputTag("pfMetT1") # This is the default, but let's make it explicit
+process.patMETsT0pc = process.patMETs.clone(metSource = cms.InputTag("pfMetT0pc"))
+process.patMETsT0pcT1 = process.patMETs.clone(metSource = cms.InputTag("pfMetT0pcT1"))
 
 #Try scheduled processs
-process.path = cms.Path( process.goodVertices*
-                         process.trackingFailureFilter*
-                         process.HBHENoiseFilterResultProducer*
-                         process.HBHENoiseFilterResultProducerNoMinZ*
-                         process.allMetFilterPaths*
+process.path = cms.Path( process.allMetFilterPaths*
                          process.correctionTermsPfMetType0PFCandidate*
                          process.patMETs*
+                         process.patMETsT0pc*
+                         process.patMETsT0pcT1*
                          process.QGTagger*
                          process.ak4 )
 
