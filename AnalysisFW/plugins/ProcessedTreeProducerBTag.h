@@ -53,6 +53,24 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     static bool sort_pfjets(QCDPFJet j1, QCDPFJet j2) {
       return j1.ptCor() > j2.ptCor();
     }
+    unsigned genorder(double pt, Handle<GenJetCollection> gjets, unsigned blw, unsigned abv) {
+      unsigned nxt = (abv+blw)/2;
+      if (nxt==blw) return nxt;
+      double nxtpt = gjets->at(nxt).p4().Pt();
+      if (nxtpt<=pt)
+        return genorder(pt,gjets,blw,nxt);
+      else
+        return genorder(pt,gjets,nxt,abv);
+    }
+    unsigned partonorder(double pt, edm::Handle<reco::GenParticleCollection> prtns, unsigned blw, unsigned abv) {
+      unsigned nxt = (abv+blw)/2;
+      if (nxt==blw) return nxt;
+      double nxtpt = prtns->at(nxt).p4().Pt();
+      if (nxtpt>pt)
+        return partonorder(pt,prtns,blw,nxt);
+      else
+        return partonorder(pt,prtns,nxt,abv);
+    }
     //---- configurable parameters --------
     bool   mAK4;
     bool   mPrintTriggerMenu;

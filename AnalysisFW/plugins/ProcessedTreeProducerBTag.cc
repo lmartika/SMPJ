@@ -362,6 +362,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     for (auto i_gen = genjets->begin(); i_gen != genjets->end() and j != theJetFlavourInfos->end() and k != theJetFlavourInfosPhysicsDef->end(); ++i_gen, ++j, ++k) {
       //if (i_gen->pt() > mMinGenPt && fabs(i_gen->y()) < mMaxY) {
         mGenJets.push_back(i_gen->p4());
+        unsigned idx = i_gen-genjets->begin();
 
         int FlavourGen = 0;
         reco::JetFlavourInfo aInfo = j->second;
@@ -422,6 +423,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     
   for (auto i_pfjetchs=patjetschs->begin(); i_pfjetchs!=patjetschs->end(); ++i_pfjetchs) { 
     if (!i_pfjetchs->isPFJet()) continue;
+    unsigned idx = i_pfjetchs-patjetschs->begin();
 
     //---- preselection -----------------
     int jetNo = i_pfjetchs-patjetschs->begin();
@@ -591,12 +593,10 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     float partonFlavourPhysicsDef=-100;
     float hadronFlavour=-100;
     if (mIsMCarlo and mUseGenInfo) {
-      cout << "Parton flav " << i_pfjetchs->partonFlavour() << endl;
-      cout << "Hadron flav " << i_pfjetchs->hadronFlavour() << endl;
       partonFlavour = i_pfjetchs->partonFlavour();
       hadronFlavour = i_pfjetchs->hadronFlavour();
       if (i_pfjetchs->genParton() != NULL) partonFlavourPhysicsDef = i_pfjetchs->genParton()->pdgId(); //it is not always defined!!
-      cout << "Gen parton " << partonFlavourPhysicsDef << endl;
+      cout << "Jet flav " << i_pfjetchs->partonFlavour() << " " << partonFlavourPhysicsDef << " " << i_pfjetchs->hadronFlavour() << endl;
     }
     qcdpfjetchs.setFlavour(partonFlavour,hadronFlavour,partonFlavourPhysicsDef);
     
@@ -618,24 +618,36 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     if (i_pfjetchs->hasUserFloat(mPFJetPUIDCHS)) pileupJetId = i_pfjetchs->userFloat(mPFJetPUIDCHS);
     qcdpfjetchs.SetPUJetId(pileupJetId);
     
-    if (mIsMCarlo) {
-      GenJetCollection::const_iterator i_matchedchs;
+    if (mIsMCarlo and genjets->size()>0) {
+      // Find approximately the closest pt and then iterate up and down
+      // If a good match is found, iteration stops
       float rmin(999);
-      for(GenJetCollection::const_iterator i_gen = genjets->begin(); i_gen != genjets->end(); i_gen++) {
-        double deltaR = reco::deltaR(*i_pfjetchs,*i_gen);
-        if (deltaR < rmin) {
-          rmin = deltaR;
-          i_matchedchs = i_gen;
+      int imin = 0;
+      int dwn = genorder(i_pfjetchs->p4().Pt(),genjets,0,genjets->size()-1);
+      int up = dwn+1;
+      int limit = genjets->size();
+      while (dwn>=0 or up<limit) {
+        if (dwn>=0) {
+          double deltaR = reco::deltaR(*i_pfjetchs,genjets->at(dwn));
+          if (deltaR < rmin) {
+            imin = dwn;
+            rmin = deltaR;
+            if (rmin<0.2) break;
+          }
+          --dwn;
+        }
+        if (up<limit) {
+          double deltaR = reco::deltaR(*i_pfjetchs,genjets->at(up));
+          if (deltaR < rmin) {
+            imin = up;
+            rmin = deltaR;
+            if (rmin<0.2) break;
+          }
+          ++up;
         }
       }
-      if (genjets->size() == 0) {
-        LorentzVector tmpP4(0.0,0.0,0.0,0.0);
-        qcdpfjetchs.setGen(tmpP4,0);
-      } else {
-        unsigned pos = i_matchedchs-genjets->begin();
-        qcdpfjetchs.setGen(i_matchedchs->p4(),rmin);
-        cout << "Gen flav: " << GenFlavour[pos] << " " << GenPartonFlavourPhysicsDef[pos] << " " << GenHadronFlavour[pos] << endl;
-      }
+      qcdpfjetchs.setGen(genjets->at(imin).p4(),rmin);
+      cout << "Gen flav: " << GenFlavour[imin] << " " << GenPartonFlavourPhysicsDef[imin] << " " << GenHadronFlavour[imin] << endl;
     } else {
       LorentzVector tmpP4(0.0,0.0,0.0,0.0);
       qcdpfjetchs.setGen(tmpP4,0);
