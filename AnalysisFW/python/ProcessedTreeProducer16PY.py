@@ -39,12 +39,6 @@ process.load("PhysicsTools.PatAlgos.patSequences_cff")
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag.globaltag = "80X_mcRun2_asymptotic_2016_TrancheIV_v6"
 
-# srcJets could be reco::PFJetCollection or pat::JetCollection (both AOD and miniAOD)process.load('RecoJets.JetProducers.QGTagger_cfi')
-# other options for jetsLabel: see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
-process.load('RecoJets.JetProducers.QGTagger_cfi')
-process.QGTagger.srcJets = cms.InputTag('ak4PFJetsCHS')
-process.QGTagger.jetsLabel  = cms.string('QGL_AK4PFchs') 
-
 ##-------------------- Import the JEC services -----------------------
 process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 
@@ -213,13 +207,11 @@ def jetToolbox( proc, jetType, jetSequence, PUMethod='', bTagDiscriminators = No
                     pvSource = cms.InputTag( 'offlinePrimaryVertices' ), #'offlineSlimmedPrimaryVertices'),
                     jetTrackAssociation = True)
   
-  QGjetsLabel='chs'
-
   # srcJets Could be reco::PFJetCollection or pat::JetCollection (both AOD and miniAOD) 
   # Other options for jetsLabel (might need to add an ESSource for it): see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
   setattr( proc, 'QGTagger'+jetALGO+'PF'+PUMethod,
            QGTagger.clone( srcJets = cms.InputTag(jetalgo+'PFJets'+PUMethod),
-                           jetsLabel = cms.string('QGL_AK4PF'+QGjetsLabel) ) )
+                           jetsLabel = cms.string('QGL_AK4PFchs') ) )
   elemToKeep += [ 'keep *_QGTagger'+jetALGO+'PF'+PUMethod+'_*_*' ]
   getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userFloats.src += ['QGTagger'+jetALGO+'PF'+PUMethod+':qgLikelihood']
   jetSeq += getattr(proc, 'QGTagger'+jetALGO+'PF'+PUMethod )
@@ -247,7 +239,8 @@ from PhysicsTools.JetMCAlgos.HadronAndPartonSelector_cfi import selectedHadronsA
 process.selectedHadronsAndPartons = selectedHadronsAndPartons.clone( particles = genParticleCollection )
 
 from PhysicsTools.JetMCAlgos.AK4PFJetsMCFlavourInfos_cfi import ak4JetFlavourInfos
-process.genJetFlavourInfos = ak4JetFlavourInfos.clone( jets = genJetCollection )
+process.genJetFlavourInfos = ak4JetFlavourInfos.clone( jets = genJetCollection,
+                                                       partons = cms.InputTag("selectedHadronsAndPartons","algorithmicPartons") )
 
 #You need to create another collection to give the physics definition 
 process.genJetFlavourInfosPhysicsDef = ak4JetFlavourInfos.clone(
@@ -255,11 +248,9 @@ process.genJetFlavourInfosPhysicsDef = ak4JetFlavourInfos.clone(
     partons = cms.InputTag("selectedHadronsAndPartons","physicsPartons"),
 )
 
-#fillPhysicsDefinition
-# partons = cms.InputTag("selectedHadronsAndPartons","algorithmicPartons"),
-
 process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                ## jet collections ###########################
+                               AK4                       = cms.untracked.bool(True),
                                pfjetschs                 = cms.InputTag('selectedPatJetsAK4PFCHS'),
                                pfpujetid                 = cms.string('AK4PFpileupJetIdEvaluator:fullDiscriminant'),
                                pfchsjetpuid              = cms.string('AK4PFCHSpileupJetIdEvaluator:fullDiscriminant'),
@@ -269,7 +260,6 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                pfmetT0pcT1               = cms.InputTag('patMETsT0pcT1'),
                                ## database entry for the uncertainties ######
                                PFPayloadNameCHS          = cms.string('AK4PFchs'),
-                               jecUncSrcCHS              = cms.string(''),
                                jecUncSrcNames            = cms.vstring(''),
                                ## set the conditions for good Vtx counting ##
                                offlineVertices           = cms.InputTag('offlinePrimaryVertices'),
@@ -287,15 +277,15 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                minNPFJets                = cms.int32(1),
                                minGenPt                  = cms.untracked.double(20),
                                minJJMass                 = cms.double(-1),
-                               isMCarlo                  = cms.untracked.bool(True),
-                               useGenInfo                = cms.untracked.bool(True),
-                               AK4                       = cms.untracked.bool(True),
                                ## trigger ###################################
                                triggerName               = cms.vstring(''), 
                                ## gen services ##############################
+                               isMCarlo                  = cms.untracked.bool(True),
+                               useGenInfo                = cms.untracked.bool(True),
+                               mcType                    = cms.untracked.int(0),
                                EventInfo       = cms.untracked.InputTag("generator"),
-                               genjets         = cms.untracked.InputTag('ak4GenJetsNoNu'),
-                               GenParticles    = cms.untracked.InputTag("genParticles"),
+                               genjets         = cms.untracked.InputTag(genJetCollection),
+                               GenParticles    = cms.untracked.InputTag(genParticleCollection),
                                jetFlavourInfos = cms.untracked.InputTag("genJetFlavourInfos"),
                                jetFlavourInfosPhysicsDef = cms.untracked.InputTag("genJetFlavourInfosPhysicsDef") )
 
@@ -343,7 +333,6 @@ process.path = cms.Path( process.allMetFilterPaths*
                          process.patMETs*
                          process.patMETsT0pc*
                          process.patMETsT0pcT1*
-                         process.QGTagger*
                          process.ak4 )
 
 

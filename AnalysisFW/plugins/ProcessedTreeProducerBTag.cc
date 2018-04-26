@@ -77,12 +77,11 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   mPFPayloadNameCHS(                                                                          cfg.getParameter<std::string>("PFPayloadNameCHS")),
   mRunYear(                                                                          cfg.getUntrackedParameter<std::string>("runYear","2016")),
   mPFJetPUIDCHS(                                                                              cfg.getParameter<std::string>("pfchsjetpuid")),
-  mPFJECUncSrcCHS(                                                                            cfg.getParameter<std::string>("jecUncSrcCHS")),
+  mPFJECUncSrcCHS(                                                                   cfg.getUntrackedParameter<std::string>("jecUncSrcCHS","")),
   mPFJECUncSrcNames(                                                            cfg.getParameter<std::vector<std::string> >("jecUncSrcNames")),
   mOfflineVertices(mayConsume<reco::VertexCollection>(                                      cfg.getParameter<edm::InputTag>("offlineVertices"))),
   mBeamSpot(mayConsume<reco::BeamSpot>(                                                     cfg.getParameter<edm::InputTag>("beamSpot"))),
   mPFJetsNameCHS(consumes<edm::View<pat::Jet>>(                                             cfg.getParameter<edm::InputTag>("pfjetschs"))),
-  qgToken(consumes<edm::ValueMap<float>>(                                                                     edm::InputTag("QGTagger", "qgLikelihood"))),
   // Rho
   mSrcCaloRho(mayConsume<double>(                                                           cfg.getParameter<edm::InputTag>("srcCaloRho"))),
   mSrcPFRho(mayConsume<double>(                                                             cfg.getParameter<edm::InputTag>("srcPFRho"))),
@@ -162,10 +161,6 @@ void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup 
 void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup const& iSetup)
 {
   vector<QCDPFJet>      mPFJetsCHS;
-  vector<LorentzVector> mGenJets;
-  vector<float> GenFlavour;
-  vector<float> GenPartonFlavourPhysicsDef;
-  vector<float> GenHadronFlavour;
   QCDEventHdr mEvtHdr;
   QCDMET mPFMet_t1, mPFMet_t0pc, mPFMet_t0pct1;
 
@@ -195,9 +190,9 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     mEvtHdr.setHCALNoiseNoMinZ(*noiseSummary_NoMinZ);
   }
   //-------------- Trigger Info -----------------------------------
-  vector<int> L1Prescales,HLTPrescales,Fired;
-  vector<vector<LorentzVector> > mL1Objects, mHLTObjects;
   if (!mIsMCarlo) {
+    vector<int> L1Prescales,HLTPrescales,Fired;
+    vector<vector<LorentzVector> > mL1Objects, mHLTObjects;
     event.getByToken(triggerResultsTag_,triggerResultsHandle_);
     if (!triggerResultsHandle_.isValid()) {
       cout << "ProcessedTreeProducerBTag::analyze: Error in getting TriggerResults product from Event!" << endl;
@@ -280,11 +275,11 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       mL1Objects.push_back(vvL1);
       mHLTObjects.push_back(vvHLT);
     }// loop over trigger names
-  }
-  mEvent->setTrigDecision(Fired);
-  mEvent->setPrescales(L1Prescales,HLTPrescales);
-  mEvent->setL1Obj(mL1Objects);
-  mEvent->setHLTObj(mHLTObjects);
+    mEvent->setTrigDecision(Fired);
+    mEvent->setPrescales(L1Prescales,HLTPrescales);
+    mEvent->setL1Obj(mL1Objects);
+    mEvent->setHLTObj(mHLTObjects);
+  } // !isMCarlo
 
   //-------------- Vertex Info -----------------------------------
   Handle<reco::VertexCollection> recVtxs;
@@ -348,83 +343,51 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     mEvtHdr.setPU(0,0,0,0);
     mEvtHdr.setTrPu(0);
   }
+  mEvent->setEvtHdr(mEvtHdr);
 
   //---------------- GenJets ------------------------------------------
   Handle<GenJetCollection>  genjets;
+    vector<float> GenFlavour;
+    vector<float> GenHadronFlavour;
+    vector<float> GenPartonFlavourPhysicsDef;
   if (mIsMCarlo) {
+    vector<LorentzVector> mGenJets;
     event.getByToken(mGenJetsName,genjets);
-    //bool switchB=0;
-    //bool switchC=0;
-
-    //edm::Handle<reco::GenParticleCollection> genParticles;
-    //event.getByToken(mGenParticles, genParticles);
-
-    //for (auto i = 0u; i < genParticles->size (); ++i) {
-    //  const GenParticle & genIt = (*genParticles)[i];
-    //  cout << "parton " << i << " pdgid " << genIt.pdgId() << " status " << genIt.status() << endl;
-    //  int pdgId = genIt.pdgId();
-    //  double DeltaR=deltaR(genIt.p4().eta(),genIt.p4().phi(),i_gen->eta(),i_gen->phi());
-    //  double DeltaRmin=0.3;
-    //  if (DeltaR < DeltaRmin ){
-    //    DeltaRmin=DeltaR;
-    //    if(abs(pdgId)==5){ jetFlavour=5; switchB=true;}
-    //    if(abs(pdgId)==4){ jetFlavour=4; switchC=true;}
-    //    if(abs(pdgId)<=3 && abs(pdgId)>=1){ jetFlavour=1; }
-    //    if(abs(pdgId)==21){ jetFlavour=21; }
-    //  }      
-    //  if (switchB) {jetFlavour=5;}
-    //  if (switchC && !switchB) {jetFlavour=4;}
-    //}
-    for (auto i_gen = genjets->begin(); i_gen != genjets->end(); i_gen++) {
-      if (i_gen->pt() > mMinGenPt && fabs(i_gen->y()) < mMaxY) {
-        mGenJets.push_back(i_gen->p4());
-
-        //ADD FLAVOUR AT GEN LEVEL
-        int FlavourGen = getMatchedPartonGen(event,i_gen);
-        GenFlavour.push_back(FlavourGen);
-        cout << "Genjet " << int(i_gen-genjets->begin()) << " partonflav " << getMatchedPartonGen(event,i_gen) << endl;
-      }
-    }
-
     edm::Handle<reco::JetFlavourInfoMatchingCollection> theJetFlavourInfos;
     event.getByToken(jetFlavourInfosToken_, theJetFlavourInfos );
-    
-    int counter = 0;
-    for (auto j  = theJetFlavourInfos->begin();j != theJetFlavourInfos->end();++j ) {
-      reco::JetFlavourInfo aInfo = (*j).second;
-      int FlavourGenHadron = aInfo.getHadronFlavour();
-      GenHadronFlavour.push_back(FlavourGenHadron);
-      cout << "Genjet " << counter << " partonflav " << aInfo.getPartonFlavour() << " hadronflav " << aInfo.getHadronFlavour() << endl;
-      ++counter;
-      auto &parts = aInfo.getPartons();
-      for ( auto pa = parts.begin(); pa != parts.end(); ++pa ) {
-        cout << "  " << (*pa)->pdgId() << " " << (*pa)->status() << endl;
-      }
-    }
-
-    //Physics Definition Gen Level
+    auto j = theJetFlavourInfos->begin();
     edm::Handle<reco::JetFlavourInfoMatchingCollection> theJetFlavourInfosPhysicsDef;
     event.getByToken(jetFlavourInfosTokenPhysicsDef_, theJetFlavourInfosPhysicsDef );
+    auto k = theJetFlavourInfosPhysicsDef->begin();
+    for (auto i_gen = genjets->begin(); i_gen != genjets->end() and j != theJetFlavourInfos->end() and k != theJetFlavourInfosPhysicsDef->end(); ++i_gen, ++j, ++k) {
+      //if (i_gen->pt() > mMinGenPt && fabs(i_gen->y()) < mMaxY) {
+        mGenJets.push_back(i_gen->p4());
 
-    counter = 0;
-    cout << "Physdef" << endl;    
-    for (auto j  = theJetFlavourInfosPhysicsDef->begin();j != theJetFlavourInfosPhysicsDef->end();++j ) {
-      reco::JetFlavourInfo aInfo = (*j).second;
-      int FlavourGenHadronPhysicsDef = aInfo.getPartonFlavour();
-      GenPartonFlavourPhysicsDef.push_back(FlavourGenHadronPhysicsDef);
-      cout << "Genjet " << counter << " partonflav " << aInfo.getPartonFlavour() << " hadronflav " << aInfo.getHadronFlavour() << endl;
-      ++counter;
-      auto &parts = aInfo.getPartons();
-      for ( auto pa = parts.begin(); pa != parts.end(); ++pa ) {
-        cout << "  " << (*pa)->pdgId() << " " << (*pa)->status() << endl;
-      }
+        int FlavourGen = 0;
+        reco::JetFlavourInfo aInfo = j->second;
+        if (mMCType==0) {
+          FlavourGen = aInfo.getPartonFlavour();
+        } else if (mMCType==1) {
+          FlavourGen = getMatchedPartonGen(event,i_gen);
+        }
+        GenFlavour.push_back(FlavourGen);
+        int FlavourGenHadron = aInfo.getHadronFlavour();
+        GenHadronFlavour.push_back(FlavourGenHadron);
+        reco::JetFlavourInfo bInfo = k->second;
+        int FlavourGenHadronPhysicsDef = bInfo.getPartonFlavour();
+        GenPartonFlavourPhysicsDef.push_back(FlavourGenHadronPhysicsDef);
+      //}
     }
+    mEvent->setGenJets(mGenJets);
+    mEvent->setGenFlavour(GenFlavour);
+    mEvent->setGenHadronFlavour(GenHadronFlavour);
+    mEvent->setGenFlavourPhysicsDef(GenPartonFlavourPhysicsDef);
   }
   
   //---------------- Jets ---------------------------------------------
   // -------- CHS Uncertainty part ----------------//
   edm::ESHandle<JetCorrectorParametersCollection> PFJetCorParCollCHS;
-  if (mPFPayloadNameCHS != "" && !isPFJecUncSetCHS_){
+  if (mPFPayloadNameCHS != "" and !isPFJecUncSetCHS_){
     iSetup.get<JetCorrectionsRecord>().get(mPFPayloadNameCHS,PFJetCorParCollCHS);
     JetCorrectorParameters const& PFJetCorParCHS = (*PFJetCorParCollCHS)["Uncertainty"];
     mPFUncCHS = new JetCorrectionUncertainty(PFJetCorParCHS);
@@ -440,17 +403,8 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
 
 
   //----------- PFJets  CHS part -------------------------
-  edm::Handle<edm::ValueMap<float>> qgHandle; 
-  event.getByToken(qgToken, qgHandle);
- 
   edm::Handle<edm::View<pat::Jet> > patjetschs;
   event.getByToken(mPFJetsNameCHS,patjetschs);
-
-  //for (auto i_pfjet=patjetschs->begin(); i_pfjet!=patjetschs->end(); ++i_pfjet) {
-  //  edm::RefToBase<pat::Jet> jetRef(edm::Ref<edm::View<pat::Jet> >(patjetschs, i_pfjet - patjetschs->begin()));
-  //  float qgLikelihood = (*qgHandle)[jetRef];
-  //  cout<<qgLikelihood<<endl;
-  //}
 
   // A store for track-vertex association
   map<reco::TrackRef,int> trk2vtx;
@@ -471,7 +425,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
 
     //---- preselection -----------------
     int jetNo = i_pfjetchs-patjetschs->begin();
-    if (fabs(i_pfjetchs->y()) > mMaxY or (i_pfjetchs->pt() < (jetNo<=3 ? mMinPFPtThirdJet : mMinPFPt))) continue;
+    if (fabs(i_pfjetchs->y()) > mMaxY or (i_pfjetchs->pt() < (jetNo<3 ? mMinPFPtThirdJet : mMinPFPt))) continue;
     
     QCDPFJet qcdpfjetchs;
     double scaleCHS = 1./i_pfjetchs->jecFactor(0); // --- the value of the JEC factor
@@ -677,14 +631,19 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       if (genjets->size() == 0) {
         LorentzVector tmpP4(0.0,0.0,0.0,0.0);
         qcdpfjetchs.setGen(tmpP4,0);
-      } else
+      } else {
+        unsigned pos = i_matchedchs-genjets->begin();
         qcdpfjetchs.setGen(i_matchedchs->p4(),rmin);
+        cout << "Gen flav: " << GenFlavour[pos] << " " << GenPartonFlavourPhysicsDef[pos] << " " << GenHadronFlavour[pos] << endl;
+      }
     } else {
       LorentzVector tmpP4(0.0,0.0,0.0,0.0);
       qcdpfjetchs.setGen(tmpP4,0);
     }
     mPFJetsCHS.push_back(qcdpfjetchs);
   } // for: chs Jets
+  sort(mPFJetsCHS.begin(),mPFJetsCHS.end(),sort_pfjets);
+  mEvent->setPFJetsCHS(mPFJetsCHS); // -- later substitute chs jets
   
   //---------------- met ---------------------------------------------
   Handle<pat::METCollection> pfmet_t1, pfmet_t0pc, pfmet_t0pct1;
@@ -697,18 +656,9 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   mPFMet_t0pc.setVar(met_t0pc.et(),met_t0pc.sumEt(),met_t0pc.phi());
   const pat::MET &met_t0pct1 = pfmet_t0pct1->front();
   mPFMet_t0pct1.setVar(met_t0pct1.et(),met_t0pct1.sumEt(),met_t0pct1.phi());
+  mEvent->setPFMET(mPFMet_t1,mPFMet_t0pc,mPFMet_t0pct1);
 
   //-------------- fill the tree -------------------------------------
-  sort(mPFJetsCHS.begin(),mPFJetsCHS.end(),sort_pfjets);
-  mEvent->setEvtHdr(mEvtHdr);
-  mEvent->setPFJetsCHS(mPFJetsCHS); // -- later substitute chs jets
-  mEvent->setGenJets(mGenJets);
-  mEvent->setGenFlavour(GenFlavour);
-  mEvent->setGenFlavourPhysicsDef(GenPartonFlavourPhysicsDef);
-  mEvent->setGenHadronFlavour(GenHadronFlavour);
-  mEvent->setPFMET(mPFMet_t1,mPFMet_t0pc,mPFMet_t0pct1);
-  mEvent->setL1Obj(mL1Objects);
-  mEvent->setHLTObj(mHLTObjects);
   if ((mEvent->nPFJetsCHS() >= (unsigned)mMinNPFJets) ) {
     if ((mEvent->pfchsmjjcor(0) >= mMinJJMass) ) {
       mTree->Fill();

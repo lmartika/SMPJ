@@ -71,7 +71,6 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     edm::EDGetTokenT<reco::VertexCollection> mOfflineVertices;
     edm::EDGetTokenT<reco::BeamSpot> mBeamSpot;
     edm::EDGetTokenT<edm::View<pat::Jet> >mPFJetsNameCHS;
-    edm::EDGetTokenT<edm::ValueMap<float>> qgToken;
     edm::EDGetTokenT<double> mSrcCaloRho;
     edm::EDGetTokenT<double> mSrcPFRho;
     //---- MET -----------------------------
