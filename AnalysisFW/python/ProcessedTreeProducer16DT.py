@@ -371,7 +371,7 @@ process.path = cms.Path( process.hltFilter*
                          process.patMETsT0pc*
                          process.patMETsT0pcT1*
                          process.QGTagger*
-                         #process.content*
+                         #process.content* # HOX, noisy!
                          process.ak4 )
 
 

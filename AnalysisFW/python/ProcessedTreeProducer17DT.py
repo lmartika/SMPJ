@@ -38,13 +38,6 @@ process.load('RecoJets.JetProducers.TrackJetParameters_cfi')
 process.load('RecoJets.JetProducers.PileupJetIDParams_cfi')
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
 
-process.load('RecoJets.JetProducers.QGTagger_cfi')
-process.QGTagger.srcJets = cms.InputTag('ak4PFJetsCHS')
-process.QGTagger.jetsLabel  = cms.string('QGL_AK4PFchs')
-
-#process.GlobalTag.globaltag = "80X_dataRun2_ICHEP16_repro_v0"
-#process.GlobalTag.globaltag = "80X_dataRun2_2016SeptRepro_v4"
-#process.GlobalTag.globaltag = "80X_dataRun2_2016LegacyRepro_v4"
 process.GlobalTag.globaltag = "94X_dataRun2_ReReco_EOY17_v2"
 
 ##-------------------- Import the JEC services -----------------------
@@ -73,8 +66,6 @@ process.TFileService.fileName=cms.string('DATA.root')
 
 inFiles = cms.untracked.vstring(
 'root://cms-xrd-global.cern.ch//store/data/Run2017B/JetHT/AOD/17Nov2017-v1/20000/0025AD66-25CC-E711-B8FE-EC0D9A0B3320.root'
-#'root://cms-xrd-global.cern.ch//store/data/Run2016G/JetHT/AOD/07Aug17-v1/110000/0017B3B5-F17C-E711-BC55-0242AC110004.root'
-#'root://cms-xrd-global.cern.ch//store/data/Run2016G/JetHT/AOD/23Sep2016-v1/100000/0645BD20-F486-E611-A724-002590D0B054.root'
 )
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(200))
@@ -217,8 +208,8 @@ def jetToolbox( proc, jetType, jetSequence ):
   getattr(proc,'patJets'+jetNAME).addTagInfos = cms.bool(True)
   getattr(proc,'patJets'+jetNAME).addAssociatedTracks = cms.bool(True)
 
-  setattr( proc, 'QGTagger'+jetNAME,QGTagger.clone( srcJets = cms.InputTag(jetname),jetsLabel = cms.string('QGL_AK4PFchs') ) )
-  getattr( proc, 'patJets'+jetNAME).userData.userFloats.src += ['QGTagger'+jetNAME+':qgLikelihood']
+  setattr(proc, 'QGTagger'+jetNAME,QGTagger.clone(srcJets = cms.InputTag(jetname),jetsLabel = cms.string('QGL_AK4PFchs')) )
+  getattr(proc, 'patJets'+jetNAME).userData.userFloats.src += ['QGTagger'+jetNAME+':qgLikelihood']
   jetSeq += getattr(proc, 'QGTagger'+jetNAME )
   
   # This is already done in addJetCollection, but I worry that the changes done to patJets do not get updated to selectedPatJets
@@ -235,14 +226,16 @@ process.load("PhysicsTools.PatAlgos.patSequences_cff")
 
 process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                ## jet collections ###########################
+                               AK4                       = cms.untracked.bool(True),
                                pfjetschs                 = cms.InputTag('selectedPatJetsAK4PFCHS'),
                                pfpujetid                 = cms.string('AK4PFpileupJetIdEvaluator:fullDiscriminant'),
                                pfchsjetpuid              = cms.string('AK4PFCHSpileupJetIdEvaluator:fullDiscriminant'),
                                ## MET collection ####
-                               pfmet                     = cms.InputTag('patMETs'),
+                               pfmetT1                   = cms.InputTag('patMETs'),
+                               pfmetT0pc                 = cms.InputTag('patMETsT0pc'),
+                               pfmetT0pcT1               = cms.InputTag('patMETsT0pcT1'),
                                ## database entry for the uncertainties ######
                                PFPayloadNameCHS          = cms.string('AK4PFchs'),
-                               jecUncSrcCHS              = cms.string(''),
                                jecUncSrcNames            = cms.vstring(''),
                                ## set the conditions for good Vtx counting ##
                                offlineVertices           = cms.InputTag('offlinePrimaryVertices'),
@@ -260,23 +253,16 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                minNPFJets                = cms.int32(1),
                                minGenPt                  = cms.untracked.double(20.0),
                                minJJMass                 = cms.double(-1),
-                               isMCarlo                  = cms.untracked.bool(False),
-                               useGenInfo                = cms.untracked.bool(False),
-                               AK4                       = cms.untracked.bool(True),
                                ## trigger ###################################
                                printTriggerMenu          = cms.untracked.bool(True),
-                               processName               = cms.string('HLT'),
+                               processName               = cms.untracked.string('HLT'),
                                triggerName               = triggers, 
-                               triggerResults            = cms.InputTag("TriggerResults","","HLT"),
-                               triggerEvent              = cms.InputTag("hltTriggerSummaryAOD","","HLT"),
+                               triggerResults            = cms.untracked.InputTag("TriggerResults","","HLT"),
+                               triggerEvent              = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT"),
                                ## jec services ##############################
-                               HBHENoiseFilterResultLabel = cms.InputTag("HBHENoiseFilterResultProducer", "HBHENoiseFilterResult"),
-                               HBHENoiseFilterResultNoMinZLabel = cms.InputTag("HBHENoiseFilterResultProducerNoMinZ", "HBHENoiseFilterResult"), 
-                               ## gen services (dummy) ######################
-                               EventInfo                 = cms.InputTag("generator"),
-                               GenParticles              = cms.InputTag("genparticles"),
-                               jetFlavourInfos           = cms.InputTag("genJetFlavourInfos"),
-                               jetFlavourInfosPhysicsDef = cms.InputTag("genJetFlavourInfosPhysicsDef") ) 
+                               isMCarlo                  = cms.untracked.bool(False), 
+                               HBHENoiseFilterResultLabel = cms.untracked.InputTag("HBHENoiseFilterResultProducer", "HBHENoiseFilterResult"),
+                               HBHENoiseFilterResultNoMinZLabel = cms.untracked.InputTag("HBHENoiseFilterResultProducerNoMinZ", "HBHENoiseFilterResult") )
 
 ############# hlt filter #########################
 process.hltFilter = cms.EDFilter( 'HLTHighLevel',
@@ -297,8 +283,12 @@ process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
 process.load('RecoMET.METFilters.eeBadScFilter_cfi')
 process.load('RecoMET.METFilters.ecalBadCalibFilter_cfi')
 
+process.HBHENoiseFilterResultProducerNoMinZ = process.HBHENoiseFilterResultProducer.clone(minZeros = cms.int32(99999))
+
 process.allMetFilterPaths=cms.Sequence( process.primaryVertexFilter*
                                         process.globalTightHalo2016Filter*
+                                        process.HBHENoiseFilterResultProducer*
+                                        process.HBHENoiseFilterResultProducerNoMinZ*
                                         process.HBHENoiseFilter*
                                         process.HBHENoiseIsoFilter*
                                         process.EcalDeadCellTriggerPrimitiveFilter*
@@ -307,30 +297,30 @@ process.allMetFilterPaths=cms.Sequence( process.primaryVertexFilter*
                                         process.eeBadScFilter*
                                         process.ecalBadCalibFilter )
 
-process.allFilterPaths=cms.Sequence( process.hltFilter*
-                                     process.HBHENoiseFilterResultProducer*
-                                     process.HBHENoiseFilterResultProducerNoMinZ*
-                                     process.HBHENoiseFilter*
-                                     process.HBHENoiseIsoFilter*
-                                     process.primaryVertexFilter*
-                                     process.EcalDeadCellTriggerPrimitiveFilter*
-                                     process.ecalBadCalibFilter*
-                                     process.eeBadScFilter*
-                                     process.BadPFMuonFilter*
-                                     process.BadChargedCandidateFilter*
-                                     process.globalTightHalo2016Filter )
-
 ##Type1 patMET Producer
 process.load("JetMETCorrections.Type1MET.correctionTermsPfMetType0PFCandidate_cff")
 process.load("JetMETCorrections.Type1MET.correctedMet_cff")
 process.load('PhysicsTools.PatAlgos.producersLayer1.metProducer_cfi')
 process.patMETs.addGenMET = cms.bool(False)
-## Choose to use Type0 MET instead
-process.patMETs.metSource = cms.InputTag("pfMetT0pc")
+
+process.patMETs.metSource = cms.InputTag("pfMetT1") # This is the default, but let's make it explicit
+process.patMETsT0pc = process.patMETs.clone(metSource = cms.InputTag("pfMetT0pc"))
+process.patMETsT0pcT1 = process.patMETs.clone(metSource = cms.InputTag("pfMetT0pcT1"))
 
 process.allMetPaths=cms.Sequence( process.correctionTermsPfMetType0PFCandidate*
+                                  process.ak4PFCHSResidualCorrector*
+                                  process.ak4PFCHSL3AbsoluteCorrector*
+                                  process.ak4PFCHSL2RelativeCorrector*
+                                  process.ak4PFCHSL1FastjetCorrector*
+                                  process.ak4PFCHSL1FastL2L3ResidualCorrector*
+                                  process.ak4PFCHSL1FastL2L3Corrector*
+                                  process.corrPfMetType1*
+                                  process.pfMetT1*
                                   process.pfMetT0pc*
-                                  process.patMETs )
+                                  process.pfMetT0pcT1*
+                                  process.patMETs*
+                                  process.patMETsT0pc*
+                                  process.patMETsT0pcT1 )
 
 process.allBTagPaths=cms.Sequence( process.pfImpactParameterTagInfosAK4PFCHS*
                                    process.pfImpactParameterAK8TagInfosAK4PFCHS*
@@ -357,7 +347,9 @@ process.allBTagPaths=cms.Sequence( process.pfImpactParameterTagInfosAK4PFCHS*
                                    process.pfTrackCountingHighPurBJetTagsAK4PFCHS*
                                    process.pfTrackCountingHighEffBJetTagsAK4PFCHS )
 
-process.allJetPaths=cms.Sequence( process.patJetChargeAK4PFCHS*
+process.allJetPaths=cms.Sequence( process.QGTaggerAK4PFCHS*
+                                  process.jetTracksAssociatorAtVertexAK4PFCHS*
+                                  process.patJetChargeAK4PFCHS*
                                   process.patJetCorrFactorsAK4PFCHS*
                                   process.patJetsAK4PFCHS*
                                   process.selectedPatJetsAK4PFCHS )
@@ -365,17 +357,15 @@ process.allJetPaths=cms.Sequence( process.patJetChargeAK4PFCHS*
 process.content = cms.EDAnalyzer("EventContentAnalyzer")
 
 #Try scheduled processs
-process.path = cms.Path( process.allFilterPaths*
+process.path = cms.Path( process.allMetFilterPaths*
                          process.allMetPaths*
-                         process.QGTaggerAK4PFCHS*
-                         process.QGTagger*
-                         process.jetTracksAssociatorAtVertexAK4PFCHS*
+                         process.hltFilter*
                          process.allBTagPaths*
                          process.allJetPaths*
+                         #process.content* # HOX, noisy!
                          process.ak4 )
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #! Output and Log
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
-process.options.allowUnscheduled = cms.untracked.bool(True)
