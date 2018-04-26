@@ -277,16 +277,16 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                minNPFJets                = cms.int32(1),
                                minGenPt                  = cms.untracked.double(20),
                                minJJMass                 = cms.double(-1),
-                               ## trigger ###################################
+                               ## trigger (dummy) ###########################
                                triggerName               = cms.vstring(''), 
                                ## gen services ##############################
                                isMCarlo                  = cms.untracked.bool(True),
                                useGenInfo                = cms.untracked.bool(True),
-                               mcType                    = cms.untracked.int(0),
-                               EventInfo       = cms.untracked.InputTag("generator"),
-                               genjets         = cms.untracked.InputTag(genJetCollection),
-                               GenParticles    = cms.untracked.InputTag(genParticleCollection),
-                               jetFlavourInfos = cms.untracked.InputTag("genJetFlavourInfos"),
+                               mcType                    = cms.untracked.int32(0),
+                               EventInfo                 = cms.untracked.InputTag("generator"),
+                               genjets                   = cms.untracked.InputTag(genJetCollection),
+                               GenParticles              = cms.untracked.InputTag(genParticleCollection),
+                               jetFlavourInfos           = cms.untracked.InputTag("genJetFlavourInfos"),
                                jetFlavourInfosPhysicsDef = cms.untracked.InputTag("genJetFlavourInfosPhysicsDef") )
 
 #jetToolbox( process, 'ak7', 'ak7JetSubs','CHS')
@@ -322,7 +322,7 @@ process.allMetFilterPaths=cms.Sequence( process.primaryVertexFilter*
 process.load("JetMETCorrections.Type1MET.correctionTermsPfMetType0PFCandidate_cff")
 process.load('PhysicsTools.PatAlgos.producersLayer1.metProducer_cfi')
 process.patMETs.addGenMET = cms.bool(False)
-## Choose to use Type0 MET instead
+
 process.patMETs.metSource = cms.InputTag("pfMetT1") # This is the default, but let's make it explicit
 process.patMETsT0pc = process.patMETs.clone(metSource = cms.InputTag("pfMetT0pc"))
 process.patMETsT0pcT1 = process.patMETs.clone(metSource = cms.InputTag("pfMetT0pcT1"))

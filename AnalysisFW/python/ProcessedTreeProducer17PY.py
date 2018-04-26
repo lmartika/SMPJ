@@ -228,16 +228,16 @@ process.genJetFlavourInfosPhysicsDef = ak4JetFlavourInfos.clone( jets = genJetCo
 
 process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                ## jet collections ###########################
+                               AK4                       = cms.untracked.bool(True),
                                pfjetschs                 = cms.InputTag('selectedPatJetsAK4PFCHS'),
                                pfpujetid                 = cms.string('AK4PFpileupJetIdEvaluator:fullDiscriminant'),
                                pfchsjetpuid              = cms.string('AK4PFCHSpileupJetIdEvaluator:fullDiscriminant'),
                                ## MET collection ####
                                pfmet                     = cms.InputTag('patMETs'),
-                               ## Gen jets
-                               genjets                   = cms.untracked.InputTag('ak4GenJetsNoNu'),
+                               pfmetT0pc                 = cms.InputTag('patMETsT0pc'),
+                               pfmetT0pcT1               = cms.InputTag('patMETsT0pcT1'),
                                ## database entry for the uncertainties ######
                                PFPayloadNameCHS          = cms.string('AK4PFchs'),
-                               jecUncSrcCHS              = cms.string(''),
                                jecUncSrcNames            = cms.vstring(''),
                                ## set the conditions for good Vtx counting ##
                                offlineVertices           = cms.InputTag('offlinePrimaryVertices'),
@@ -255,20 +255,17 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                minNPFJets                = cms.int32(1),
                                minGenPt                  = cms.untracked.double(20.0),
                                minJJMass                 = cms.double(-1),
+                               ## trigger (dummy) ###########################
+                               triggerName               = cms.vstring(''), 
+                               ## gen services ##############################
                                isMCarlo                  = cms.untracked.bool(True),
                                useGenInfo                = cms.untracked.bool(True),
-                               AK4                       = cms.untracked.bool(True),
-                               ## trigger ###################################
-                               printTriggerMenu          = cms.untracked.bool(False),
-                               processName               = cms.string('HLT'),
-                               triggerName               = cms.vstring(''), 
-                               triggerResults  = cms.InputTag("TriggerResults","","HLT"),
-                               triggerEvent    = cms.InputTag("hltTriggerSummaryAOD","","HLT"),
-                               ## gen services ##############################
-                               EventInfo       = cms.InputTag("generator"),
-                               GenParticles    = cms.InputTag("genParticles"),
-                               jetFlavourInfos = cms.InputTag("genJetFlavourInfos"),
-                               jetFlavourInfosPhysicsDef = cms.InputTag("genJetFlavourInfosPhysicsDef") ) 
+                               mcType                    = cms.untracked.int32(0),
+                               EventInfo                 = cms.untracked.InputTag("generator"),
+                               genjets                   = cms.untracked.InputTag(genJetCollection),
+                               GenParticles              = cms.untracked.InputTag(genParticleCollection),
+                               jetFlavourInfos           = cms.untracked.InputTag("genJetFlavourInfos"),
+                               jetFlavourInfosPhysicsDef = cms.untracked.InputTag("genJetFlavourInfosPhysicsDef") ) 
 
 #MET Filters
 process.load('RecoMET.METFilters.primaryVertexFilter_cfi')
@@ -296,12 +293,16 @@ process.load("JetMETCorrections.Type1MET.correctionTermsPfMetType0PFCandidate_cf
 process.load("JetMETCorrections.Type1MET.correctedMet_cff")
 process.load('PhysicsTools.PatAlgos.producersLayer1.metProducer_cfi')
 process.patMETs.addGenMET = cms.bool(False)
-## Choose to use Type0 MET instead
-process.patMETs.metSource = cms.InputTag("pfMetT0pc")
+
+process.patMETs.metSource = cms.InputTag("pfMetT1") # This is the default, but let's make it explicit
+process.patMETsT0pc = process.patMETs.clone(metSource = cms.InputTag("pfMetT0pc"))
+process.patMETsT0pcT1 = process.patMETs.clone(metSource = cms.InputTag("pfMetT0pcT1"))
 
 process.allMetPaths=cms.Sequence( process.correctionTermsPfMetType0PFCandidate*
                                   process.pfMetT0pc*
-                                  process.patMETs )
+                                  process.patMETs*
+                                  process.patMETsT0pc*
+                                  process.patMETsT0pcT1 )
 
 process.allBTagPaths=cms.Sequence( process.pfImpactParameterTagInfosAK4PFCHS*
                                    process.pfImpactParameterAK8TagInfosAK4PFCHS*
@@ -342,7 +343,7 @@ process.allJetPaths=cms.Sequence( process.patJetChargeAK4PFCHS*
                                   process.selectedPatJetsAK4PFCHS )
 
 #Try scheduled processs
-process.path = cms.Path( process.allFilterPaths*
+process.path = cms.Path( process.allMetFilterPaths*
                          process.allMetPaths*
                          process.QGTaggerAK4PFCHS*
                          process.QGTagger*
