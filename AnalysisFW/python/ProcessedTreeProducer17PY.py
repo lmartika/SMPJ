@@ -216,11 +216,11 @@ process.load("PhysicsTools.PatAlgos.patSequences_cff")
 genJetCollection = 'ak4GenJetsNoNu'
 genParticleCollection = 'genParticles'
 
-process.selectedHadronsAndPartons = selectedHadronsAndPartons.clone( particles = genParticleCollection )
-process.selectedHadronsAndPhysPartons = process.selectedHadronsAndPartons.clone( fullChainPhysPartons=False )
+process.selectedHadronsAndPartons = selectedHadronsAndPartons.clone(particles = genParticleCollection)
+process.selectedHadronsAndPhysPartons = process.selectedHadronsAndPartons.clone(fullChainPhysPartons=False)
 
 process.genJetFlavourInfos = ak4JetFlavourInfos.clone( jets = genJetCollection )
-process.genJetFlavourInfosPhysicsDef = process.genJetFlavourInfos.clone( partons = cms.InputTag("selectedHadronsAndPhysPartons","physicsPartons"))
+process.genJetFlavourInfosPhysicsDef = process.genJetFlavourInfos.clone(partons = cms.InputTag("selectedHadronsAndPhysPartons","physicsPartons"))
 
 process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                ## jet collections ###########################
