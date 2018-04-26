@@ -254,6 +254,7 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                ## trigger (dummy) ###########################
                                triggerName               = cms.vstring(''), 
                                ## gen services ##############################
+                               runYear                   = cms.untracked.string("2017"),
                                isMCarlo                  = cms.untracked.bool(True),
                                useGenInfo                = cms.untracked.bool(True),
                                mcType                    = cms.untracked.int32(1),

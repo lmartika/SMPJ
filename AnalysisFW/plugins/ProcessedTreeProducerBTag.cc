@@ -118,6 +118,7 @@ void ProcessedTreeProducerBTag::beginJob()
   mTriggerNamesHisto->SetBit(TH1::kUserContour);
   mTriggerPassHisto = fs->make<TH1F>("TriggerPass","TriggerPass",1,0,1);
   mTriggerPassHisto->SetBit(TH1::kUserContour);
+  mUseLegacyTag = (mRunYear=="2016" and mMCType==1);
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void ProcessedTreeProducerBTag::endJob() {}
@@ -365,14 +366,12 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     for (auto i_gen = genjets->begin(); i_gen != genjets->end() and j != theJetFlavourInfos->end() and k != theJetFlavourInfosPhysicsDef->end(); ++i_gen, ++j, ++k) {
       int FlavourGen = 0;
       reco::JetFlavourInfo aInfo = j->second;
-      //if (mMCType==0) {
-        FlavourGen = aInfo.getPartonFlavour();
-      //} else if (mMCType==1) {
-      //  FlavourGen = getMatchedPartonGen(event,i_gen);
-      //}
+      if (mUseLegacyTag)FlavourGen = getMatchedPartonGen(event,i_gen);
+      else FlavourGen = aInfo.getPartonFlavour();
       int FlavourGenHadron = aInfo.getHadronFlavour();
       reco::JetFlavourInfo bInfo = k->second;
       int FlavourGenPhysicsDef = bInfo.getPartonFlavour();
+
       genFlavour.push_back(FlavourGen);
       genFlavourPhys.push_back(FlavourGenPhysicsDef);
       genFlavourHadr.push_back(FlavourGenHadron);
@@ -427,12 +426,10 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     
   for (auto i_pfjetchs=patjetschs->begin(); i_pfjetchs!=patjetschs->end(); ++i_pfjetchs) { 
     if (!i_pfjetchs->isPFJet()) continue;
-    unsigned idx = i_pfjetchs-patjetschs->begin();
 
     //---- preselection -----------------
     int jetNo = i_pfjetchs-patjetschs->begin();
     if (fabs(i_pfjetchs->y()) > mMaxY or (i_pfjetchs->pt() < (jetNo<3 ? mMinPFPtThirdJet : mMinPFPt))) continue;
-    cout << idx << " " << i_pfjetchs->pt() << endl;
     
     QCDPFJet qcdpfjetchs;
     double scaleCHS = 1./i_pfjetchs->jecFactor(0); // --- the value of the JEC factor
@@ -661,8 +658,6 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       }
       if (imin!=-1 and rmin<0.4) {
         qcdpfjetchs.setGen(genjets->at(imin).p4(),rmin);
-        cout << "Jet flav " << partonFlavour << " " << partonFlavourPhysicsDef << " " << hadronFlavour << endl;
-        cout << "Gen flav: " << genFlavour[imin] << " " << genFlavourPhys[imin] << " " << genFlavourHadr[imin] << " " << genjets->at(imin).pt() << " " << rmin << endl;
         if (partonFlavour==0) partonFlavour = genFlavour[imin];
         if (partonFlavourPhysicsDef==0) partonFlavourPhysicsDef = genFlavourPhys[imin];
         if (hadronFlavour==0) hadronFlavour = genFlavourHadr[imin];
@@ -712,12 +707,11 @@ int ProcessedTreeProducerBTag::getMatchedPartonGen(edm::Event const& event,GenJe
   edm::Handle<reco::GenParticleCollection> genParticles;
   event.getByToken(mGenParticles, genParticles);
 
+  double DeltaRmin=0.3;
   for (size_t i = 0; i < genParticles->size (); ++i) {
     const GenParticle & genIt = (*genParticles)[i];
-    //cout << "parton " << i << " pdgid " << genIt.pdgId() << " status " << genIt.status() << endl;
     int pdgId = genIt.pdgId();
     double DeltaR=deltaR(genIt.p4().eta(),genIt.p4().phi(),i_gen->eta(),i_gen->phi());
-    double DeltaRmin=0.3;
     if (DeltaR < DeltaRmin ){
       DeltaRmin=DeltaR;
       if(abs(pdgId)==5){ jetFlavour=5; switchB=true;}

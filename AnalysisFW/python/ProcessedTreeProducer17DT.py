@@ -253,6 +253,8 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                minNPFJets                = cms.int32(1),
                                minGenPt                  = cms.untracked.double(20.0),
                                minJJMass                 = cms.double(-1),
+                               isMCarlo                  = cms.untracked.bool(False), 
+                               runYear                   = cms.untracked.string("2017"),
                                ## trigger ###################################
                                printTriggerMenu          = cms.untracked.bool(True),
                                processName               = cms.untracked.string('HLT'),
@@ -260,7 +262,6 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                triggerResults            = cms.untracked.InputTag("TriggerResults","","HLT"),
                                triggerEvent              = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT"),
                                ## jec services ##############################
-                               isMCarlo                  = cms.untracked.bool(False), 
                                HBHENoiseFilterResultLabel = cms.untracked.InputTag("HBHENoiseFilterResultProducer", "HBHENoiseFilterResult"),
                                HBHENoiseFilterResultNoMinZLabel = cms.untracked.InputTag("HBHENoiseFilterResultProducerNoMinZ", "HBHENoiseFilterResult") )
 

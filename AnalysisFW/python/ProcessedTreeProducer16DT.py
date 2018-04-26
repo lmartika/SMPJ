@@ -274,6 +274,7 @@ triggers = cms.vstring( "HLT_PFJet40_v19", "HLT_PFJet60_v19", "HLT_PFJet450_v19"
 
 process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                ## jet collections ###########################
+                               AK4                       = cms.untracked.bool(True),
                                pfjetschs                 = cms.InputTag('selectedPatJetsAK4PFCHS'),
                                pfpujetid                 = cms.string('AK4PFpileupJetIdEvaluator:fullDiscriminant'),
                                pfchsjetpuid              = cms.string('AK4PFCHSpileupJetIdEvaluator:fullDiscriminant'),
@@ -283,7 +284,6 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                pfmetT0pcT1               = cms.InputTag('patMETsT0pcT1'),
                                ## database entry for the uncertainties ######
                                PFPayloadNameCHS          = cms.string('AK4PFchs'),
-                               jecUncSrcCHS              = cms.string(''),
                                jecUncSrcNames            = cms.vstring(''),
                                ## set the conditions for good Vtx counting ##
                                offlineVertices           = cms.InputTag('offlinePrimaryVertices'),
@@ -301,7 +301,7 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                minNPFJets                = cms.int32(1),
                                minJJMass                 = cms.double(-1),
                                isMCarlo                  = cms.untracked.bool(False),
-                               AK4                       = cms.untracked.bool(True),
+                               runYear                   = cms.untracked.string("2016"),
                                ## trigger ###################################
                                printTriggerMenu          = cms.untracked.bool(True),
                                processName               = cms.untracked.string('HLT'),

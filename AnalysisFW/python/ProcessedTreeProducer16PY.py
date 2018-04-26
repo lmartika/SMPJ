@@ -277,6 +277,7 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                minNPFJets                = cms.int32(1),
                                minGenPt                  = cms.untracked.double(20),
                                minJJMass                 = cms.double(-1),
+                               runYear                   = cms.untracked.string("2016"),
                                ## trigger (dummy) ###########################
                                triggerName               = cms.vstring(''), 
                                ## gen services ##############################

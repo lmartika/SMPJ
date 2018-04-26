@@ -75,6 +75,7 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     bool   mAK4;
     bool   mPrintTriggerMenu;
     bool   isPFJecUncSetCHS_; // Not to be set by the user
+    bool   mUseLegacyTag; // Not to be set by the user
     int    mGoodVtxNdof;
     double mGoodVtxZ;
     int    mMinNPFJets;
