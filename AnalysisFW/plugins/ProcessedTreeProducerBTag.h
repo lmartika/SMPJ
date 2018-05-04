@@ -30,6 +30,7 @@
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/PatCandidates/interface/IsolatedTrack.h"
 
 //Hadron level definition
 #include "SimDataFormats/JetMatching/interface/JetFlavourInfo.h"              
@@ -70,6 +71,7 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     edm::EDGetTokenT<reco::VertexCollection> mOfflineVertices;
     edm::EDGetTokenT<reco::BeamSpot> mBeamSpot;
     edm::EDGetTokenT<edm::View<pat::Jet> >mPFJetsNameCHS;
+    edm::EDGetTokenT<pat::IsolatedTrackCollection> mIsolatedTracks;
     edm::EDGetTokenT<GenEventInfoProduct> mhEventInfo;
     edm::EDGetTokenT<edm::ValueMap<float>> qgToken;
     // ----CHS jet input tag ----- //
@@ -82,6 +84,7 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     //---- TRIGGER -------------------------
     std::string   processName_;
     std::vector<std::string> triggerNames_;
+    std::vector<std::string> goodTriggerNames_;
     std::vector<unsigned int> triggerIndex_;
     //edm::InputTag mSrcPU;
     edm::EDGetTokenT<edm::TriggerResults> triggerResultsTag_;
@@ -97,10 +100,8 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesL1Max_;
 
     edm::EDGetTokenT<GenEventInfoProduct> genEvtInfoToken;
-    edm::EDGetTokenT<LHEEventProduct> lheEvtInfoToken;
 
     edm::Handle<GenEventInfoProduct> genEvtInfo;
-    edm::Handle<LHEEventProduct> lheEvtInfo;
 
     //hadron jet definition
     edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> jetFlavourInfosToken_;
