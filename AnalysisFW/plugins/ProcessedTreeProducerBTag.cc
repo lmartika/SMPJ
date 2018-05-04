@@ -119,6 +119,26 @@ void ProcessedTreeProducerBTag::beginJob()
   mTriggerPassHisto = fs->make<TH1F>("TriggerPass","TriggerPass",1,0,1);
   mTriggerPassHisto->SetBit(TH1::kUserContour);
   mUseLegacyTag = (mRunYear=="2016" and mMCType==1);
+  mULimCEF = 0; mULimNEF = 0; mLLimNEF = 0; mULimNHF = 0; mLLimNHF = 0;
+  if (mRunYear=="2016") {
+    mULimCEF = 0.99;
+    mULimNEF = 1.01;
+    mULimNHF = 0.98;
+    mLLimNEF = 0.01;
+    mLLimNHF = -1.00;
+  } else if (mRunYear=="2017") {
+    mULimCEF = 1.01;
+    mULimNEF = 0.99;
+    mULimNHF = 1.01;
+    mLLimNEF = 0.02;
+    mLLimNHF = 0.02;
+  }
+  cout << "Run year " << mRunYear << " using the following JetID limit parameter values:" << endl;
+  cout << "Up cef " << mULimCEF << endl;
+  cout << "Up nef " << mULimNEF << endl;
+  cout << "Up nhf " << mULimNHF << endl;
+  cout << "Lo nef " << mLLimNEF << endl;
+  cout << "Lo nhf " << mLLimNHF << endl;
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void ProcessedTreeProducerBTag::endJob() {}
@@ -349,43 +369,45 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   //---------------- GenJets ------------------------------------------
   Handle<GenJetCollection>  genjets;
   vector<int> genFlavour;
-  vector<int> genFlavourPhys;
   vector<int> genFlavourHadr;
+  vector<int> genFlavourPhys;
   if (mIsMCarlo) {
+    // These are for local use - only a subset of the gen jets
     vector<float> GenFlavour;
-    vector<float> GenHadronFlavour;
-    vector<float> GenPartonFlavourPhysicsDef;
+    vector<float> GenFlavourHadr;
+    vector<float> GenFlavourPhys;
     vector<LorentzVector> mGenJets;
+    // Fetch the collections!
     event.getByToken(mGenJetsName,genjets);
     edm::Handle<reco::JetFlavourInfoMatchingCollection> theJetFlavourInfos;
     event.getByToken(jetFlavourInfosToken_, theJetFlavourInfos );
-    auto j = theJetFlavourInfos->begin();
     edm::Handle<reco::JetFlavourInfoMatchingCollection> theJetFlavourInfosPhysicsDef;
     event.getByToken(jetFlavourInfosTokenPhysicsDef_, theJetFlavourInfosPhysicsDef );
+    // Genjet loop
+    auto i_gen = genjets->begin();
+    auto j = theJetFlavourInfos->begin();
     auto k = theJetFlavourInfosPhysicsDef->begin();
-    for (auto i_gen = genjets->begin(); i_gen != genjets->end() and j != theJetFlavourInfos->end() and k != theJetFlavourInfosPhysicsDef->end(); ++i_gen, ++j, ++k) {
-      int FlavourGen = 0;
-      reco::JetFlavourInfo aInfo = j->second;
-      if (mUseLegacyTag)FlavourGen = getMatchedPartonGen(event,i_gen);
-      else FlavourGen = aInfo.getPartonFlavour();
-      int FlavourGenHadron = aInfo.getHadronFlavour();
-      reco::JetFlavourInfo bInfo = k->second;
-      int FlavourGenPhysicsDef = bInfo.getPartonFlavour();
+    for (;i_gen!=genjets->end() and j!=theJetFlavourInfos->end() and k!=theJetFlavourInfosPhysicsDef->end();++i_gen,++j,++k) {
+      auto aInfo = j->second;
+      auto bInfo = k->second;
+      int gflav = (mUseLegacyTag ? getMatchedPartonGen(event,i_gen) : aInfo.getPartonFlavour());
+      int gflavhad = aInfo.getHadronFlavour();
+      int gflavphy = bInfo.getPartonFlavour();
 
-      genFlavour.push_back(FlavourGen);
-      genFlavourPhys.push_back(FlavourGenPhysicsDef);
-      genFlavourHadr.push_back(FlavourGenHadron);
+      genFlavour.push_back(gflav);
+      genFlavourPhys.push_back(gflavphy);
+      genFlavourHadr.push_back(gflavhad);
       if (i_gen->pt() > mMinGenPt && fabs(i_gen->y()) < mMaxY) {
         mGenJets.push_back(i_gen->p4());
-        GenFlavour.push_back(FlavourGen);
-        GenPartonFlavourPhysicsDef.push_back(FlavourGenPhysicsDef);
-        GenHadronFlavour.push_back(FlavourGenHadron);
+        GenFlavour.push_back(gflav);
+        GenFlavourHadr.push_back(gflavhad);
+        GenFlavourPhys.push_back(gflavphy);
       }
     }
     mEvent->setGenJets(mGenJets);
     mEvent->setGenFlavour(GenFlavour);
-    mEvent->setGenHadronFlavour(GenHadronFlavour);
-    mEvent->setGenFlavourPhysicsDef(GenPartonFlavourPhysicsDef);
+    mEvent->setGenFlavourHadron(GenFlavourHadr);
+    mEvent->setGenFlavourPhysicsDef(GenFlavourPhys);
   }
   
   //---------------- Jets ---------------------------------------------
@@ -519,7 +541,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     qcdpfjetchs.setArea(i_pfjetchs->jetArea());
     
     double chf   = i_pfjetchs->chargedHadronEnergyFraction();
-    double nhf   = i_pfjetchs->neutralHadronEnergyFraction();// + i_pfjetchs->HFHadronEnergyFraction();
+    double nhf   = i_pfjetchs->neutralHadronEnergyFraction();// hf info is included
     double nemf  = i_pfjetchs->neutralEmEnergyFraction(); // equals to deprecated phf but has HF info too
     double cemf  = i_pfjetchs->chargedEmEnergyFraction(); // equals to deprecated elf
     double muf   = i_pfjetchs->muonEnergyFraction();
@@ -541,14 +563,14 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     // https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
     bool looseID, tightID;
     if (abseta <= 2.7) {
-       looseID = nhf<0.99 and nemf<0.99 and npr>1 and (abseta>2.4 || (chf>0 and chm>0 and cemf <0.99));
+       looseID = nhf<0.99 and nemf<0.99 and npr>1 and (abseta>2.4 || (chf>0 and chm>0 and cemf<mULimCEF));
        tightID = looseID and nhf<0.90 and nemf<0.90; 
     } else if (abseta <= 3.0) {
-       looseID = nemf<0.90 and nm>2;
-       tightID = looseID; 
+       looseID = nemf<mULimNEF and nemf>mLLimNEF and nm>2 and nhf<mULimNHF;
+       tightID = looseID;
     } else {
-       looseID = nemf<0.90 and nm>10; 
-       tightID = looseID; 
+       looseID = nemf<0.90 and nm>10 and nhf>mLLimNHF; 
+       tightID = looseID;
     }
 
     qcdpfjetchs.setLooseID(looseID);
@@ -561,6 +583,26 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     double hof = i_pfjetchs->hoEnergyFraction(); // Juska
     qcdpfjetchs.setVtxInfo(mpuTrk,mlvTrk,mjtTrk);
     qcdpfjetchs.setHO(hof);
+
+    if (i_pfjetchs == patjetschs->begin()) {
+      auto pdisc = i_pfjetchs->getPairDiscri();
+      cout << "Disc" << endl;
+      for (auto &disc : pdisc) cout << "  " << disc.first << endl;
+    }
+  pfCombinedCvsLJetTags
+  pfJetBProbabilityBJetTags
+  pfCombinedInclusiveSecondaryVertexV2BJetTags
+  pfPositiveCombinedSecondaryVertexV2BJetTags
+  pfSimpleSecondaryVertexHighEffBJetTags
+  pfBoostedDoubleSecondaryVertexAK8BJetTags
+  pfNegativeCombinedSecondaryVertexV2BJetTags
+  pfCombinedCvsBJetTags
+  pfSimpleSecondaryVertexHighPurBJetTags
+  pfJetProbabilityBJetTags
+  pfCombinedSecondaryVertexV2BJetTags
+  pfTrackCountingHighEffBJetTags
+  pfCombinedMVAV2BJetTags
+  pfTrackCountingHighPurBJetTags
    
     double CSVpfPositive = i_pfjetchs->bDiscriminator("pfPositiveCombinedSecondaryVertexV2BJetTags");
     double CSVpfNegative = i_pfjetchs->bDiscriminator("pfNegativeCombinedSecondaryVertexV2BJetTags");
@@ -586,22 +628,10 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     float DeepCSVbbP = i_pfjetchs->bDiscriminator("positiveDeepFlavourJetTags:probbb");
     float DeepCSVccP = i_pfjetchs->bDiscriminator("positiveDeepFlavourJetTags:probcc");
 
-    //the three recommended                                                                                                                                        
+    //the three recommended b tags
     double pfJetProbabilityBJetTags=i_pfjetchs->bDiscriminator("pfJetProbabilityBJetTags");
     double pfCombinedInclusiveSecondaryVertexV2BJetTags= i_pfjetchs->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
     double pfCombinedMVAV2BJetTags=i_pfjetchs->bDiscriminator("pfCombinedMVAV2BJetTags");
-    
-    float partonFlavour=0;
-    float partonFlavourPhysicsDef=0;
-    float hadronFlavour=0;
-    if (mIsMCarlo and mUseGenInfo) {
-      partonFlavour = i_pfjetchs->partonFlavour();
-      hadronFlavour = i_pfjetchs->hadronFlavour();
-      if (i_pfjetchs->genParton() != NULL) partonFlavourPhysicsDef = i_pfjetchs->genParton()->pdgId();
-    }
-    
-    float QGTagger=-100; 
-    if (mAK4) QGTagger = i_pfjetchs->userFloat("QGTaggerAK4PFCHS:qgLikelihood");
     
     //Filling B-tag infos
     qcdpfjetchs.setPositiveNegativeCSV(CSVpfPositive,CSVpfNegative);
@@ -609,6 +639,9 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     qcdpfjetchs.setDeepCSV(DeepCSVb, DeepCSVc, DeepCSVl, DeepCSVbb, DeepCSVcc,
                            DeepCSVbN, DeepCSVcN, DeepCSVlN, DeepCSVbbN, DeepCSVccN,
                            DeepCSVbP, DeepCSVcP, DeepCSVlP, DeepCSVbbP, DeepCSVccP);
+    
+    float QGTagger=-100; 
+    if (mAK4) QGTagger = i_pfjetchs->userFloat("QGTaggerAK4PFCHS:qgLikelihood");
     
     qcdpfjetchs.setQGTagger(QGTagger);	 
     qcdpfjetchs.setBoosted(pfBoostedDoubleSecondaryVertex);
@@ -618,63 +651,76 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     if (i_pfjetchs->hasUserFloat(mPFJetPUIDCHS)) pileupJetId = i_pfjetchs->userFloat(mPFJetPUIDCHS);
     qcdpfjetchs.SetPUJetId(pileupJetId);
     
-    if (mIsMCarlo and genjets->size()>0) {
-      float ratiouplim = (i_pfjetchs->pt()>20 ? 1.5 : 2.5);
-      float ratiololim = (i_pfjetchs->pt()>20 ? 0.4 : 0.25);
-      // Find approximately the closest pt and then iterate up and down
-      // If a good match is found, iteration stops
+    if (mIsMCarlo) {
+      float partonFlavour=0;
+      float partonFlavourPhysicsDef=0;
+      float hadronFlavour=0;
+      if (mUseGenInfo) {
+        partonFlavour = i_pfjetchs->partonFlavour();
+        hadronFlavour = i_pfjetchs->hadronFlavour();
+        if (i_pfjetchs->genParton() != NULL) partonFlavourPhysicsDef = i_pfjetchs->genParton()->pdgId();
+      }
+      
       float rmin(999);
       int imin = -1;
-      int dwn = genorder(i_pfjetchs->pt(),genjets,0,genjets->size()-1);
-      int up = dwn+1;
-      int limit = genjets->size();
-      while (dwn>=0 or up<limit) {
-        if (dwn>=0) {
-          if ((genjets->at(dwn).pt())/(i_pfjetchs->pt())<ratiouplim) {
-            float deltaR = reco::deltaR(*i_pfjetchs,genjets->at(dwn));
-            if (deltaR < rmin) {
-              imin = dwn;
-              rmin = deltaR;
-              if (rmin<0.2) break;
+      if (genjets->size()>0) {
+        float ratiouplim = (i_pfjetchs->pt()>20 ? 1.5 : 2.5);
+        float ratiololim = (i_pfjetchs->pt()>20 ? 0.4 : 0.25);
+        // Find approximately the closest pt and then iterate up and down
+        // If a good match is found, iteration stops
+        int dwn = genorder(i_pfjetchs->pt(),genjets,0,genjets->size()-1);
+        int up = dwn+1;
+        int limit = genjets->size();
+        while (dwn>=0 or up<limit) {
+          if (dwn>=0) {
+            if ((genjets->at(dwn).pt())/(i_pfjetchs->pt())<ratiouplim) {
+              float deltaR = reco::deltaR(*i_pfjetchs,genjets->at(dwn));
+              if (deltaR < rmin) {
+                imin = dwn;
+                rmin = deltaR;
+                if (rmin<0.2) break;
+              }
+              --dwn;
+            } else {
+              dwn = -1;
             }
-            --dwn;
-          } else {
-            dwn = -1;
           }
-        }
-        if (up<limit) {
-          if ((genjets->at(up).pt())/(i_pfjetchs->pt())>ratiololim) {
-            float deltaR = reco::deltaR(*i_pfjetchs,genjets->at(up));
-            if (deltaR < rmin) {
-              imin = up;
-              rmin = deltaR;
-              if (rmin<0.2) break;
+          if (up<limit) {
+            if ((genjets->at(up).pt())/(i_pfjetchs->pt())>ratiololim) {
+              float deltaR = reco::deltaR(*i_pfjetchs,genjets->at(up));
+              if (deltaR < rmin) {
+                imin = up;
+                rmin = deltaR;
+                if (rmin<0.2) break;
+              }
+              ++up;
+            } else {
+              up = limit;
             }
-            ++up;
-          } else {
-            up = limit;
           }
         }
       }
       if (imin!=-1 and rmin<0.4) {
         qcdpfjetchs.setGen(genjets->at(imin).p4(),rmin);
+        // Patch the PF jet flavours
         if (partonFlavour==0) partonFlavour = genFlavour[imin];
         if (partonFlavourPhysicsDef==0) partonFlavourPhysicsDef = genFlavourPhys[imin];
         if (hadronFlavour==0) hadronFlavour = genFlavourHadr[imin];
       } else {
+        // Empty gen jet if no match
         qcdpfjetchs.setGen(LorentzVector(0,0,0,0),0);
       }
       qcdpfjetchs.setFlavour(partonFlavour,hadronFlavour,partonFlavourPhysicsDef);
     } else {
-      LorentzVector tmpP4(0.0,0.0,0.0,0.0);
-      qcdpfjetchs.setGen(tmpP4,0);
+      // Empty gen jet for data
+      qcdpfjetchs.setGen(LorentzVector(0,0,0,0),0);
     }
     mPFJetsCHS.push_back(qcdpfjetchs);
   } // for: chs Jets
   sort(mPFJetsCHS.begin(),mPFJetsCHS.end(),sort_pfjets);
   mEvent->setPFJetsCHS(mPFJetsCHS); // -- later substitute chs jets
   
-  //---------------- met ---------------------------------------------
+  //---------------- MET ---------------------------------------------
   Handle<pat::METCollection> pfmet_t1, pfmet_t0pc, pfmet_t0pct1;
   event.getByToken(mPFMETt1, pfmet_t1);
   event.getByToken(mPFMETt0pc, pfmet_t0pc);
@@ -696,13 +742,13 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
 }
 
 
-/////////////// Matching Flavour (deprecated) ///////////////////////////////
+/////////////// Matching Flavour (deprecated - corresponds to algo flav) ////
 
 int ProcessedTreeProducerBTag::getMatchedPartonGen(edm::Event const& event,GenJetCollection::const_iterator i_gen)
 {
   int jetFlavour=-100;
-  bool switchB=0;
-  bool switchC=0;
+  bool switchB=false;
+  bool switchC=false;
 
   edm::Handle<reco::GenParticleCollection> genParticles;
   event.getByToken(mGenParticles, genParticles);
@@ -718,7 +764,7 @@ int ProcessedTreeProducerBTag::getMatchedPartonGen(edm::Event const& event,GenJe
       if(abs(pdgId)==4){ jetFlavour=4; switchC=true;}
       if(abs(pdgId)<=3 && abs(pdgId)>=1){ jetFlavour=1; }
       if(abs(pdgId)==21){ jetFlavour=21; }
-    }      
+    } 
     if (switchB) {jetFlavour=5;}
     if (switchC && !switchB) {jetFlavour=4;}
   }

@@ -72,6 +72,11 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
         return partonorder(pt,prtns,nxt,abv);
     }
     //---- configurable parameters --------
+    float mULimCEF; // Not to be set by the user
+    float mULimNEF; // Not to be set by the user
+    float mULimNHF; // Not to be set by the user
+    float mLLimNEF; // Not to be set by the user
+    float mLLimNHF; // Not to be set by the user
     bool   mAK4;
     bool   mPrintTriggerMenu;
     bool   isPFJecUncSetCHS_; // Not to be set by the user

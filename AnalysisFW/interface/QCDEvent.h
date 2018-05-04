@@ -34,9 +34,9 @@ class QCDEvent
       void setPrescales(const std::vector<int>& fPreL1, const std::vector<int>& fPreHLT) {L1Prescale_ = fPreL1; HLTPrescale_ = fPreHLT;}
       void setTrigDecision(const std::vector<int>& fTrigDecision) {TriggerDecision_ = fTrigDecision;}
 
-      void setGenFlavour(const std::vector<float> GenFlavour){ genFlavour_= GenFlavour; }
-      void setGenHadronFlavour(const std::vector<float> GenFlavourHadron){ genFlavourHadron_= GenFlavourHadron; }
-      void setGenFlavourPhysicsDef(const std::vector<float> GenPartonFlavourPhysicsDef){ genFlavourPartonPhysicsDef_= GenPartonFlavourPhysicsDef; }
+      void setGenFlavour(const std::vector<float> GenFlavour) {genFlavour_= GenFlavour;}
+      void setGenFlavourHadron(const std::vector<float> GenFlavourHadron) {genFlavourHadron_= GenFlavourHadron;}
+      void setGenFlavourPhysicsDef(const std::vector<float> GenPartonFlavourPhysicsDef) {genFlavourPartonPhysicsDef_= GenPartonFlavourPhysicsDef;}
 
       //------------ Get methods -------------------------------
       unsigned int nTriggers()                         const {return TriggerDecision_.size();}
