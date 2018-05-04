@@ -73,79 +73,26 @@ process.source = cms.Source("PoolSource", fileNames = inFiles )
 ## Modified version of jetToolBox from https://github.com/cms-jet/jetToolbox
 ## Options for PUMethod: Puppi, CS, SK, CHS
 def jetToolbox( proc, jetType, jetSequence ):
-  bTagDiscriminators = [#'trackCountingHighEffBJetTags',
-                        #'trackCountingHighPurBJetTags',
+  # See PhysicsTools/PatAlgos/python/recoLayer0/bTagging_cff.py for further options
+  bTagDiscriminators = ['pfDeepCSVJetTags:probb',
+                        'pfDeepCSVJetTags:probc',
+                        'pfDeepCSVJetTags:probudsg',
+                        'pfDeepCSVJetTags:probbb',
+                        #'pfDeepFlavourJetTags:probb',
+                        #'pfDeepFlavourJetTags:probc',
+                        #'pfDeepFlavourJetTags:probg',
+                        #'pfDeepFlavourJetTags:probuds',
+                        #'pfDeepFlavourJetTags:probbb',
                         #'pfTrackCountingHighEffBJetTags',
-                        #'pfTrackCountingHighPurBJetTags',
-                        #'softPFMuonByIP3dBJetTags',
-                        #'softPFElectronByIP3dBJetTags',
-                        #'softPFMuonBJetTags',
-                        #'softPFElectronBJetTags',
-                        #'simpleSecondaryVertexHighEffBJetTags',
-                        #'simpleSecondaryVertexHighPurBJetTags',
-                        #'pfSimpleSecondaryVertexHighEffBJetTags',
-                        #'pfSimpleSecondaryVertexHighPurBJetTags',
-                        #'combinedSecondaryVertexV2BJetTags',
-                        #'pfDeepCSVJetTags:probc',
-                        #'pfDeepCSVJetTags:probb',
-                        #'pfDeepCSVJetTags:probbb',
-                        #'pfDeepCSVJetTags:probcc',
-                        #'pfDeepCSVJetTags:probudsg', 
-                        #'pfDeepCMVAJetTags:probc',
-                        #'pfDeepCMVAJetTags:probb',
-                        #'pfDeepCMVAJetTags:probbb',
-                        #'pfDeepCMVAJetTags:probcc', 
-                        #'pfDeepCMVAJetTags:probudsg',
-                        #'pfNegativeDeepCSVJetTags:probb',
-                        #'pfNegativeDeepCSVJetTags:probc', 
-                        #'pfNegativeDeepCSVJetTags:probcc',
-                        #'pfNegativeDeepCSVJetTags:probbb',
-                        #'pfNegativeDeepCSVJetTags:probudsg',
-                        #'pfPositiveDeepCSVJetTags:probb',
-                        #'pfPositiveDeepCSVJetTags:probc',
-                        #'pfPositiveDeepCSVJetTags:probcc',
-                        #'pfPositiveDeepCSVJetTags:probbb', 
-                        #'pfPositiveDeepCSVJetTags:probudsg', 
-                        #'pfNegativeDeepCMVAJetTags:probb',
-                        #'pfNegativeDeepCMVAJetTags:probc',
-                        #'pfNegativeDeepCMVAJetTags:probcc',
-                        #'pfNegativeDeepCMVAJetTags:probbb',
-                        #'pfNegativeDeepCMVAJetTags:probudsg',
-                        #'pfPositiveDeepCMVAJetTags:probb',
-                        #'pfPositiveDeepCMVAJetTags:probc',
-                        #'pfPositiveDeepCMVAJetTags:probcc',
-                        #'pfPositiveDeepCMVAJetTags:probbb',
-                        #'pfPositiveDeepCMVAJetTags:probudsg',
-                        #'deepFlavourJetTags:probb',
-                        #'deepFlavourJetTags:probc',
-                        #'deepFlavourJetTags:probudsg',
-                        #'deepFlavourJetTags:probbb',
-                        #'deepFlavourJetTags:probcc',
-                        #'negativeDeepFlavourJetTags:probb',
-                        #'negativeDeepFlavourJetTags:probc',
-                        #'negativeDeepFlavourJetTags:probudsg',
-                        #'negativeDeepFlavourJetTags:probbb',
-                        #'negativeDeepFlavourJetTags:probcc',
-                        #'positiveDeepFlavourJetTags:probb',
-                        #'positiveDeepFlavourJetTags:probc',
-                        #'positiveDeepFlavourJetTags:probudsg',
-                        #'positiveDeepFlavourJetTags:probbb',
-                        #'poositiveDeepFlavourJetTags:probcc',
-                        'pfTrackCountingHighEffBJetTags',
-                        'pfTrackCountingHighPurBJetTags',
                         'pfJetProbabilityBJetTags',
-                        'pfJetBProbabilityBJetTags',
-                        'pfSimpleSecondaryVertexHighEffBJetTags',
-                        'pfSimpleSecondaryVertexHighPurBJetTags',
+                        #'pfSimpleSecondaryVertexHighEffBJetTags',
                         'pfCombinedCvsLJetTags',
                         'pfCombinedCvsBJetTags',
                         'pfBoostedDoubleSecondaryVertexAK8BJetTags',
-                        'pfCombinedSecondaryVertexV2BJetTags',
-                        'pfPositiveCombinedSecondaryVertexV2BJetTags',  #implemented
-                        'pfNegativeCombinedSecondaryVertexV2BJetTags',  #implemented
-                        'pfCombinedInclusiveSecondaryVertexV2BJetTags', #implemented
-                        'pfCombinedMVAV2BJetTags',                      #implemented
-                        'pfJetProbabilityBJetTags']                     #implemented
+                        #'pfCombinedSecondaryVertexV2BJetTags',
+                        'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+                        'pfCombinedMVAV2BJetTags',
+                        'pfJetProbabilityBJetTags']
 
   print '|---- jetToolbox: Initialyzing collection...'
   algorithm='AntiKt' # CambridgeAachen' , 'Kt'
@@ -315,24 +262,20 @@ process.allBTagPaths=cms.Sequence( process.pfImpactParameterTagInfosAK4PFCHS*
                                    process.pfInclusiveSecondaryVertexFinderCvsLTagInfosAK4PFCHS*
                                    process.softPFMuonsTagInfosAK4PFCHS*
                                    process.softPFElectronsTagInfosAK4PFCHS*
-                                   process.pfSecondaryVertexNegativeTagInfosAK4PFCHS*
                                    process.pfInclusiveSecondaryVertexFinderTagInfosAK4PFCHS*
                                    process.pfInclusiveSecondaryVertexFinderAK8TagInfosAK4PFCHS*
                                    process.pfBoostedDoubleSVAK8TagInfosAK4PFCHS*
                                    process.pfCombinedMVAV2BJetTagsAK4PFCHS*
                                    process.pfCombinedInclusiveSecondaryVertexV2BJetTagsAK4PFCHS*
-                                   process.pfNegativeCombinedSecondaryVertexV2BJetTagsAK4PFCHS*
-                                   process.pfPositiveCombinedSecondaryVertexV2BJetTagsAK4PFCHS*
-                                   process.pfCombinedSecondaryVertexV2BJetTagsAK4PFCHS*
+                                   #process.pfCombinedSecondaryVertexV2BJetTagsAK4PFCHS*
                                    process.pfBoostedDoubleSecondaryVertexAK8BJetTagsAK4PFCHS*
                                    process.pfCombinedCvsBJetTagsAK4PFCHS*
                                    process.pfCombinedCvsLJetTagsAK4PFCHS*
-                                   process.pfSimpleSecondaryVertexHighPurBJetTagsAK4PFCHS*
-                                   process.pfSimpleSecondaryVertexHighEffBJetTagsAK4PFCHS*
-                                   process.pfJetBProbabilityBJetTagsAK4PFCHS*
-                                   process.pfJetProbabilityBJetTagsAK4PFCHS*
-                                   process.pfTrackCountingHighPurBJetTagsAK4PFCHS*
-                                   process.pfTrackCountingHighEffBJetTagsAK4PFCHS )
+                                   #process.pfSimpleSecondaryVertexHighEffBJetTagsAK4PFCHS*
+                                   process.pfDeepCSVTagInfosAK4PFCHS*
+                                   process.pfDeepCSVJetTagsAK4PFCHS*
+                                   process.pfJetProbabilityBJetTagsAK4PFCHS )
+                                   #process.pfTrackCountingHighEffBJetTagsAK4PFCHS )
 
 process.allGenPaths=cms.Sequence( process.patJetPartons*
                                   process.selectedHadronsAndPartons*

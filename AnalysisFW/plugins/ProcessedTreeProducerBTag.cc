@@ -156,10 +156,7 @@ void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup 
         for (unsigned itrig=0; itrig<triggerNames_.size(); ++itrig) {
           auto &trgName = triggerNames_[itrig];
           auto trgIdx = hltConfig_.triggerIndex(trgName); 
-          cout<<triggerNames_[itrig]<<" "<<trgIdx<<" ";
-          if (trgIdx >= n) cout<<"does not exist in the current menu"<<endl;
-          else {
-            cout<<"exists"<<endl;
+          if (trgIdx < n) {
             triggerIndex_.push_back(trgIdx);
             goodTriggerNames_.push_back(trgName);
             mTriggerNamesHisto->Fill(trgName.c_str(),1);
@@ -584,72 +581,37 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     qcdpfjetchs.setVtxInfo(mpuTrk,mlvTrk,mjtTrk);
     qcdpfjetchs.setHO(hof);
 
-    if (i_pfjetchs == patjetschs->begin()) {
-      auto pdisc = i_pfjetchs->getPairDiscri();
-      cout << "Disc" << endl;
-      for (auto &disc : pdisc) cout << "  " << disc.first << endl;
-    }
-  pfCombinedCvsLJetTags
-  pfJetBProbabilityBJetTags
-  pfCombinedInclusiveSecondaryVertexV2BJetTags
-  pfPositiveCombinedSecondaryVertexV2BJetTags
-  pfSimpleSecondaryVertexHighEffBJetTags
-  pfBoostedDoubleSecondaryVertexAK8BJetTags
-  pfNegativeCombinedSecondaryVertexV2BJetTags
-  pfCombinedCvsBJetTags
-  pfSimpleSecondaryVertexHighPurBJetTags
-  pfJetProbabilityBJetTags
-  pfCombinedSecondaryVertexV2BJetTags
-  pfTrackCountingHighEffBJetTags
-  pfCombinedMVAV2BJetTags
-  pfTrackCountingHighPurBJetTags
-   
-    double CSVpfPositive = i_pfjetchs->bDiscriminator("pfPositiveCombinedSecondaryVertexV2BJetTags");
-    double CSVpfNegative = i_pfjetchs->bDiscriminator("pfNegativeCombinedSecondaryVertexV2BJetTags");
+    //if (i_pfjetchs == patjetschs->begin()) {
+    //  auto pdisc = i_pfjetchs->getPairDiscri();
+    //  cout << "Disc" << endl;
+    //  for (auto &disc : pdisc) cout << "  " << disc.first << endl;
+    //}
 
-    double pfBoostedDoubleSecondaryVertex = i_pfjetchs->bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags");
-    //C taggers
-    double pfCombinedCvsL = i_pfjetchs->bDiscriminator("pfCombinedCvsLJetTags");
-    double pfCombinedCvsB = i_pfjetchs->bDiscriminator("pfCombinedCvsBJetTags");
+    // Jet flavour tagging discriminators
+    qcdpfjetchs.pfBoosted_ = i_pfjetchs->bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags");
+    qcdpfjetchs.pfCombinedCvsL_ = i_pfjetchs->bDiscriminator("pfCombinedCvsLJetTags");
+    qcdpfjetchs.pfCombinedCvsB_ = i_pfjetchs->bDiscriminator("pfCombinedCvsBJetTags");
 
-    float DeepCSVb   = i_pfjetchs->bDiscriminator("deepFlavourJetTags:probb");
-    float DeepCSVc   = i_pfjetchs->bDiscriminator("deepFlavourJetTags:probc");
-    float DeepCSVl   = i_pfjetchs->bDiscriminator("deepFlavourJetTags:probudsg");
-    float DeepCSVbb  = i_pfjetchs->bDiscriminator("deepFlavourJetTags:probbb");
-    float DeepCSVcc  = i_pfjetchs->bDiscriminator("deepFlavourJetTags:probcc");
-    float DeepCSVbN  = i_pfjetchs->bDiscriminator("negativeDeepFlavourJetTags:probb");
-    float DeepCSVcN  = i_pfjetchs->bDiscriminator("negativeDeepFlavourJetTags:probc");
-    float DeepCSVlN  = i_pfjetchs->bDiscriminator("negativeDeepFlavourJetTags:probudsg");
-    float DeepCSVbbN = i_pfjetchs->bDiscriminator("negativeDeepFlavourJetTags:probbb");
-    float DeepCSVccN = i_pfjetchs->bDiscriminator("negativeDeepFlavourJetTags:probcc");
-    float DeepCSVbP  = i_pfjetchs->bDiscriminator("positiveDeepFlavourJetTags:probb");
-    float DeepCSVcP  = i_pfjetchs->bDiscriminator("positiveDeepFlavourJetTags:probc");
-    float DeepCSVlP  = i_pfjetchs->bDiscriminator("positiveDeepFlavourJetTags:probudsg");
-    float DeepCSVbbP = i_pfjetchs->bDiscriminator("positiveDeepFlavourJetTags:probbb");
-    float DeepCSVccP = i_pfjetchs->bDiscriminator("positiveDeepFlavourJetTags:probcc");
+    qcdpfjetchs.pfDeepCSVb_  = i_pfjetchs->bDiscriminator("pfDeepCSVJetTags:probb");
+    qcdpfjetchs.pfDeepCSVc_  = i_pfjetchs->bDiscriminator("pfDeepCSVJetTags:probc");
+    qcdpfjetchs.pfDeepCSVl_  = i_pfjetchs->bDiscriminator("pfDeepCSVJetTags:probudsg");
+    qcdpfjetchs.pfDeepCSVbb_ = i_pfjetchs->bDiscriminator("pfDeepCSVJetTags:probbb");
 
-    //the three recommended b tags
-    double pfJetProbabilityBJetTags=i_pfjetchs->bDiscriminator("pfJetProbabilityBJetTags");
-    double pfCombinedInclusiveSecondaryVertexV2BJetTags= i_pfjetchs->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
-    double pfCombinedMVAV2BJetTags=i_pfjetchs->bDiscriminator("pfCombinedMVAV2BJetTags");
+    //if (mRunYear!="2016") {
+    //  qcdpfjetchs.pfDeepFlavourb_  = i_pfjetchs->bDiscriminator("pfDeepFlavourJetTags:probb");
+    //  qcdpfjetchs.pfDeepFlavourc_  = i_pfjetchs->bDiscriminator("pfDeepFlavourJetTags:probc");
+    //  qcdpfjetchs.pfDeepFlavourg_  = i_pfjetchs->bDiscriminator("pfDeepFlavourJetTags:probg");
+    //  qcdpfjetchs.pfDeepFlavourl_  = i_pfjetchs->bDiscriminator("pfDeepFlavourJetTags:probuds");
+    //  qcdpfjetchs.pfDeepFlavourbb_ = i_pfjetchs->bDiscriminator("pfDeepFlavourJetTags:probbb");
+    //}
+
+    qcdpfjetchs.pfBTag_JetProb_ = i_pfjetchs->bDiscriminator("pfJetProbabilityBJetTags");
+    qcdpfjetchs.pfBTag_CombInclSecVtxV2_ = i_pfjetchs->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+    qcdpfjetchs.pfBTag_CombMVAV2_ = i_pfjetchs->bDiscriminator("pfCombinedMVAV2BJetTags");
     
-    //Filling B-tag infos
-    qcdpfjetchs.setPositiveNegativeCSV(CSVpfPositive,CSVpfNegative);
-    qcdpfjetchs.setTagRecommended(pfJetProbabilityBJetTags,pfCombinedInclusiveSecondaryVertexV2BJetTags,pfCombinedMVAV2BJetTags);
-    qcdpfjetchs.setDeepCSV(DeepCSVb, DeepCSVc, DeepCSVl, DeepCSVbb, DeepCSVcc,
-                           DeepCSVbN, DeepCSVcN, DeepCSVlN, DeepCSVbbN, DeepCSVccN,
-                           DeepCSVbP, DeepCSVcP, DeepCSVlP, DeepCSVbbP, DeepCSVccP);
+    qcdpfjetchs.setQGTagger((mAK4 ? i_pfjetchs->userFloat("QGTaggerAK4PFCHS:qgLikelihood") : -100 )); 
     
-    float QGTagger=-100; 
-    if (mAK4) QGTagger = i_pfjetchs->userFloat("QGTaggerAK4PFCHS:qgLikelihood");
-    
-    qcdpfjetchs.setQGTagger(QGTagger);	 
-    qcdpfjetchs.setBoosted(pfBoostedDoubleSecondaryVertex);
-    qcdpfjetchs.setCTagger(pfCombinedCvsL,pfCombinedCvsB);
-    
-    float pileupJetId = -999;
-    if (i_pfjetchs->hasUserFloat(mPFJetPUIDCHS)) pileupJetId = i_pfjetchs->userFloat(mPFJetPUIDCHS);
-    qcdpfjetchs.SetPUJetId(pileupJetId);
+    qcdpfjetchs.SetPUJetId((i_pfjetchs->hasUserFloat(mPFJetPUIDCHS) ? i_pfjetchs->userFloat(mPFJetPUIDCHS) : -999));
     
     if (mIsMCarlo) {
       float partonFlavour=0;
@@ -714,6 +676,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     } else {
       // Empty gen jet for data
       qcdpfjetchs.setGen(LorentzVector(0,0,0,0),0);
+      qcdpfjetchs.setFlavour(-999,-999,-999);
     }
     mPFJetsCHS.push_back(qcdpfjetchs);
   } // for: chs Jets
