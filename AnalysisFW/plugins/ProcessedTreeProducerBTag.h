@@ -30,7 +30,7 @@
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
-#include "DataFormats/PatCandidates/interface/IsolatedTrack.h"
+//#include "DataFormats/PatCandidates/interface/IsolatedTrack.h"
 
 //Hadron level definition
 #include "SimDataFormats/JetMatching/interface/JetFlavourInfo.h"              
@@ -71,7 +71,7 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     edm::EDGetTokenT<reco::VertexCollection> mOfflineVertices;
     edm::EDGetTokenT<reco::BeamSpot> mBeamSpot;
     edm::EDGetTokenT<edm::View<pat::Jet> >mPFJetsNameCHS;
-    edm::EDGetTokenT<pat::IsolatedTrackCollection> mIsolatedTracks;
+//    edm::EDGetTokenT<pat::IsolatedTrackCollection> mIsolatedTracks;
     edm::EDGetTokenT<GenEventInfoProduct> mhEventInfo;
     edm::EDGetTokenT<edm::ValueMap<float>> qgToken;
     // ----CHS jet input tag ----- //

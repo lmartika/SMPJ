@@ -9,6 +9,7 @@
 #include "TTree.h"
 #include <vector>
 #include <cassert>
+#include <regex>
 #include <TLorentzVector.h>
 
 #include "SMPJ/AnalysisFW/plugins/ProcessedTreeProducerBTag.h"
@@ -89,13 +90,13 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   processName_       = cfg.getParameter<std::string>               ("processName");
   triggerNames_      = cfg.getParameter<std::vector<std::string> > ("triggerName");
   mPFJetsNameCHS = consumes<edm::View<pat::Jet> >(cfg.getParameter<edm::InputTag>("pfjetschs"));
-  mIsolatedTracks = consumes<pat::IsolatedTrackCollection>(edm::InputTag("isolatedTracks"));
+//  mIsolatedTracks = consumes<pat::IsolatedTrackCollection>(edm::InputTag("isolatedTracks"));
   mhEventInfo = consumes<GenEventInfoProduct>(cfg.getParameter<edm::InputTag>("EventInfo"));
   mgenParticles = consumes<reco::GenParticleCollection>(cfg.getParameter<edm::InputTag>("GenParticles"));
   qgToken = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood"));
   jetFlavourInfosToken_ = consumes<reco::JetFlavourInfoMatchingCollection>( cfg.getParameter<edm::InputTag>("jetFlavourInfos"));
   triggerBits_ = consumes<edm::TriggerResults>(cfg.getParameter<edm::InputTag>("triggerResults"));
-  triggerObjects_  = consumes<pat::TriggerObjectStandAloneCollection>(cfg.getParameter<edm::InputTag> ("triggerObjects"));
+//  triggerObjects_  = consumes<pat::TriggerObjectStandAloneCollection>(cfg.getParameter<edm::InputTag> ("triggerObjects"));
   triggerPrescales_ = consumes<pat::PackedTriggerPrescales>(cfg.getParameter<edm::InputTag>("prescales"));
   triggerPrescalesL1Max_ = consumes<pat::PackedTriggerPrescales>(cfg.getParameter<edm::InputTag>("prescalesL1Max"));
   triggerPrescalesL1Min_ = consumes<pat::PackedTriggerPrescales>(cfg.getParameter<edm::InputTag>("prescalesL1Min"));
@@ -122,6 +123,7 @@ void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup 
   bool changed(true);
   if (hltConfig_.init(iRun,iSetup,processName_,changed) && hltPrescale_.init(iRun, iSetup, processName_, changed) ) {
     if (changed) {
+      regex pfjet(Form("HLT_%sPFJet([0-9]*)_v([0-9]*)",mAK4 ? "" : "AK8"));
       cout<<"New trigger menu found !!!"<<endl;
       triggerIndex_.clear();
       const unsigned int n(hltConfig_.size());
@@ -192,7 +194,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     
   if (!mIsMCarlo){
     event.getByToken(triggerBits_, triggerBits);
-    event.getByToken(triggerObjects_, triggerObjects);
+//    event.getByToken(triggerObjects_, triggerObjects);
     event.getByToken(triggerPrescales_, triggerPrescales);
     event.getByToken(triggerPrescalesL1Min_, triggerPrescalesL1Min);
     event.getByToken(triggerPrescalesL1Max_, triggerPrescalesL1Max);
@@ -218,19 +220,19 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     }
     
     //std::cout << "\n === TRIGGER OBJECTS === " << std::endl;
-    for (pat::TriggerObjectStandAlone obj : *triggerObjects) { // note: not "const &" since we want to call unpackPathNames
-      obj.unpackPathNames(names);
-      
-      TLorentzVector P4;                                                                                                                                         
-      P4.SetPtEtaPhiM(obj.pt(),obj.eta(),obj.phi(),obj.mass());                                                                                                      
-      LorentzVector qcdhltobj(P4.Px(),P4.Py(),P4.Pz(),P4.E());                                                                                                   
-      vvHLT.push_back(qcdhltobj);
-      
-      std::vector<std::string> pathNamesAll  = obj.pathNames(false);
-      std::vector<std::string> pathNamesLast = obj.pathNames(true);
-      
-      mHLTObjects.push_back(vvHLT); 
-    }
+//    for (pat::TriggerObjectStandAlone obj : *triggerObjects) { // note: not "const &" since we want to call unpackPathNames
+//      obj.unpackPathNames(names);
+//      
+//      TLorentzVector P4;                                                                                                                                         
+//      P4.SetPtEtaPhiM(obj.pt(),obj.eta(),obj.phi(),obj.mass());                                                                                                      
+//      LorentzVector qcdhltobj(P4.Px(),P4.Py(),P4.Pz(),P4.E());                                                                                                   
+//      vvHLT.push_back(qcdhltobj);
+//      
+//      std::vector<std::string> pathNamesAll  = obj.pathNames(false);
+//      std::vector<std::string> pathNamesLast = obj.pathNames(true);
+//      
+//      mHLTObjects.push_back(vvHLT); 
+//    }
   
     mEvent->setTrigDecision(Fired);
     mEvent->setPrescales(L1Prescales,HLTPrescales);
