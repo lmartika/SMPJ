@@ -57,81 +57,100 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     static bool sort_pfjets(QCDPFJet j1, QCDPFJet j2) {
       return j1.ptCor() > j2.ptCor();
     }
+    unsigned genorder(double pt, Handle<GenJetCollection> gjets, unsigned blw, unsigned abv) {
+      unsigned nxt = (abv+blw)/2;
+      if (nxt==blw) return nxt;
+      double nxtpt = gjets->at(nxt).p4().Pt();
+      if (nxtpt<=pt)
+        return genorder(pt,gjets,blw,nxt);
+      else
+        return genorder(pt,gjets,nxt,abv);
+    }
+    unsigned partonorder(double pt, edm::Handle<reco::GenParticleCollection> prtns, unsigned blw, unsigned abv)     {
+      unsigned nxt = (abv+blw)/2;
+      if (nxt==blw) return nxt;
+      double nxtpt = prtns->at(nxt).p4().Pt();
+      if (nxtpt>pt)
+        return partonorder(pt,prtns,blw,nxt);
+      else
+        return partonorder(pt,prtns,nxt,abv);
+    }
+
     //---- configurable parameters --------
-    bool   mIsMCarlo;
+    float  mULimCEF; // Not to be set by the user
+    float  mULimNEF; // Not to be set by the user
+    float  mULimNHF; // Not to be set by the user
+    float  mLLimNEF; // Not to be set by the user
+    float  mLLimNHF; // Not to be set by the user
+    bool   mSaveWeights; // Not to be set by the user
     bool   mAK4;
-    bool   mUseGenInfo;
     bool   mPrintTriggerMenu;
-    int    mGoodVtxNdof,mMinNPFJets;
+    bool   mIsPFJecUncSet; // Not to be set by the user
+    bool   mUseLegacyTag; // Not to be set by the user
+    int    mGoodVtxNdof;
     double mGoodVtxZ;
-    double mMinPFPt,mMinGenPt,mMaxY;
-    std::string pfchsjetpuid;
+    int    mMinNPFJets;
+    double mMinPFPt,mMinPFPtThirdJet,mMinGenPt,mMaxY,mMinJJMass;
+    string mPFPayloadName;
+    string mRunYear; 
+    string mPFJetPUID;
 
-    // ---- non CHS jet input tag ----- //
+    // unc file for CHS jet //
+    string                                   mPFJECUncSrc;
+    vector<string>                           mPFJECUncSrcNames;
     edm::EDGetTokenT<reco::VertexCollection> mOfflineVertices;
-    edm::EDGetTokenT<reco::BeamSpot> mBeamSpot;
-    edm::EDGetTokenT<edm::View<pat::Jet> >mPFJetsNameCHS;
-//    edm::EDGetTokenT<pat::IsolatedTrackCollection> mIsolatedTracks;
-    edm::EDGetTokenT<GenEventInfoProduct> mhEventInfo;
-    edm::EDGetTokenT<edm::ValueMap<float>> qgToken;
-    // ----CHS jet input tag ----- //
-    edm::EDGetTokenT<double> mSrcCaloRho;
-    edm::EDGetTokenT<double> mSrcPFRho;
-    edm::EDGetTokenT<pat::METCollection> mPFMET;
-    edm::EDGetTokenT<GenJetCollection> mGenJetsName;
-    edm::EDGetTokenT<reco::GenParticleCollection> mgenParticles;
-    //edm::InputTag mHBHENoiseFilter;
-    //---- TRIGGER -------------------------
-    std::string   processName_;
-    std::vector<std::string> triggerNames_;
-    std::vector<std::string> goodTriggerNames_;
-    std::vector<unsigned int> triggerIndex_;
-    //edm::InputTag mSrcPU;
-    edm::EDGetTokenT<edm::TriggerResults> triggerResultsTag_;
-    edm::EDGetTokenT<trigger::TriggerEvent> triggerEventTag_;
-    edm::EDGetTokenT<std::vector<PileupSummaryInfo> > mSrcPU;
-    edm::Handle<edm::TriggerResults>   triggerResultsHandle_;
-    edm::Handle<trigger::TriggerEvent> triggerEventHandle_;
-
-    edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
-    edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjects_;
-    edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescales_;
-    edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesL1Min_;
-    edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesL1Max_;
-
-    edm::EDGetTokenT<GenEventInfoProduct> genEvtInfoToken;
-
-    edm::Handle<GenEventInfoProduct> genEvtInfo;
-
-    //hadron jet definition
-    edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> jetFlavourInfosToken_;
-
-    std::string mPFJECUncSrcCHS;
-    std::vector<std::string> mPFJECUncSrcNames;
-    std::string mPFPayloadNameCHS;
-
-    bool saveWeights_;
-
-    HLTConfigProvider hltConfig_;
-    //---- CORRECTORS ----------------------
-    JetCorrectionUncertainty *mPFUncCHS;
-
-    //------- non CHS jet uncertainty sources -------- //
+    edm::EDGetTokenT<reco::BeamSpot>         mBeamSpot;
+    edm::EDGetTokenT<edm::View<pat::Jet> >   mPFJetsName;
+    edm::EDGetTokenT<double>                 mSrcCaloRho;
+    edm::EDGetTokenT<double>                 mSrcPFRho;
+    // MET //
+    edm::EDGetTokenT<pat::METCollection> mPFMETt1;
+    edm::EDGetTokenT<pat::METCollection> mPFMETt0pc;
+    edm::EDGetTokenT<pat::METCollection> mPFMETt0pct1;
+    // GEN //
+    bool                                                     mIsMCarlo;
+    bool                                                     mUseGenInfo;
+    int                                                      mMCType;
+    edm::EDGetTokenT<GenJetCollection>                       mGenJetsName;
+    edm::EDGetTokenT<reco::GenParticleCollection>            mGenParticles;
+    edm::EDGetTokenT<GenEventInfoProduct>                    mEventInfo;
+    edm::EDGetTokenT<std::vector<PileupSummaryInfo> >        mSrcPU;
+    edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> mJetFlavourInfosToken;
+    edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> mJetFlavourInfosTokenPhysicsDef;
+    edm::EDGetTokenT<GenEventInfoProduct>                    mGenEvtInfoToken;
+    edm::Handle<GenEventInfoProduct>                         mGenEvtInfo;
+    // TRIGGER // 
+    std::string                                              mProcessName;
+    std::vector<std::string>                                 mTriggerNames;
+    std::vector<unsigned int>                                mTriggerIndex;
+    edm::EDGetTokenT<edm::TriggerResults>                    mTriggerResultsTag;
+    edm::EDGetTokenT<trigger::TriggerEvent>                  mTriggerEventTag;
+    edm::Handle<edm::TriggerResults>                         mTriggerResultsHandle;
+    edm::Handle<trigger::TriggerEvent>                       mTriggerEventHandle;
+    edm::EDGetTokenT<edm::TriggerResults>                    mTriggerBits;
+    edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> mTriggerObjects;
+    edm::EDGetTokenT<pat::PackedTriggerPrescales>            mTriggerPrescales;
+    edm::EDGetTokenT<pat::PackedTriggerPrescales>            mTriggerPrescalesL1Min;
+    edm::EDGetTokenT<pat::PackedTriggerPrescales>            mTriggerPrescalesL1Max;
+    TH1F *mTriggerPassHisto,*mTriggerNamesHisto;
+    // CORRECTORS //
+    JetCorrectionUncertainty *mPFUnc;
     std::vector<JetCorrectionUncertainty*> mPFUncSrc;
-    // -------- CHS jet uncertainty sources -------- //
-    std::vector<JetCorrectionUncertainty*> mPFUncSrcCHS;
+//    edm::EDGetTokenT<pat::IsolatedTrackCollection> mIsolatedTracks;
+    // MISC //
+    edm::EDGetTokenT<pat::PackedCandidateCollection> mCands;
+    edm::EDGetTokenT<edm::ValueMap<float>> mQGToken;
+    HLTConfigProvider nHltConfig;
 
     edm::Service<TFileService> fs;
     TTree *mTree;
-    TH1F *mTriggerPassHisto,*mTriggerNamesHisto;
-    //---- TREE variables --------
+    // TREE variables //
     QCDEvent *mEvent;
 
     int getMatchedPartonGen(edm::Event const& event, GenJetCollection::const_iterator i_gen);
     int getMatchedHadronGen(edm::Event const& event, GenJetCollection::const_iterator i_gen);
 
     HLTPrescaleProvider hltPrescale_;
-
 };
 
 #endif

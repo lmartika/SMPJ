@@ -1,30 +1,34 @@
-//Author K. Kousouris
-//Modified by: S. Ganguly
+ //Author P. Gunnellini
 
-#ifndef QCDJet_h
-#define QCDJet_h
-#include "DataFormats/JetReco/interface/Jet.h"
+#ifndef MyMuon_h
+#define MyMuon_h
+#include "DataFormats/PatCandidates/interface/Muon.h"
 //-------- Generic Jet class for QCD analyses ---------------
-class QCDJet 
+class MyMuon
 {
    public:
      typedef reco::Particle::LorentzVector LorentzVector;
      //------------ Constructor ------------------------------
-     QCDJet() {}
+     MyMuon() {}
      //------------ Destructor -------------------------------
-     ~QCDJet() {}
+     ~MyMuon() {}
      //------------ Sett methods -----------------------------
-  //   void clear() {pfParticles_.clear();}
      void setP4(LorentzVector fP4) {P4_ = fP4;}
      void setGen(LorentzVector fP4, float fgenR) {genP4_ = fP4;genR_ = fgenR;}
      void setCor(float fCor)                     {cor_  = fCor;} 
      void setUnc(float fUnc)                     {unc_  = fUnc;} 
      void setUncSrc(std::vector<float> fUncSrc)  {uncSrc_ = fUncSrc;}
-     void setJecLabels(std::vector<double> fJecLabels) {jecLabels_ = fJecLabels;}
-     void setArea(float fArea)                   {area_ = fArea;}
-     void setLooseID(bool fLooseID)              {looseID_ = fLooseID;} 
-     void setTightID(bool fTightID)              {tightID_ = fTightID;}
-//     void setPFParticles(std::vector<LorentzVector> fpfFParticles) {pfParticles_ = fpfFParticles;}
+     //New Instructions
+     void setMuonDxyVertex(double fDxyVertex)    {DxyVertex_ = fDxyVertex;}
+     void setMuonDzVertex(double fDzVertex)    {DzVertex_ = fDzVertex;}
+     void setPDGId(double fPDGID) {PDGID_ = fPDGID;}
+     void setPfIso(double fPfIso) {PfIso_ = fPfIso;}
+
+     void setChargedHadronIso(double fChargedHadronIso) {fChargedHadronIso = ChargedHadronIso_;}
+     void setNeutralHadronIso(double fNeutralHadronIso) {fNeutralHadronIso = NeutralHadronIso_;}
+     void setPhotonIso(double fPhotonIso) {fPhotonIso = PhotonIso_;} 
+     void setPuChargedHadronIso(double fPuChargedHadronIso) {fPuChargedHadronIso = PuChargedHadronIso_;}
+
      //------------ Get methods ------------------------------
      const LorentzVector& p4()    const {return P4_;}
      const LorentzVector& genp4() const {return genP4_;}
@@ -42,13 +46,15 @@ class QCDJet
      float cor()                  const {return cor_;}
      float unc()                  const {return unc_;} 
      float uncSrc(int i)          const {return uncSrc_[i];}
-     double jecLabels(int i)      const {return jecLabels_[i];}
-     float area()                 const {return area_;} 
-     bool  looseID()              const {return looseID_;}
-     bool  tightID()              const {return tightID_;}
-  //   int  nParticles()            const {return pfParticles_.size();}
-  //   const LorentzVector& getPFParticles(int i) const {return pfParticles_[i];}
-   private:
+
+     float Iso()                  const {return PfIso_;}
+     float pdgId()                const {return PDGID_;}
+     float MuonDZVertex()          const {return DzVertex_;}
+     float MuonDxyVertex()          const {return DxyVertex_;}
+
+     //   int  nParticles()            const {return pfParticles_.size();}
+     //   const LorentzVector& getPFParticles(int i) const {return pfParticles_[i];}
+ private:
      //------ jet 4-momentum vector------------------
      LorentzVector P4_;
      //------ matched genjet 4-momentum vector-------
@@ -65,11 +71,17 @@ class QCDJet
      std::vector<float> uncSrc_;
      //------ jet area ------------------------------
      float area_;
-     //------ loose ID flag -------------------------
-     bool  looseID_;
-     //------ tight ID flag -------------------------
-     bool  tightID_;
-     //------ LorentzVector For PF PARTICLES
-  //   std::vector<LorentzVector> pfParticles_;
+
+     //Muon Vertices
+     double DxyVertex_;
+     double DzVertex_;
+     double PDGID_;
+     double PfIso_;
+
+     double PuChargedHadronIso_;
+     double ChargedHadronIso_;
+     double NeutralHadronIso_;
+     double PhotonIso_;
+
  };
 #endif

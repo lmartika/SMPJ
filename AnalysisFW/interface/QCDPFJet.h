@@ -4,47 +4,30 @@
 #ifndef QCDPFJet_h
 #define QCDPFJet_h
 #include "SMPJ/AnalysisFW/interface/QCDJet.h"
+#include "SMPJ/AnalysisFW/interface/QCDPFJetBTag.h"
 #include "TLorentzVector.h"
-class QCDPFJet : public QCDJet {
+class QCDPFJet : public QCDPFJetBTag {
    public:
      //------------ Constructor ------------------------------
-     QCDPFJet() {chf_=0;nhf_=0;nemf_=0;cemf_=0;muf_=0;chm_=0;nhm_=0;phm_=0;elm_=0;mum_=0;
-//     pfParticles_.clear();
-     }
+     QCDPFJet() {chf_=0;nhf_=0;nemf_=0;cemf_=0;muf_=0;chm_=0;nhm_=0;phm_=0;elm_=0;mum_=0,cm_=0;}
      //------------ Destructor -------------------------------
      ~QCDPFJet() {}
      //------------ Set methods ------------------------------
      void setFrac(float fchf, float fnhf, float fnemf, float fcemf, float fmuf)  {chf_ = fchf; nhf_ = fnhf; nemf_ = fnemf; cemf_ = fcemf; muf_ = fmuf;}
-     void setMulti(int fncand, int fchm, int fnhm, int fphm, int felm, int fmum) {ncand_ = fncand; chm_ = fchm; nhm_ = fnhm; phm_ = fphm; elm_ = felm; mum_ = fmum;}
+     void setMulti(int fncand, int fchm, int fnhm, int fphm, int felm, int fmum, int fcm) {ncand_ = fncand; chm_ = fchm; nhm_ = fnhm; phm_ = fphm; elm_ = felm; mum_ = fmum; cm_ = fcm; }
      void setBeta(float fbeta) {beta_ = fbeta;}
      void setBetaStar(float fbetaStar) {betaStar_ = fbetaStar;}
+     void setBetaPrime(float fbetaPrime) {betaPrime_ = fbetaPrime;}
      void setHFFrac(float fhf_hf, float fhf_phf) {hf_hf_ = fhf_hf; hf_phf_ = fhf_phf;}
      void setHFMulti(int fhf_hm, int fhf_phm) {hf_hm_ = fhf_hm; hf_phm_ = fhf_phm;}
      void setVtxInfo(int mpuTrk, int mlvTrk, int mjtTrk) { mpuTrk_ = mpuTrk; mlvTrk_ = mlvTrk; mjtTrk_ = mjtTrk;} // Juska
      void setHO(float hof) {hof_ = hof;} // Juska
      void SetPUJetId(float pujid) { pujid_ = pujid; }
 
-     void setTagRecommended(float recommend1, float recommend2, float recommend3) { recommend1_ = recommend1; recommend2_ = recommend2; recommend3_ = recommend3; }
-
-     void setFlavour(float fpartonflavour, float fhadronflavour) {partonFlavour_ = fpartonflavour; hadronFlavour_ = fhadronflavour;}
-
-     void setQGTagger(float fQGTagger) {QGtagger_ = fQGTagger;}
-
-     //------------ Get methods ------------------------------                                                                                                                                           
- 
-     float partonflavour()      const {return partonFlavour_;}
-     float hadronflavour()      const {return hadronFlavour_;}
-
-     float qgtagger()      const {return QGtagger_;}
-
-     float pfJetProbabilityBJetTags() const {return recommend1_;}
-     float pfCombinedInclusiveSecondaryVertexV2BJetTags() const {return recommend2_;}
-     float pfCombinedMVAV2BJetTags() const {return recommend2_;}
-
-
      //------------ Get methods ------------------------------
      float beta()     const {return beta_;}
      float betaStar() const {return betaStar_;}
+     float betaPrime() const {return betaPrime_;}
      float chf()      const {return chf_;}
      float nhf()      const {return nhf_;}
      float nemf()      const {return nemf_;}
@@ -67,7 +50,6 @@ class QCDPFJet : public QCDJet {
      float hof()      const {return hof_;}    //
 
      float PUJetId()  const { return pujid_ ;}
-
 
    private:
      //---- charged hadron energy fraction ----
@@ -100,12 +82,14 @@ class QCDPFJet : public QCDJet {
      int mum_;
      //---- number of PF candidates -----------
      int ncand_;
+     // --- charged multiplicity ------
+     int cm_;
      //---- fraction of track pt coming from the signal vertex ---
      float beta_;
      //---- fraction of track pt NOT coming from the signal vertex ---
      float betaStar_;
-     //----- PF Particles ----//
-//     std::vector<LorentzVector> pfParticles_;
+     //---- fraction of track pt NOT coming from the signal vertex, removed by chs ---
+     float betaPrime_;
 
      // Juska:
      int mpuTrk_; // PU-tracks in jet
@@ -114,15 +98,5 @@ class QCDPFJet : public QCDJet {
      float hof_; // Hadronic Outer energy fraction
 
      float pujid_;
-
-     //from B-tag
-     float QGtagger_;
-
-     float partonFlavour_;
-     float hadronFlavour_;
-     float recommend1_;
-     float recommend2_;
-     float recommend3_;
-
-    };
+};
 #endif
