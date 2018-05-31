@@ -160,13 +160,10 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> mJetFlavourInfosToken;
     edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> mJetFlavourInfosTokenPhysicsDef;
     // TRIGGER // 
-    std::string                                              mProcessName;
-    std::vector<std::string>                                 mTriggerNames;
-    std::vector<unsigned int>                                mTriggerIndex;
-    edm::EDGetTokenT<edm::TriggerResults>                    mTriggerResultsTag;
-    edm::EDGetTokenT<trigger::TriggerEvent>                  mTriggerEventTag;
-    edm::Handle<edm::TriggerResults>                         mTriggerResultsHandle;
-    edm::Handle<trigger::TriggerEvent>                       mTriggerEventHandle;
+    string                                              mProcessName;
+    const vector<string>                                 mTriggerNames;
+    const vector<string>                                 mTriggerFollows;
+    vector<unsigned int>                                mTriggerIndex;
     edm::EDGetTokenT<edm::TriggerResults>                    mTriggerBits;
     edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> mTriggerObjects;
     edm::EDGetTokenT<pat::PackedTriggerPrescales>            mTriggerPrescales;
@@ -175,7 +172,7 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     TH1F *mTriggerPassHisto,*mTriggerNamesHisto;
     // CORRECTORS //
     JetCorrectionUncertainty *mPFUnc;
-    std::vector<JetCorrectionUncertainty*> mPFUncSrc;
+    vector<JetCorrectionUncertainty*> mPFUncSrc;
 //    edm::EDGetTokenT<pat::IsolatedTrackCollection> mIsolatedTracks;
     // MISC //
     edm::EDGetTokenT<pat::PackedCandidateCollection> mCands;
