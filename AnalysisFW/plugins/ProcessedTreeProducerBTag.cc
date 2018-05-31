@@ -624,7 +624,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     } else {
       // Empty gen jet for data
       qcdpfjetchs.setGen(LorentzVector(0,0,0,0),0);
-      qcdpfjetchs.setFlavour(-999,-999,-999);
+      qcdpfjetchs.setFlavour(0,0,0);
     }
     mPFJets.push_back(qcdpfjetchs);
   } // for: chs Jets
