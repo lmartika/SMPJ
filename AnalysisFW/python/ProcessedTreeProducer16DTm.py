@@ -15,12 +15,9 @@ from PhysicsTools.PatAlgos.patSequences_cff import *
 #from RecoJets.JetProducers.pileupjetidproducer_cfi import *
 from PhysicsTools.PatAlgos.patTemplate_cfg import *
 from PhysicsTools.PatAlgos.tools.jetTools import *
-#from RecoJets.JetProducers.QGTagger_cfi import QGTagger
+from RecoJets.JetProducers.QGTagger_cfi import QGTagger
 from triggerlists import *
 from filelists import *
-
-## Modified version of jetToolBox from https://github.com/cms-jet/jetToolbox
-## Options for PUMethod: Puppi, CS, SK, CHS
 
 # -*- coding: utf-8 -*-
 import FWCore.ParameterSet.Config as cms
@@ -48,7 +45,7 @@ process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 #! Input
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#0000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#000))#0000))
 
 #triggers = trgZBD16 
 triggers = trgAK4D16 
@@ -66,33 +63,24 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.load('CommonTools.UtilAlgos.TFileService_cfi')
 process.TFileService.fileName=cms.string('DATA.root')
 
-process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
-process.load("PhysicsTools.PatAlgos.selectionLayer1.selectedPatCandidates_cff")
+# Other options: see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
+process.load('RecoJets.JetProducers.QGTagger_cfi')
+process.QGTagger.srcJets = cms.InputTag('slimmedJets')
+process.QGTagger.jetsLabel  = cms.string('QGL_AK4PFchs')        
 
-process.patJets.addTagInfos = True
-process.patJets.addAssociatedTracks = True
-
-#process.load('RecoJets.JetProducers.QGTagger_cfi')
-#process.QGTagger.srcJets = cms.InputTag('patJets')    # Could be reco::PFJetCollection or pat::JetCollection (both AOD and miniAOD)
-#process.QGTagger.jetsLabel  = cms.string('QGL_AK4PFchs')        # Other options: see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
-
-#process.out.outputCommands += ['keep *_QGTagger_*_*']
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
 
 process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
   ## jet collections ###########################
-  pfjets          = cms.InputTag('slimmedJets'),
   pfjetschs       = cms.InputTag('slimmedJets'),
-  pfpujetid       = cms.string('AK4PFpileupJetIdEvaluator:fullDiscriminant'),
-  pfchsjetpuid    = cms.string('AK4PFCHSpileupJetIdEvaluator:fullDiscriminant'),
+  pfchsjetpuid    = cms.string("pileupJetId:fullDiscriminant"),
+  runYear         = cms.untracked.string("2016"),
   ## MET collection ####
   pfmetT1         = cms.InputTag('slimmedMETs'),
   genjets         = cms.untracked.InputTag('slimmedGenJets'),
   ## database entry for the uncertainties ######
   PFPayloadName   = cms.string(''),
-  PFPayloadNameCHS= cms.string(''),
   jecUncSrc       = cms.untracked.string(''),
-  jecUncSrcCHS    = cms.string(''),
   jecUncSrcNames  = cms.vstring(''),
   ## set the conditions for good Vtx counting ##
   offlineVertices = cms.InputTag('offlineSlimmedPrimaryVertices'),
@@ -118,11 +106,15 @@ process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
   processName     = cms.untracked.string('HLT'),
   triggerName     = triggers,
   triggerFollow   = follows,
+  triggerFlags    = cms.untracked.InputTag("TriggerResults","","RECO"),
   triggerResults  = cms.untracked.InputTag("TriggerResults","","HLT"),
+  triggerHLTObjs  = cms.untracked.InputTag("selectedPatTrigger"),
+  triggerL1Objs   = cms.untracked.InputTag("caloStage2Digis","Jet"),
+  triggerL1HTObjs = cms.untracked.InputTag("caloStage2Digis","EtSum"),
+  #triggerAllObjs   = cms.untracked.InputTag("gtStage2Digis","GlobalAlgBlk"),
   prescales       = cms.InputTag("patTrigger"),
   prescalesL1Min  = cms.InputTag("patTrigger","l1min"), 
   prescalesL1Max  = cms.InputTag("patTrigger","l1max"), 
-  #triggerObjects  = cms.InputTag("slimmedPatTrigger"),
   ## jec services ##############################
   EventInfo       = cms.untracked.InputTag("generator"),
   GenParticles    = cms.untracked.InputTag("genparticles"),
@@ -135,6 +127,8 @@ process.goodVertices = cms.EDFilter("VertexSelector",
   src = cms.InputTag("offlineSlimmedPrimaryVertices"),
   cut = cms.string("!isFake && ndof > 4 && abs(z) <= 24 && position.Rho <= 2"),
 )
+
+
 
 #Try scheduled processs
 process.path = cms.Path(process.goodVertices*

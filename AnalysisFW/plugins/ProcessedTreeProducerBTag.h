@@ -25,7 +25,6 @@
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
-//#include "DataFormats/PatCandidates/interface/IsolatedTrack.h"
 #include "DataFormats/JetReco/interface/Jet.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
@@ -36,6 +35,9 @@
 #include "DataFormats/METReco/interface/HcalNoiseSummary.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/L1Trigger/interface/BXVector.h"
+#include "DataFormats/L1Trigger/interface/Jet.h"
+#include "DataFormats/L1Trigger/interface/EtSum.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "HLTrigger/HLTcore/interface/HLTPrescaleProvider.h"
@@ -159,13 +161,20 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     edm::EDGetTokenT<std::vector<PileupSummaryInfo> >        mSrcPU;
     edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> mJetFlavourInfosToken;
     edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> mJetFlavourInfosTokenPhysicsDef;
+    edm::EDGetTokenT<edm::ValueMap<float>>                   mQGLToken;
+    edm::EDGetTokenT<edm::ValueMap<float>>                   mQGAx2Token;
+    edm::EDGetTokenT<edm::ValueMap<int>>                     mQGMulToken;
+    edm::EDGetTokenT<edm::ValueMap<float>>                   mQGPtDToken;
     // TRIGGER // 
-    string                                              mProcessName;
-    const vector<string>                                 mTriggerNames;
-    const vector<string>                                 mTriggerFollows;
-    vector<unsigned int>                                mTriggerIndex;
+    string                                                   mProcessName;
+    const vector<string>                                     mTriggerNames;
+    const vector<string>                                     mTriggerFollows;
+    vector<unsigned int>                                     mTriggerIndex;
+    edm::EDGetTokenT<edm::TriggerResults>                    mTriggerFlags;
     edm::EDGetTokenT<edm::TriggerResults>                    mTriggerBits;
-    edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> mTriggerObjects;
+    edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> mTriggerHLTObjs;
+    edm::EDGetTokenT<BXVector<l1t::Jet> >                    mTriggerL1Objs;
+    edm::EDGetTokenT<BXVector<l1t::EtSum> >                  mTriggerL1HTObjs;
     edm::EDGetTokenT<pat::PackedTriggerPrescales>            mTriggerPrescales;
     edm::EDGetTokenT<pat::PackedTriggerPrescales>            mTriggerPrescalesL1Min;
     edm::EDGetTokenT<pat::PackedTriggerPrescales>            mTriggerPrescalesL1Max;
@@ -173,7 +182,6 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     // CORRECTORS //
     JetCorrectionUncertainty *mPFUnc;
     vector<JetCorrectionUncertainty*> mPFUncSrc;
-//    edm::EDGetTokenT<pat::IsolatedTrackCollection> mIsolatedTracks;
     // MISC //
     edm::EDGetTokenT<pat::PackedCandidateCollection> mCands;
     HLTConfigProvider mHLTConfig;

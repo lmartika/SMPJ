@@ -69,7 +69,5 @@ class QCDJet
      bool  looseID_;
      //------ tight ID flag -------------------------
      bool  tightID_;
-     //------ LorentzVector For PF PARTICLES
-  //   std::vector<LorentzVector> pfParticles_;
  };
 #endif
