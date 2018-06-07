@@ -2,7 +2,6 @@
 
 import FWCore.ParameterSet.Config as cms
 
-#from RecoJets.Configuration.RecoPFJets_cff import ak4PFJets, ak4PFJetsCHS
 from RecoJets.Configuration.RecoGenJets_cff import ak4GenJets
 from RecoJets.JetProducers.SubJetParameters_cfi import SubJetParameters
 from RecoJets.JetProducers.PFJetParameters_cfi import *
@@ -12,12 +11,12 @@ from PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff import *
 from PhysicsTools.PatAlgos.selectionLayer1.jetSelector_cfi import selectedPatJets
 from PhysicsTools.PatAlgos.tools.jetTools import *
 from PhysicsTools.PatAlgos.patSequences_cff import *
-#from RecoJets.JetProducers.pileupjetidproducer_cfi import *
 from PhysicsTools.PatAlgos.patTemplate_cfg import *
 from PhysicsTools.PatAlgos.tools.jetTools import *
 from RecoJets.JetProducers.QGTagger_cfi import QGTagger
 from triggerlists import *
 from filelists import *
+from filterlists import *
 
 # -*- coding: utf-8 -*-
 import FWCore.ParameterSet.Config as cms
@@ -45,15 +44,23 @@ process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 #! Input
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))#000))#0000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))
 
 #triggers = trgZBD16 
 triggers = trgAK4D16 
 follows = trgAK8D16
 #inFiles = ZBD16
 inFiles = JHTD16 
+filters = flt16DT
+
+zbflag = False
 
 process.source = cms.Source("PoolSource", fileNames = inFiles )
+
+process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
+process.load('CommonTools.RecoAlgos.HBHENoiseFilter_cfi')
+
+process.HBHENoiseFilterResultProducerNoMinZ = process.HBHENoiseFilterResultProducer.clone(minZeros = cms.int32(99999))
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #! Services
@@ -100,13 +107,15 @@ process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
   minGenPt        = cms.untracked.double(20),
   isMCarlo        = cms.untracked.bool(False),
   useGenInfo      = cms.untracked.bool(False),
-  AK4             = cms.untracked.bool(True),      
+  AK4             = cms.untracked.bool(True),
+  ZB              = cms.untracked.bool(zbflag),
   ## trigger ###################################
-  printTriggerMenu= cms.untracked.bool(True),
+  printTriggerMenu= cms.untracked.bool(False),
   processName     = cms.untracked.string('HLT'),
+  filterName      = filters,
   triggerName     = triggers,
   triggerFollow   = follows,
-  triggerFlags    = cms.untracked.InputTag("TriggerResults","","RECO"),
+  filterFlags    = cms.untracked.InputTag("TriggerResults","","RECO"),
   triggerResults  = cms.untracked.InputTag("TriggerResults","","HLT"),
   triggerHLTObjs  = cms.untracked.InputTag("selectedPatTrigger"),
   triggerL1Objs   = cms.untracked.InputTag("caloStage2Digis","Jet"),
@@ -120,18 +129,11 @@ process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
   GenParticles    = cms.untracked.InputTag("genparticles"),
   jetFlavourInfos = cms.untracked.InputTag("genJetFlavourInfos"),
   saveWeights     = cms.bool(False),                      
+  HBHENoiseFilterResultNoMinZLabel = cms.untracked.InputTag("HBHENoiseFilterResultProducerNoMinZ", "HBHENoiseFilterResult")
 )
-
-process.goodVertices = cms.EDFilter("VertexSelector",
-  filter = cms.bool(False),
-  src = cms.InputTag("offlineSlimmedPrimaryVertices"),
-  cut = cms.string("!isFake && ndof > 4 && abs(z) <= 24 && position.Rho <= 2"),
-)
-
-
 
 #Try scheduled processs
-process.path = cms.Path(process.goodVertices*
+process.path = cms.Path(process.HBHENoiseFilterResultProducerNoMinZ*
                         process.ak4)
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

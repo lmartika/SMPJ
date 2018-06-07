@@ -126,6 +126,7 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     float  mLLimNHF; // Not to be set by the user
     bool   mSaveWeights; // Not to be set by the user
     bool   mAK4;
+    bool   mZB;
     bool   mPrintTriggerMenu;
     bool   mIsPFJecUncSet; // Not to be set by the user
     bool   mUseLegacyTag; // Not to be set by the user
@@ -147,11 +148,10 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     edm::EDGetTokenT<double>                 mSrcPFRho;
     // MET //
     edm::EDGetTokenT<pat::METCollection> mPFMETt1;
-    //edm::EDGetTokenT<pat::METCollection> mPFMETt0pc;
-    //edm::EDGetTokenT<pat::METCollection> mPFMETt0pct1;
     // GEN //
     bool                                                     mIsMCarlo;
     bool                                                     mUseGenInfo;
+    bool                                                     mNewTrigs;
     int                                                      mMCType;
     edm::EDGetTokenT<GenJetCollection>                       mGenJetsName;
     edm::EDGetTokenT<reco::GenParticleCollection>            mGenParticles;
@@ -167,10 +167,14 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     edm::EDGetTokenT<edm::ValueMap<float>>                   mQGPtDToken;
     // TRIGGER // 
     string                                                   mProcessName;
+    const vector<string>                                     mFilterNames;
     const vector<string>                                     mTriggerNames;
-    const vector<string>                                     mTriggerFollows;
-    vector<unsigned int>                                     mTriggerIndex;
-    edm::EDGetTokenT<edm::TriggerResults>                    mTriggerFlags;
+    const vector<string>                                     mTriggerFlwNames;
+    vector<int>                                              mFilterIndex;
+    vector<int>                                              mTriggerIndex;
+    vector<int>                                              mTriggerFlwIndex;
+    vector<int>                                              mTriggerFlgIndex;
+    edm::EDGetTokenT<edm::TriggerResults>                    mFilterBits;
     edm::EDGetTokenT<edm::TriggerResults>                    mTriggerBits;
     edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> mTriggerHLTObjs;
     edm::EDGetTokenT<BXVector<l1t::Jet> >                    mTriggerL1Objs;
@@ -180,12 +184,13 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     edm::EDGetTokenT<pat::PackedTriggerPrescales>            mTriggerPrescalesL1Max;
     TH1F *mTriggerPassHisto,*mTriggerNamesHisto;
     // CORRECTORS //
-    JetCorrectionUncertainty *mPFUnc;
-    vector<JetCorrectionUncertainty*> mPFUncSrc;
+    JetCorrectionUncertainty                                *mPFUnc;
+    vector<JetCorrectionUncertainty*>                        mPFUncSrc;
     // MISC //
-    edm::EDGetTokenT<pat::PackedCandidateCollection> mCands;
-    HLTConfigProvider mHLTConfig;
-    HLTPrescaleProvider mHLTPrescale;
+    edm::EDGetTokenT<bool>                                   mHBHENoiseFilterResultNoMinZLabel;
+    edm::EDGetTokenT<pat::PackedCandidateCollection>         mCands;
+    HLTConfigProvider                                        mHLTConfig;
+    HLTPrescaleProvider                                      mHLTPrescale;
 
     edm::Service<TFileService> fs;
     TTree *mTree;

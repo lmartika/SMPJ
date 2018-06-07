@@ -3,6 +3,7 @@
 ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cfg):
   mSaveWeights(                                                                                      cfg.getParameter<bool>("saveWeights")),
   mAK4(                                                                                     cfg.getUntrackedParameter<bool>("AK4",false)),
+  mZB(                                                                                      cfg.getUntrackedParameter<bool>("ZB",false)),
   mPrintTriggerMenu(                                                                        cfg.getUntrackedParameter<bool>("printTriggerMenu",false)),
   mIsPFJecUncSet(                                                                                                           false),
   // Cut params
@@ -28,9 +29,6 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   mSrcPFRho(mayConsume<double>(                                                             cfg.getParameter<edm::InputTag>("srcPFRho"))),
   // MET
   mPFMETt1(mayConsume<pat::METCollection>(                                                  cfg.getParameter<edm::InputTag>("pfmetT1"))),
-  //mPFMETt0pc(mayConsume<pat::METCollection>(                                                cfg.getParameter<edm::InputTag>("pfmetT0pc"))),
-  //mPFMETt0pct1(mayConsume<pat::METCollection>(                                              cfg.getParameter<edm::InputTag>("pfmetT0pcT1"))),
-  //mIsolatedTracks(consumes<pat::IsolatedTrackCollection>(                                                     edm::InputTag("isolatedTracks"))),
   // GEN
   mIsMCarlo(                                                                                cfg.getUntrackedParameter<bool>("isMCarlo",false)),
   mUseGenInfo(                                                                              cfg.getUntrackedParameter<bool>("useGenInfo",false)),
@@ -49,8 +47,10 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
 
   // Trigger
   mProcessName(                                                                      cfg.getUntrackedParameter<std::string>("processName","")),
+  mFilterNames(                                                                 cfg.getParameter<std::vector<std::string> >("filterName")),
   mTriggerNames(                                                                cfg.getParameter<std::vector<std::string> >("triggerName")),
-  mTriggerFollows(                                                              cfg.getParameter<std::vector<std::string> >("triggerFollow")),
+  mTriggerFlwNames(                                                             cfg.getParameter<std::vector<std::string> >("triggerFollow")),
+  mFilterBits(mayConsume<edm::TriggerResults>(                                 cfg.getUntrackedParameter<edm::InputTag>("filterFlags",edm::InputTag("")))),
   mTriggerBits(mayConsume<edm::TriggerResults>(                                    cfg.getUntrackedParameter<edm::InputTag>("triggerResults",edm::InputTag("")))),
   mTriggerHLTObjs(mayConsume<pat::TriggerObjectStandAloneCollection>(              cfg.getUntrackedParameter<edm::InputTag>("triggerHLTObjs",edm::InputTag("")))),
   mTriggerL1Objs(mayConsume<BXVector<l1t::Jet> >(                                  cfg.getUntrackedParameter<edm::InputTag>("triggerL1Objs",edm::InputTag("")))),
@@ -58,8 +58,7 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   mTriggerPrescales(consumes<pat::PackedTriggerPrescales>(                                  cfg.getParameter<edm::InputTag>("prescales"))),
   mTriggerPrescalesL1Min(consumes<pat::PackedTriggerPrescales>(                             cfg.getParameter<edm::InputTag>("prescalesL1Min"))),
   mTriggerPrescalesL1Max(consumes<pat::PackedTriggerPrescales>(                             cfg.getParameter<edm::InputTag>("prescalesL1Max"))),
-  //mHBHENoiseFilterResultLabel(mayConsume<bool>(                                    cfg.getUntrackedParameter<edm::InputTag>("HBHENoiseFilterResultLabel",edm::InputTag(""))    )),
-  //mHBHENoiseFilterResultNoMinZLabel(mayConsume<bool>(                              cfg.getUntrackedParameter<edm::InputTag>("HBHENoiseFilterResultNoMinZLabel",edm::InputTa    g("")))),
+  mHBHENoiseFilterResultNoMinZLabel(mayConsume<bool>(                              cfg.getUntrackedParameter<edm::InputTag>("HBHENoiseFilterResultNoMinZLabel",edm::InputTag("")))),
   mCands(mayConsume<pat::PackedCandidateCollection>(edm::InputTag("packedPFCandidates"))),
   mHLTPrescale(cfg, consumesCollector(), *this)
 {
@@ -82,6 +81,7 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   cout << "Up nhf " << mULimNHF << endl;
   cout << "Lo nef " << mLLimNEF << endl;
   cout << "Lo nhf " << mLLimNHF << endl;
+  mNewTrigs = false;
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void ProcessedTreeProducerBTag::beginJob()
@@ -100,23 +100,45 @@ void ProcessedTreeProducerBTag::endJob() {}
 //////////////////////////////////////////////////////////////////////////////////////////
 void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup const& iSetup)
 {
-  if (mIsMCarlo) return;
   bool changed(true);
   if (mHLTConfig.init(iRun,iSetup,mProcessName,changed) and mHLTPrescale.init(iRun, iSetup, mProcessName, changed) ) {
     if (!changed) return;
-    cout<<"New trigger menu found !!!"<<endl;
+    cout << "Running on global tag " << mHLTConfig.globalTag() << "!!!" << endl;
+    if (mIsMCarlo) return;
+    cout << "New trigger menu found!!!" << endl;
+    mNewTrigs = true;
     mTriggerIndex.clear();
+    mTriggerFlwIndex.clear();
     const unsigned int n(mHLTConfig.size());
-    // We select the triggers that are studied later on
+    // We check out what triggers are to be actively monitored
     for (unsigned itrig=0; itrig<mTriggerNames.size(); ++itrig) {
       auto &trgName = mTriggerNames[itrig];
       auto trgIdx = mHLTConfig.triggerIndex(trgName);
-      mTriggerIndex.push_back(trgIdx);
-      mTriggerNamesHisto->Fill(trgName.c_str(),1);
+      cout << "Actively monitored trigger " << mTriggerNames[itrig] << " " << trgIdx << " ";
+      if (trgIdx >= n) {
+        cout << "does not exist in the current menu" << endl;
+        mTriggerIndex.push_back(0);
+        mTriggerNamesHisto->Fill(trgName.c_str(),-1);
+      } else {
+        cout << "exists" <<endl;
+        mTriggerIndex.push_back(trgIdx);
+        mTriggerNamesHisto->Fill(trgName.c_str(),1);
+      }
       mTriggerPassHisto->Fill(trgName.c_str(),0);
-      cout<<mTriggerNames[itrig]<<" "<<trgIdx<<" ";
-      if (trgIdx >= n) cout<<"does not exist in the current menu"<<endl;
-      else cout<<"exists"<<endl;
+    }
+    // These triggers are not saved in the current run, but we save the events with these for compatibility reasons.
+    // Usage example: when AK4 and AK8 jets are saved into separate files, we still want the same events to be available in both.
+    for (unsigned itrig=0; itrig<mTriggerFlwNames.size(); ++itrig) {
+      auto &trgName = mTriggerFlwNames[itrig];
+      auto trgIdx = mHLTConfig.triggerIndex(trgName);
+      cout << "Passively monitored trigger " << mTriggerFlwNames[itrig] << " " << trgIdx << " ";
+      if (trgIdx >= n) {
+        cout << "does not exist in the current menu" << endl;
+        mTriggerFlwIndex.push_back(-1);
+      } else {
+        cout << "exists" <<endl;
+        mTriggerFlwIndex.push_back(trgIdx);
+      }
     }
 
     if (mPrintTriggerMenu) {
@@ -124,9 +146,7 @@ void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup 
       mHLTConfig.dump("Triggers");
     }
   } else {
-    cout << "ProcessedTreeProducerBTag::analyze:"
-         << " config extraction failure with process name "
-         << mProcessName << endl;
+    cout << "ProcessedTreeProducerBTag::analyze: config extraction failure with process name " << mProcessName << endl;
   }
 }
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -137,7 +157,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   vector<float> GenFlavour;
   vector<float> GenHadronFlavour;
   QCDEventHdr mEvtHdr;
-  QCDMET mPFMet_t1, mPFMet_t0pc, mPFMet_t0pct1;
+  QCDMET mPFMet_t1, mPFMet_t0, mPFMet_t0t1;
 
   bool save_event=false;
   
@@ -152,9 +172,19 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   event.getByToken(mBeamSpot,beamSpot);
   if (beamSpot.isValid()) mEvtHdr.setBS(beamSpot->x0(),beamSpot->y0(),beamSpot->z0());
   else mEvtHdr.setBS(-999,-999,-999);
-  
+
+  //-------------- HCAL Noise Summary -----------------------------
+  if (mIsMCarlo) {
+    mEvtHdr.setHCALNoiseNoMinZ(true);
+  } else {
+    Handle<bool> noiseSummary_NoMinZ;
+    event.getByToken(mHBHENoiseFilterResultNoMinZLabel, noiseSummary_NoMinZ);
+    mEvtHdr.setHCALNoiseNoMinZ(*noiseSummary_NoMinZ);
+  }
+
   //-------------- Trigger Info ----------------------------------- 
   edm::Handle<edm::TriggerResults> triggerBits;
+  edm::Handle<edm::TriggerResults> filterBits;
   edm::Handle<pat::TriggerObjectStandAloneCollection> triggerHLTObjs;
   edm::Handle<BXVector<l1t::Jet> > triggerL1Objs;
   edm::Handle<BXVector<l1t::EtSum> > triggerL1HTObjs;
@@ -162,12 +192,12 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   edm::Handle<pat::PackedTriggerPrescales> triggerPrescalesL1Max;
   edm::Handle<pat::PackedTriggerPrescales> triggerPrescalesL1Min;
   
-  if (!mIsMCarlo){
+  if (!mIsMCarlo) {
     map<string, vector<LorentzVector> > vvHLT;
     vector<vector<LorentzVector> > mL1Objs, mHLTObjs;  
-    vector<int> L1Prescales,HLTPrescales,Fired;                                                                                                                          
-
+    vector<int> L1Prescales,HLTPrescales,Fired;
     event.getByToken(mTriggerBits, triggerBits);
+    event.getByToken(mFilterBits, filterBits);
     event.getByToken(mTriggerHLTObjs, triggerHLTObjs);
     event.getByToken(mTriggerL1Objs, triggerL1Objs);
     event.getByToken(mTriggerL1HTObjs, triggerL1HTObjs);
@@ -175,45 +205,98 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     event.getByToken(mTriggerPrescalesL1Min, triggerPrescalesL1Min);
     event.getByToken(mTriggerPrescalesL1Max, triggerPrescalesL1Max);
     
-    //Variables
-    unsigned fireprim = 0;
-    unsigned emptyprim = 0; 
-    unsigned fireoth = 0;
-    unsigned emptyoth = 0;
     const edm::TriggerNames &names = event.triggerNames(*triggerBits);
-    for (unsigned int itrig=0; itrig<triggerBits->size(); ++itrig) {
-      // Stop when all trigger names are found
-      if ((fireprim+emptyprim==mTriggerNames.size()) and (emptyoth+fireoth==mTriggerFollows.size())) break;
-      // Look for the current trigger within interesting triggers
-      string trgName = string(names.triggerName(itrig));
-      auto place = std::find(mTriggerNames.begin(),mTriggerNames.end(),trgName);
-      if (place!=mTriggerNames.end()) {
-        int pidx = place-mTriggerNames.begin();
-        
-        if (triggerBits->accept(itrig)) {
-          L1Prescales.push_back(max(triggerPrescalesL1Max->getPrescaleForIndex(itrig),triggerPrescalesL1Min->getPrescaleForIndex(itrig)));
-          HLTPrescales.push_back(triggerPrescales->getPrescaleForIndex(itrig));
-          mTriggerPassHisto->Fill(trgName.c_str(),1);
-          Fired.push_back(pidx);
-          if (vvHLT.find(trgName)==vvHLT.end()) vvHLT[trgName] = vector<LorentzVector>();
-          ++fireprim;
-        } else {
-          ++emptyprim;
+    const edm::TriggerNames &filterNames = event.triggerNames(*filterBits);
+    if (mNewTrigs) {
+      cout << "Flags:" << endl;
+      mFilterIndex.clear();
+      for (auto &flt : mFilterNames) {
+        int fltIdx = -1;
+        for (unsigned int itrig=0; itrig<filterBits->size(); ++itrig) {
+          string filterName = filterNames.triggerName(itrig);
+          if (filterName==flt) {
+            fltIdx = itrig;
+            break;
+          }
         }
-      } else { 
-        // Check if a "followed" trigger has fired
-        auto fplace = std::find(mTriggerFollows.begin(),mTriggerFollows.end(),trgName);
-        if (fplace!=mTriggerFollows.end()) {
-          if (triggerBits->accept(itrig)) ++fireoth;
-          else ++emptyoth;
+        mFilterIndex.push_back(fltIdx);
+        cout << "MET filter " << flt;
+        if (fltIdx==-1) cout << " not found! :(" << endl;
+        else cout << " found! :)" << endl;
+      }
+      // When the triggers are changed, check that the info we got from hltConfig is good
+      for (auto trgIdx = 0u; trgIdx<mTriggerIndex.size(); ++trgIdx) {
+        int itrig = mTriggerIndex[trgIdx];
+        if (itrig<0) continue;
+
+        string trgName1 = mTriggerNames[trgIdx];
+        string trgName2 = names.triggerName(itrig);
+        if (trgName1!=trgName2) cout << "HOX! trigger name mismatch " << trgName1 << " " << trgName2 << endl;
+      }
+      cout << "Actively monitored triggers checked!" << endl;
+      for (auto trgIdx = 0u; trgIdx<mTriggerFlwIndex.size(); ++trgIdx) {
+        int itrig = mTriggerFlwIndex[trgIdx];
+        if (itrig<0) continue;
+
+        string trgName1 = mTriggerFlwNames[trgIdx];
+        string trgName2 = names.triggerName(itrig);
+        if (trgName1!=trgName2) cout << "HOX! trigger name mismatch " << trgName1 << " " << trgName2 << endl;
+      }
+      cout << "Passively monitored triggers checked!" << endl;
+      mNewTrigs = false;
+    }
+
+    for (auto iflt = 0u; iflt<mFilterIndex.size(); ++iflt) {
+      int fltIdx = mFilterIndex[iflt];
+      if (fltIdx<0) continue; 
+      
+      string fltName = filterNames.triggerName(fltIdx);
+      if (fltName!=mFilterNames[iflt]) {
+        cout << "Mismatch in filter names: " << mFilterNames[iflt] << " " << fltName << endl;
+      } else if (!filterBits->accept(fltIdx)) {
+        // A filter is allowed to reject the event
+        return;
+      }
+    }
+
+    // Trigger counts
+    unsigned fire = 0;
+    unsigned fireflw = 0;
+    // Primary triggers
+    for (auto trgIdx = 0u; trgIdx<mTriggerIndex.size(); ++trgIdx) {
+      int itrig = mTriggerIndex[trgIdx]; 
+      if (itrig<0) continue;
+
+      if (triggerBits->accept(itrig)) {
+        string trgName = mTriggerNames[trgIdx];      
+        L1Prescales.push_back(max(triggerPrescalesL1Max->getPrescaleForIndex(itrig),triggerPrescalesL1Min->getPrescaleForIndex(itrig)));
+        HLTPrescales.push_back(triggerPrescales->getPrescaleForIndex(itrig));
+        mTriggerPassHisto->Fill(trgName.c_str(),1);
+        Fired.push_back(trgIdx);
+        if (vvHLT.find(trgName)==vvHLT.end()) vvHLT[trgName] = vector<LorentzVector>();
+        ++fire;
+      }
+    }
+    if (fire==0) {
+      // When the primary trigger has not fired, check if a "followed" secondary trigger has fired
+      for (auto trgIdx = 0u; trgIdx<mTriggerFlwIndex.size(); ++trgIdx) {
+        int itrig = mTriggerFlwIndex[trgIdx]; 
+        if (itrig<0) continue;
+
+        if (triggerBits->accept(itrig)) {
+          string trgName = mTriggerFlwNames[trgIdx];        
+          if (vvHLT.find(trgName)==vvHLT.end()) vvHLT[trgName] = vector<LorentzVector>();
+          ++fireflw;
         }
       }
     }
+    // For convenience reasons, we check the order
     sort(Fired.begin(),Fired.end());
-    // If none of the monitored triggers have fired, skip this as a redundant event
-    if (fireprim==0 and fireoth==0) return;
-    
-    if (fireprim>0) {
+    // If none of the actively/passively monitored triggers have fired, skip this as a redundant event
+    if (fire==0 and fireflw==0) return;
+
+    // The trigger objects are saved only when the actively monitored trigger has fired (in ZB events we pay no attention)
+    if (fire>0 and !mZB) {
       // HLT sector
       regex pfjet(Form("HLT_%sPFJet([0-9]*)_v([0-9]*)",mAK4 ? "" : "AK8"));
       regex jetht("HLT_PFHT([0-9]*)_v[0-9]*");
@@ -660,17 +743,15 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   //---------------- met ---------------------------------------------
   Handle<pat::METCollection> pfmett1;
   event.getByToken(mPFMETt1, pfmett1);
+  // MET T1 is available by default in MINIAOD
   const pat::MET &mett1 = pfmett1->front();
   mPFMet_t1.setVar(mett1.et(),mett1.sumEt(),mett1.phi());
-  cout << "T1: " << mett1.et() << endl;
-  auto v1 = mett1.corP2(pat::MET::Type1);
-  cout << "T1: " << v1.pt() << endl;
-  auto v2 = mett1.corP2(pat::MET::Raw);
-  cout << "RAW: " << v2.pt() << endl;
-  auto v3 = mett1.corP2(pat::MET::Type01);
-  cout << "T01: " << v3.pt() << endl; 
-  auto v4 = mett1.corP2(pat::MET::Type01XY);
-  cout << "T01XY: " << v4.pt() << endl;
+  // MET T0 is obtained through a custom patch
+  auto mett0 = mett1.corP2(pat::MET::Type0);
+  mPFMet_t0.setVar(mett0.pt(),mett1.corSumEt(pat::MET::Type0),mett0.phi());
+  // MET T0T1 is found using standard routines
+  auto mett0t1 = mett1.corP2(pat::MET::Type01);
+  mPFMet_t0t1.setVar(mett0t1.pt(),mett1.corSumEt(pat::MET::Type01),mett0t1.phi());
  
   //-------------- fill the tree -------------------------------------
   sort(mPFJets.begin(),mPFJets.end(),sort_pfjets);
@@ -681,7 +762,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     //mEvent->setGenFlavour(GenFlavour);
     //mEvent->setGenHadronFlavour(GenHadronFlavour);
   }
-  mEvent->setPFMET(mPFMet_t1,mPFMet_t1,mPFMet_t1);
+  mEvent->setPFMET(mPFMet_t1,mPFMet_t0,mPFMet_t0t1);
 
   if (save_event) {
     mTree->Fill();
