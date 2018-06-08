@@ -192,12 +192,11 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                srcPFRho                  = cms.InputTag('fixedGridRhoFastjetAll'),
                                srcPULabel                = cms.untracked.InputTag('addPileupInfo'),
                                ## preselection cuts #########################
-                               maxY                      = cms.double(5.0),
+                               maxEta                    = cms.double(5.0),
                                minPFPt                   = cms.double(10.0),
                                minPFPtThirdJet           = cms.double(5.0),
-                               minNPFJets                = cms.int32(1),
+                               minNPFJets                = cms.uint32(1),
                                minGenPt                  = cms.untracked.double(20.0),
-                               minJJMass                 = cms.double(-1),
                                ## trigger (dummy) ###########################
                                triggerName               = cms.vstring(''), 
                                ## gen services ##############################

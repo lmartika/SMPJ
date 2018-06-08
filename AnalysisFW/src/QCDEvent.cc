@@ -130,14 +130,3 @@ float QCDEvent::pfchsmjjcor(int k,int src)
     return ((1+sign*unc0)*P0+(1+sign*unc1)*P1).mass();
   }
 }
-//---------------------------------------------------
-float QCDEvent::pfmjjgen()
-{
-  if (PFJetsCHS_.size() < 2)
-    return 0.0;
-  else {
-    const LorentzVector& P0 = PFJetsCHS_[0].genp4();
-    const LorentzVector& P1 = PFJetsCHS_[1].genp4();
-    return (P0+P1).mass();
-  }
-}

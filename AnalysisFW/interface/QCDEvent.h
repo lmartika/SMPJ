@@ -34,9 +34,9 @@ class QCDEvent
       void setPrescales(const std::vector<int>& fPreL1, const std::vector<int>& fPreHLT) {L1Prescale_ = fPreL1; HLTPrescale_ = fPreHLT;}
       void setTrigDecision(const std::vector<int>& fTrigDecision) {TriggerDecision_ = fTrigDecision;}
 
-      void setGenFlavour(const std::vector<float> GenFlavour) {genFlavour_= GenFlavour;}
-      void setGenFlavourHadron(const std::vector<float> GenFlavourHadron) {genFlavourHadron_= GenFlavourHadron;}
-      void setGenFlavourPhysicsDef(const std::vector<float> GenPartonFlavourPhysicsDef) {genFlavourPartonPhysicsDef_= GenPartonFlavourPhysicsDef;}
+      void setGenFlavour(const std::vector<int> GenFlavour) {genFlavour_= GenFlavour;}
+      void setGenFlavourHadron(const std::vector<int> GenFlavourHadron) {genFlavourHadron_= GenFlavourHadron;}
+      void setGenFlavourPhysicsDef(const std::vector<int> GenPartonFlavourPhysicsDef) {genFlavourPartonPhysicsDef_= GenPartonFlavourPhysicsDef;}
 
       //------------ Get methods -------------------------------
       unsigned int nTriggers()                         const {return TriggerDecision_.size();}
@@ -49,15 +49,14 @@ class QCDEvent
       int preL1(int i)                                 const {return L1Prescale_[i];}
       int preHLT(int i)                                const {return HLTPrescale_[i];}
 
-      float GenJetFlavour(int i)                       const {return genFlavour_[i];}
-      float GenHadronJetFlavour(int i)                       const {return genFlavourHadron_[i];}
-      float GenPartonPhysicsDefJetFlavour(int i)                       const {return genFlavourPartonPhysicsDef_[i];}
+      int GenJetFlavour(int i)                         const {return genFlavour_[i];}
+      int GenHadronJetFlavour(int i)                   const {return genFlavourHadron_[i];}
+      int GenPartonPhysicsDefJetFlavour(int i)         const {return genFlavourPartonPhysicsDef_[i];}
 
       float pfmjj();
       float genmjj();
       float pfchsmjjcor(int unc);
       float pfchsmjjcor(int unc,int src);
-      float pfmjjgen();
       const QCDMET&        pfmet()                     const {return PFMet_;}
       const LorentzVector& hltobj(int itrig, int iobj) const {return (HLTObj_[itrig])[iobj];}
       const LorentzVector& l1obj(int itrig, int iobj)  const {return (L1Obj_[itrig])[iobj];}
@@ -89,8 +88,8 @@ class QCDEvent
       std::vector<LorentzVector>               GenJets_;
       //---- PFJetsCHS -----------------------------------------------
       std::vector<QCDPFJet>                    PFJetsCHS_;
-      std::vector<float>  genFlavour_;
-      std::vector<float>  genFlavourHadron_;
-      std::vector<float>  genFlavourPartonPhysicsDef_;
+      std::vector<int>  genFlavour_;
+      std::vector<int>  genFlavourHadron_;
+      std::vector<int>  genFlavourPartonPhysicsDef_;
 };
 #endif

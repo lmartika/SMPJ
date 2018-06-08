@@ -31,7 +31,7 @@ class QCDPFJetBTag : public QCDJet {
     float pfBoosted_;
     float pfCombinedCvsL_, pfCombinedCvsB_;
     float pfDeepCSVb_, pfDeepCSVc_, pfDeepCSVl_, pfDeepCSVbb_;
-    //float pfDeepFlavourb_, pfDeepFlavourc_, pfDeepFlavourg_, pfDeepFlavourl_, pfDeepFlavourbb_;
+    float pfDeepFlavourb_, pfDeepFlavourc_, pfDeepFlavourg_, pfDeepFlavourl_, pfDeepFlavourbb_;
     float pfBTag_JetProb_;
     float pfBTag_CombInclSecVtxV2_;
     float pfBTag_CombMVAV2_; 

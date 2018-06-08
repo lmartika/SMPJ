@@ -7,21 +7,20 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   // Cut params
   mGoodVtxNdof(                                                                                    cfg.getParameter<double>("goodVtxNdof")),
   mGoodVtxZ(                                                                                       cfg.getParameter<double>("goodVtxZ")),
-  mMinNPFJets(                                                                                        cfg.getParameter<int>("minNPFJets")),
+  mMinNPFJets(                                                                               cfg.getParameter<unsigned int>("minNPFJets")),
   mMinPFPt(                                                                                        cfg.getParameter<double>("minPFPt")),
   mMinPFPtThirdJet(                                                                                cfg.getParameter<double>("minPFPtThirdJet")),
   mMinGenPt(                                                                              cfg.getUntrackedParameter<double>("minGenPt",20)),
-  mMaxY(                                                                                           cfg.getParameter<double>("maxY")),
-  mMinJJMass(                                                                                      cfg.getParameter<double>("minJJMass")),
+  mMaxEta(                                                                                         cfg.getParameter<double>("maxEta")),
   // Misc
-  mPFPayloadName(                                                                          cfg.getParameter<std::string>("PFPayloadNameCHS")),
+  mPFPayloadName(                                                                             cfg.getParameter<std::string>("PFPayloadNameCHS")),
   mRunYear(                                                                          cfg.getUntrackedParameter<std::string>("runYear","2016")),
-  mPFJetPUID(                                                                              cfg.getParameter<std::string>("pfchsjetpuid")),
-  mPFJECUncSrc(                                                                   cfg.getUntrackedParameter<std::string>("jecUncSrcCHS","")),
+  mPFJetPUID(                                                                                 cfg.getParameter<std::string>("pfchsjetpuid")),
+  mPFJECUncSrc(                                                                      cfg.getUntrackedParameter<std::string>("jecUncSrcCHS","")),
   mPFJECUncSrcNames(                                                            cfg.getParameter<std::vector<std::string> >("jecUncSrcNames")),
   mOfflineVertices(mayConsume<reco::VertexCollection>(                                      cfg.getParameter<edm::InputTag>("offlineVertices"))),
   mBeamSpot(mayConsume<reco::BeamSpot>(                                                     cfg.getParameter<edm::InputTag>("beamSpot"))),
-  mPFJetsName(consumes<edm::View<pat::Jet>>(                                             cfg.getParameter<edm::InputTag>("pfjetschs"))),
+  mPFJetsName(consumes<edm::View<pat::Jet>>(                                                cfg.getParameter<edm::InputTag>("pfjetschs"))),
   // Rho
   mSrcCaloRho(mayConsume<double>(                                                           cfg.getParameter<edm::InputTag>("srcCaloRho"))),
   mSrcPFRho(mayConsume<double>(                                                             cfg.getParameter<edm::InputTag>("srcPFRho"))),
@@ -42,9 +41,9 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   // Trigger
   mProcessName(                                                                      cfg.getUntrackedParameter<std::string>("processName","")),
   mTriggerNames(                                                                cfg.getParameter<std::vector<std::string> >("triggerName")),
+  mTriggerFlwNames(                                                             cfg.getParameter<std::vector<std::string> >("triggerFollow")),
   mTriggerResultsTag(mayConsume<edm::TriggerResults>(                              cfg.getUntrackedParameter<edm::InputTag>("triggerResults",edm::InputTag("")))),
   mTriggerEventTag(mayConsume<trigger::TriggerEvent>(                              cfg.getUntrackedParameter<edm::InputTag>("triggerEvent",edm::InputTag("")))),
-  mHBHENoiseFilterResultLabel(mayConsume<bool>(                                    cfg.getUntrackedParameter<edm::InputTag>("HBHENoiseFilterResultLabel",edm::InputTag("")))),
   mHBHENoiseFilterResultNoMinZLabel(mayConsume<bool>(                              cfg.getUntrackedParameter<edm::InputTag>("HBHENoiseFilterResultNoMinZLabel",edm::InputTag("")))),
   mHLTPrescale(cfg, consumesCollector(), *this)
 {}
@@ -85,86 +84,113 @@ void ProcessedTreeProducerBTag::endJob() {}
 //////////////////////////////////////////////////////////////////////////////////////////
 void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup const& iSetup)
 {
+  bool changed = true;
+  if (!(mHLTConfig.init(iRun,iSetup,mProcessName,changed) and mHLTPrescale.init(iRun, iSetup, mProcessName, changed))) {
+    cout << "ProcessedTreeProducerBTag::analyze: config extraction failure with process name " << mProcessName << endl;
+    return;
+  }
+  if (!changed) return;
+  cout << "Running on global tag " << mHLTConfig.globalTag() << "!!!" << endl;
   if (mIsMCarlo) return;
-  bool changed(true);
-  if (mHLTConfig.init(iRun,iSetup,mProcessName,changed) and mHLTPrescale.init(iRun, iSetup, mProcessName, changed)) {
-    if (!changed) return;
-    cout<<"New trigger menu found !!!"<<endl;
-    mTriggerIndex.clear();
-    const unsigned int n(mHLTConfig.size());
-    // We select the triggers that are studied later on
-    for (unsigned itrig=0; itrig<mTriggerNames.size(); ++itrig) {
-      auto &trgName = mTriggerNames[itrig];
-      auto trgIdx = mHLTConfig.triggerIndex(trgName);
+  cout<<"New trigger menu found !!!"<<endl;
+
+  mTriggerIndex.clear();
+  mTriggerFlwIndex.clear();
+  const unsigned int n = mHLTConfig.size();
+  // We check out what triggers are to be actively monitored
+  for (unsigned itrig=0; itrig<mTriggerNames.size(); ++itrig) {
+    auto &trgName = mTriggerNames[itrig];
+    auto trgIdx = mHLTConfig.triggerIndex(trgName);
+    cout << "Actively monitored trigger " << mTriggerNames[itrig] << " " << trgIdx << " ";
+    if (trgIdx >= n) {
+      cout << "does not exist in the current menu" << endl;
+      mTriggerIndex.push_back(-1);
+      mTriggerNamesHisto->Fill(trgName.c_str(),0);
+    } else {
+      cout << "exists" <<endl;
       mTriggerIndex.push_back(trgIdx);
       mTriggerNamesHisto->Fill(trgName.c_str(),1);
-      mTriggerPassHisto->Fill(trgName.c_str(),0);
-      cout<<mTriggerNames[itrig]<<" "<<trgIdx<<" ";
-      if (trgIdx >= n) cout<<"does not exist in the current menu"<<endl;
-      else cout<<"exists"<<endl;
     }
+    mTriggerPassHisto->Fill(trgName.c_str(),0);
+  }
+  // These triggers are not saved in the current run, but we save the events with these for compatibility reasons.
+  // Usage example: when AK4 and AK8 jets are saved into separate files, we still want the same events to be available in both.
+  for (unsigned itrig=0; itrig<mTriggerFlwNames.size(); ++itrig) {
+    auto &trgName = mTriggerFlwNames[itrig];
+    auto trgFlwIdx = mHLTConfig.triggerIndex(trgName);
+    cout << "Passively monitored trigger " << mTriggerFlwNames[itrig] << " " << trgFlwIdx << " ";
+    if (trgFlwIdx >= n) {
+      cout << "does not exist in the current menu" << endl;
+      mTriggerFlwIndex.push_back(-1);
+    } else {
+      cout << "exists" <<endl;
+      mTriggerFlwIndex.push_back(trgFlwIdx);
+    }
+  }
 
-    if (mPrintTriggerMenu) {
-      cout << "Available TriggerNames are: " << endl;
-      mHLTConfig.dump("Triggers");
-    }
-  } else {
-    cout << "ProcessedTreeProducerBTag::analyze: config extraction failure with process name " << mProcessName << endl;
+  if (mPrintTriggerMenu) {
+    cout << "Available TriggerNames are: " << endl;
+    mHLTConfig.dump("Triggers");
   }
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup const& iSetup)
 {
-  vector<QCDPFJet>      mPFJets;
-  QCDEventHdr mEvtHdr;
-  QCDMET mPFMet_t1, mPFMet_t0pc, mPFMet_t0pct1;
+  vector<QCDPFJet>      qPFJets;
+  QCDEventHdr           qEvtHdr;
+  QCDMET                qPFMet_t1, qPFMet_t0pc, qPFMet_t0pct1;
 
   //-------------- Basic Event Info ------------------------------
-  mEvtHdr.setRun(event.id().run());
-  mEvtHdr.setEvt(event.id().event());
-  mEvtHdr.setLumi(event.luminosityBlock());
-  mEvtHdr.setBunch(event.bunchCrossing());
+  qEvtHdr.setRun(event.id().run());
+  qEvtHdr.setEvt(event.id().event());
+  qEvtHdr.setLumi(event.luminosityBlock());
+  qEvtHdr.setBunch(event.bunchCrossing());
+
   //-------------- Beam Spot --------------------------------------
   Handle<reco::BeamSpot> beamSpot;
   event.getByToken(mBeamSpot,beamSpot);
-  if (beamSpot.isValid()) mEvtHdr.setBS(beamSpot->x0(),beamSpot->y0(),beamSpot->z0());
-  else mEvtHdr.setBS(-999,-999,-999);
+  if (beamSpot.isValid()) qEvtHdr.setBS(beamSpot->x0(),beamSpot->y0(),beamSpot->z0());
+  else qEvtHdr.setBS(-999,-999,-999);
 
   //-------------- HCAL Noise Summary -----------------------------
   if (mIsMCarlo) {
-    mEvtHdr.setHCALNoise(true);
-    mEvtHdr.setHCALNoiseNoMinZ(true);
+    qEvtHdr.setHCALNoiseNoMinZ(true);
   } else { 
-    Handle<bool> noiseSummary;
     Handle<bool> noiseSummary_NoMinZ;
-
-    event.getByToken(mHBHENoiseFilterResultLabel, noiseSummary);
-    mEvtHdr.setHCALNoise(*noiseSummary);
-
     event.getByToken(mHBHENoiseFilterResultNoMinZLabel, noiseSummary_NoMinZ);
-    mEvtHdr.setHCALNoiseNoMinZ(*noiseSummary_NoMinZ);
+    qEvtHdr.setHCALNoiseNoMinZ(*noiseSummary_NoMinZ);
   }
+
   //-------------- Trigger Info -----------------------------------
   if (!mIsMCarlo) {
     vector<int> L1Prescales,HLTPrescales,Fired;
-    vector<vector<LorentzVector> > mL1Objects, mHLTObjects;
-    event.getByToken(mTriggerResultsTag,mTriggerResultsHandle);
-    if (!mTriggerResultsHandle.isValid()) {
-      cout << "ProcessedTreeProducerBTag::analyze: Error in getting TriggerResults product from Event!" << endl;
+    vector<vector<LorentzVector> > qL1Objs, qHLTObjs;
+
+    edm::Handle<edm::TriggerResults>   hTriggerResults;
+    edm::Handle<trigger::TriggerEvent> hTriggerEvent;
+
+    event.getByToken(mTriggerResultsTag,hTriggerResults);
+    event.getByToken(mTriggerEventTag,hTriggerEvent);
+    // Sanity checks
+    if (!hTriggerResults.isValid()) {
+      cout << "Error: in fetching TriggerResults!" << endl;
       return;
     }
-    event.getByToken(mTriggerEventTag,mTriggerEventHandle);
-    if (!mTriggerEventHandle.isValid()) {
-      cout << "ProcessedTreeProducerBTag::analyze: Error in getting TriggerEvent product from Event!" << endl;
+    if (!hTriggerEvent.isValid()) {
+      cout << "Error in fetching TriggerEvent!" << endl;
       return;
     }
-    assert(mTriggerResultsHandle->size() == mHLTConfig.size());
+    assert(hTriggerResults->size()==mHLTConfig.size());
+
     //------ loop over triggers selected and available ---------
-    unsigned firecount = 0;
-    for (unsigned itrig=0;itrig<mTriggerNames.size();itrig++) {
+    unsigned fire = 0;
+    for (auto itrig = 0u; itrig<mTriggerNames.size(); ++itrig) {
+      int trgIdx = mTriggerIndex[itrig];
+      if (trgIdx<0) continue; // Trigger not present in file, OK!
+
       auto &trgName = mTriggerNames[itrig];
       vector<LorentzVector> vvL1,vvHLT;
-      bool accept = mTriggerResultsHandle->accept(mTriggerIndex[itrig]);
+      bool accept = hTriggerResults->accept(trgIdx);
  
       std::pair<std::vector<std::pair<std::string,int> >,int> detailedPrescaleInfo = mHLTPrescale.prescaleValuesInDetail(event, iSetup, trgName);
       int preHLT = detailedPrescaleInfo.second;
@@ -181,111 +207,114 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       int preL1 = minind < l1prescalevals.size() ? l1prescalevals.at(minind) : -1 ;
       
       ///end in detail
-      int tmpFired(0);
       if (accept) {
-        ++firecount;
+        L1Prescales.push_back(preL1);
+        HLTPrescales.push_back(preHLT);
         mTriggerPassHisto->Fill(trgName.c_str(),1);
-        tmpFired = 1;
-      }
-  
-      //--------- modules on this trigger path--------------
-      const vector<string>& moduleLabels(mHLTConfig.moduleLabels(mTriggerIndex[itrig]));
-      const unsigned int moduleIndex(mTriggerResultsHandle->index(mTriggerIndex[itrig]));
-      bool foundL1(false);
-      for(unsigned int j=0; j<=moduleIndex; ++j) {
-        const string& moduleLabel(moduleLabels[j]);
-        const string  moduleType(mHLTConfig.moduleType(moduleLabel));
-        //--------check whether the module is packed up in TriggerEvent product
-        const unsigned int filterIndex(mTriggerEventHandle->filterIndex(InputTag(moduleLabel,"",mProcessName)));
-        if (filterIndex<mTriggerEventHandle->sizeFilters()) {
-          const Vids& VIDS (mTriggerEventHandle->filterIds(filterIndex));
-          const Keys& KEYS(mTriggerEventHandle->filterKeys(filterIndex));
-          const size_type nI(VIDS.size());
-          const size_type nK(KEYS.size());
-          assert(nI==nK);
-          const size_type n(max(nI,nK));
-          const TriggerObjectCollection& TOC(mTriggerEventHandle->getObjects());
-          if (foundL1) {
-            for(size_type i=0; i!=n; ++i) {
-              const TriggerObject& TO(TOC[KEYS[i]]);
-              TLorentzVector P4;
-              P4.SetPtEtaPhiM(TO.pt(),TO.eta(),TO.phi(),TO.mass());
-              LorentzVector qcdhltobj(P4.Px(),P4.Py(),P4.Pz(),P4.E());
-              vvHLT.push_back(qcdhltobj);
+        Fired.push_back(itrig);
+        ++fire;
+        // Trigger objects are added if the trigger has fired:
+        //--------- modules on this trigger path--------------
+        const vector<string>& moduleLabels(mHLTConfig.moduleLabels(trgIdx));
+        const unsigned int moduleIndex(hTriggerResults->index(trgIdx));
+        bool foundL1(false);
+        for (unsigned int j=0; j<=moduleIndex; ++j) {
+          const string& moduleLabel(moduleLabels[j]);
+          const string  moduleType(mHLTConfig.moduleType(moduleLabel));
+          //--------check whether the module is packed up in TriggerEvent product
+          const unsigned int filterIndex(hTriggerEvent->filterIndex(InputTag(moduleLabel,"",mProcessName)));
+          if (filterIndex<hTriggerEvent->sizeFilters()) {
+            const Vids& VIDS(hTriggerEvent->filterIds(filterIndex));
+            const Keys& KEYS(hTriggerEvent->filterKeys(filterIndex));
+            const size_type nI(VIDS.size());
+            const size_type nK(KEYS.size());
+            assert(nI==nK);
+            const size_type n(max(nI,nK));
+            const TriggerObjectCollection& TOC(hTriggerEvent->getObjects());
+            if (foundL1) {
+              for(size_type i=0; i!=n; ++i) {
+                const TriggerObject& TO(TOC[KEYS[i]]);
+                TLorentzVector P4;
+                P4.SetPtEtaPhiM(TO.pt(),TO.eta(),TO.phi(),TO.mass());
+                LorentzVector qcdhltobj(P4.Px(),P4.Py(),P4.Pz(),P4.E());
+                vvHLT.push_back(qcdhltobj);
+              }
+            } else {
+              for(size_type i=0; i!=n; ++i) {
+                const TriggerObject& TO(TOC[KEYS[i]]);
+                TLorentzVector P4;
+                P4.SetPtEtaPhiM(TO.pt(),TO.eta(),TO.phi(),TO.mass());
+                LorentzVector qcdl1obj(P4.Px(),P4.Py(),P4.Pz(),P4.E());
+                vvL1.push_back(qcdl1obj);
+              }
+              foundL1 = true;
             }
-          } else {
-            for(size_type i=0; i!=n; ++i) {
-              const TriggerObject& TO(TOC[KEYS[i]]);
-              TLorentzVector P4;
-              P4.SetPtEtaPhiM(TO.pt(),TO.eta(),TO.phi(),TO.mass());
-              LorentzVector qcdl1obj(P4.Px(),P4.Py(),P4.Pz(),P4.E());
-              vvL1.push_back(qcdl1obj);
-            }
-            foundL1 = true;
           }
         }
-      }// loop over modules
-      Fired.push_back(tmpFired);
-      L1Prescales.push_back(preL1);
-      HLTPrescales.push_back(preHLT);
-      mL1Objects.push_back(vvL1);
-      mHLTObjects.push_back(vvHLT);
-    }// loop over trigger names
-    if (firecount==0) {
+        qL1Objs.push_back(vvL1);
+        qHLTObjs.push_back(vvHLT);
+      } // Trigger has fired 
+    } // Loop over trigger names
+    if (fire==0) {
       bool nofireoth = true;
-      for (unsigned itrig=0;itrig<mTriggerFollows.size();itrig++) {
-        if (mTriggerResultsHandle->accept(mTriggerIndex[itrig])) {
+      for (auto itrig = 0u; itrig<mTriggerFlwNames.size() ;++itrig) {
+        int trgIdx = mTriggerFlwIndex[itrig];
+        if (trgIdx<0) continue; // Skip the triggers not present (perfectly normal!)
+
+        if (hTriggerResults->accept(trgIdx)) {
           nofireoth = false;
           break;
         }
       }
+      // If none of the actively/passively monitored triggers have fired, skip this as a redundant event
       if (nofireoth) return;
     }
     mEvent->setTrigDecision(Fired);
     mEvent->setPrescales(L1Prescales,HLTPrescales);
-    mEvent->setL1Obj(mL1Objects);
-    mEvent->setHLTObj(mHLTObjects);
+    mEvent->setL1Obj(qL1Objs);
+    mEvent->setHLTObj(qHLTObjs);
   } // !isMCarlo
 
   //-------------- Vertex Info -----------------------------------
   Handle<reco::VertexCollection> recVtxs;
   event.getByToken(mOfflineVertices,recVtxs);
+
   //------------- reject events without reco vertices ------------
   int VtxGood(0);
   bool isPVgood(false);
   float PVx(0),PVy(0),PVz(0),PVndof(0);
-  for (VertexCollection::const_iterator i_vtx = recVtxs->begin(); i_vtx != recVtxs->end(); i_vtx++) {
-    int index = i_vtx-recVtxs->begin();
+  for (VertexCollection::const_iterator ivtx = recVtxs->begin(); ivtx != recVtxs->end(); ++ivtx) {
+    int index = ivtx-recVtxs->begin();
     if (index == 0) {
-      PVx    = i_vtx->x();
-      PVy    = i_vtx->y();
-      PVz    = i_vtx->z();
-      PVndof = i_vtx->ndof();
+      PVx    = ivtx->x();
+      PVy    = ivtx->y();
+      PVz    = ivtx->z();
+      PVndof = ivtx->ndof();
     }
-    if (!(i_vtx->isFake()) and i_vtx->ndof() >= mGoodVtxNdof and fabs(i_vtx->z()) <= mGoodVtxZ) {
+    if (!(ivtx->isFake()) and ivtx->ndof() >= mGoodVtxNdof and fabs(ivtx->z()) <= mGoodVtxZ) {
       if (index==0) isPVgood = true;
-      VtxGood++;
+      ++VtxGood;
     }
   }
-  mEvtHdr.setVertices(recVtxs->size(),VtxGood);
-  mEvtHdr.setPV(isPVgood,PVndof,PVx,PVy,PVz);
+  qEvtHdr.setVertices(recVtxs->size(),VtxGood);
+  qEvtHdr.setPV(isPVgood,PVndof,PVx,PVy,PVz);
 
   //-------------- Rho ------------------------------------------------
   Handle<double> rhoCalo;
   event.getByToken(mSrcCaloRho,rhoCalo);
   Handle<double> rhoPF;
   event.getByToken(mSrcPFRho,rhoPF);
-  mEvtHdr.setRho(*rhoCalo,*rhoPF);
+  qEvtHdr.setRho(*rhoCalo,*rhoPF);
 
   //-------------- Generator (incl. simulated PU) Info ----------------
   if (mIsMCarlo and mUseGenInfo) {
     Handle<GenEventInfoProduct> hEventInfo;
     Handle<std::vector<PileupSummaryInfo> > PupInfo;
     event.getByToken(mEventInfo, hEventInfo);
-    if (hEventInfo->hasBinningValues()) mEvtHdr.setPthat(hEventInfo->binningValues()[0]);
-    else mEvtHdr.setPthat(0);
+    if (hEventInfo->hasBinningValues()) qEvtHdr.setPthat(hEventInfo->binningValues()[0]);
+    else qEvtHdr.setPthat(0);
 
-    mEvtHdr.setWeight(hEventInfo->weight());
+    qEvtHdr.setWeight(hEventInfo->weight());
     event.getByToken(mSrcPU, PupInfo);
     int nbx = PupInfo->size();
     int ootpuEarly(0),ootpuLate(0),intpu(0);
@@ -301,62 +330,46 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
         Tnpv += PUI->getTrueNumInteractions();
       }
     }
-    mEvtHdr.setPU(nbx,ootpuEarly,ootpuLate,intpu);
-    mEvtHdr.setTrPu(Tnpv);
+    qEvtHdr.setPU(nbx,ootpuEarly,ootpuLate,intpu);
+    qEvtHdr.setTrPu(Tnpv);
   } else {
-    mEvtHdr.setPthat(0);
-    mEvtHdr.setWeight(0);
-    mEvtHdr.setPU(0,0,0,0);
-    mEvtHdr.setTrPu(0);
+    qEvtHdr.setPthat(0);
+    qEvtHdr.setWeight(0);
+    qEvtHdr.setPU(0,0,0,0);
+    qEvtHdr.setTrPu(0);
   }
-  mEvent->setEvtHdr(mEvtHdr);
+  mEvent->setEvtHdr(qEvtHdr);
 
   //---------------- GenJets ------------------------------------------
-  Handle<GenJetCollection>  genjets;
-  vector<int> genFlavour;
-  vector<int> genFlavourHadr;
-  vector<int> genFlavourPhys;
+  if (mUseLegacyTag) event.getByToken(mGenParticles, mGenParts);
   if (mIsMCarlo) {
-    // These are for local use - only a subset of the gen jets
-    vector<float> GenFlavour;
-    vector<float> GenFlavourHadr;
-    vector<float> GenFlavourPhys;
-    vector<LorentzVector> mGenJets;
     // Fetch the collections!
-    event.getByToken(mGenJetsName,genjets);
+    Handle<GenJetCollection>  genJets;
+    event.getByToken(mGenJetsName,genJets);
     edm::Handle<reco::JetFlavourInfoMatchingCollection> theJetFlavourInfos;
     event.getByToken(mJetFlavourInfosToken, theJetFlavourInfos );
     edm::Handle<reco::JetFlavourInfoMatchingCollection> theJetFlavourInfosPhysicsDef;
     event.getByToken(mJetFlavourInfosTokenPhysicsDef, theJetFlavourInfosPhysicsDef );
     // Genjet loop
-    auto i_gen = genjets->begin();
+    auto igen = genJets->begin();
     auto j = theJetFlavourInfos->begin();
     auto k = theJetFlavourInfosPhysicsDef->begin();
-    for (;i_gen!=genjets->end() and j!=theJetFlavourInfos->end() and k!=theJetFlavourInfosPhysicsDef->end();++i_gen,++j,++k) {
+    for (;igen!=genJets->end() and j!=theJetFlavourInfos->end() and k!=theJetFlavourInfosPhysicsDef->end();++igen,++j,++k) {
+      if (fabs(igen->eta()) > mMaxEta) continue;
+
       auto aInfo = j->second;
       auto bInfo = k->second;
-      int gflav = (mUseLegacyTag ? getMatchedPartonGen(event,i_gen) : aInfo.getPartonFlavour());
-      int gflavhad = aInfo.getHadronFlavour();
-      int gflavphy = bInfo.getPartonFlavour();
 
-      genFlavour.push_back(gflav);
-      genFlavourPhys.push_back(gflavphy);
-      genFlavourHadr.push_back(gflavhad);
-      if (i_gen->pt() > mMinGenPt && fabs(i_gen->y()) < mMaxY) {
-        mGenJets.push_back(i_gen->p4());
-        GenFlavour.push_back(gflav);
-        GenFlavourHadr.push_back(gflavhad);
-        GenFlavourPhys.push_back(gflavphy);
-      }
+      mGenJets.push_back(igen->p4());
+      mGenFlavour.push_back((mUseLegacyTag ? get_gjetpartonflav(event,igen) : aInfo.getPartonFlavour()));
+      mGenFlavourHadr.push_back(aInfo.getHadronFlavour());
+      mGenFlavourPhys.push_back(bInfo.getPartonFlavour());
     }
-    mEvent->setGenJets(mGenJets);
-    mEvent->setGenFlavour(GenFlavour);
-    mEvent->setGenFlavourHadron(GenFlavourHadr);
-    mEvent->setGenFlavourPhysicsDef(GenFlavourPhys);
   }
   
   //---------------- Jets ---------------------------------------------
-  // --------  Uncertainty part ----------------//
+
+  // Uncertainties
   edm::ESHandle<JetCorrectorParametersCollection> PFJetCorParColl;
   if (mPFPayloadName != "" and !mIsPFJecUncSet) {
     iSetup.get<JetCorrectionsRecord>().get(mPFPayloadName,PFJetCorParColl);
@@ -367,53 +380,53 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
         JetCorrectorParameters *parchs = new JetCorrectorParameters(mPFJECUncSrc,mPFJECUncSrcNames[isrc]);
         JetCorrectionUncertainty *tmpUnc = new JetCorrectionUncertainty(*parchs);
         mPFUncSrc.push_back(tmpUnc);
-      } // for(unsigned isrc=0;isrc<mPFJECUncSrcNames.size();isrc++)
-    } // if (mPFJECUncSrc != "")
+      } // Loop: uncertainty sources 
+    } // If uncertainty sources are given
     mIsPFJecUncSet = true;
-  } // if (mPFPayloadName != "" && !mIsPFJecUncSet)
-
+  } // PF payload is given and uncertainty sources not set
 
   //----------- PFJets   part -------------------------
-  edm::Handle<edm::View<pat::Jet> > patjetschs;
-  event.getByToken(mPFJetsName,patjetschs);
+  edm::Handle<edm::View<pat::Jet> > patJets;
+  event.getByToken(mPFJetsName,patJets);
 
   // A store for track-vertex association
   map<reco::TrackRef,int> trk2vtx;
-  //---- loop over all vertices ----------------------------
   for(unsigned ivtx = 0; ivtx < recVtxs->size(); ivtx++) {
-    //---- loop over the tracks associated with the vertex ---
-    if (!((*recVtxs)[ivtx].isFake()) && (*recVtxs)[ivtx].ndof() >= mGoodVtxNdof && fabs((*recVtxs)[ivtx].z()) <= mGoodVtxZ) {
-      for (auto i_vtxTrk = (*recVtxs)[ivtx].tracks_begin(); i_vtxTrk != (*recVtxs)[ivtx].tracks_end(); ++i_vtxTrk) {
-        //---- match the chsjet track to the track from the vertex ----
-        reco::TrackRef trkRef(i_vtxTrk->castTo<reco::TrackRef>());
+    if (!((*recVtxs)[ivtx].isFake()) and (*recVtxs)[ivtx].ndof() >= mGoodVtxNdof && fabs((*recVtxs)[ivtx].z()) <= mGoodVtxZ) {
+      for (auto ivtxTrk = (*recVtxs)[ivtx].tracks_begin(); ivtxTrk != (*recVtxs)[ivtx].tracks_end(); ++ivtxTrk) {
+        // Match the chsjet track to the track from the vertex
+        reco::TrackRef trkRef(ivtxTrk->castTo<reco::TrackRef>());
         trk2vtx[trkRef] = ivtx;
-      }
-    }
-  }
+      } // Vertex track loop
+    } // Good vertex
+  } // Vertex loop
     
-  for (auto ijet=patjetschs->begin(); ijet!=patjetschs->end(); ++ijet) { 
+  // Jet loop
+  int maxGenMatch = -1;
+  for (auto ijet = patJets->begin(); ijet != patJets->end(); ++ijet) { 
     if (!ijet->isPFJet()) continue;
 
-    //---- preselection -----------------
-    int jetNo = ijet-patjetschs->begin();
-    if (fabs(ijet->y()) > mMaxY or (ijet->pt() < (jetNo<3 ? mMinPFPtThirdJet : mMinPFPt))) continue;
+    // Preselection
+    int jetNo = ijet-patJets->begin();
+    if (fabs(ijet->eta()) > mMaxEta or (ijet->pt() < (jetNo<3 ? mMinPFPtThirdJet : mMinPFPt))) continue;
     
-    QCDPFJet qcdpfjetchs;
-    double scale = 1./ijet->jecFactor(0); // --- the value of the JEC factor
+    QCDPFJet qcdJet;
+    double scale = 1./ijet->jecFactor(0);
           
     //---- vertex association -----------
     float sumTrkPt(0.0);
     //---- Practical parameters for  jets
-    float sumTrkPtBetaPrime(0.0),sumTrkPtBeta(0.0),sumTrkPtBetaStar(0.0);
+    float sumTrkPtBetaPrime(0.0), sumTrkPtBeta(0.0), sumTrkPtBetaStar(0.0);
     
-    // Dunno how useful these are in chs jets...
+    // Track parameters by Juska. Might not be useful for chs jets.
     int mpuTrk(0), mlvTrk(0); // # of pile-up tracks & lead-vertex tracks ## Juska
     int mjtTrk(0); // multiplicity of _all_ tracks in jet (also vtx-unassociated!) ## Juska
   
+    // Loop: tracks of the jet
     auto PFCandidates = ijet->getPFConstituents();
-    //---- loop over the tracks of the jet (take the track associated to jet constituent) ----
     if (trk2vtx.size()>0) {
       vector<reco::TrackRef> usedtrk;
+      // Track fetched from PF Candidate
       for (auto &cand : PFCandidates) {
         auto trkRef = cand->trackRef();
         if (trkRef.isNonnull() and trkRef.isAvailable()) { 
@@ -458,9 +471,9 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       } // for: all tracks (non-chs included)
     } // if: tracks associated with vertices > 0
 
-    qcdpfjetchs.setBeta(sumTrkPt ? sumTrkPtBeta/sumTrkPt : 0.0);
-    qcdpfjetchs.setBetaStar(sumTrkPt ? sumTrkPtBetaStar/sumTrkPt : 0.0);
-    qcdpfjetchs.setBetaPrime(sumTrkPt ? sumTrkPtBetaPrime/sumTrkPt : 0.0);
+    qcdJet.setBeta(sumTrkPt ? sumTrkPtBeta/sumTrkPt : 0.0);
+    qcdJet.setBetaStar(sumTrkPt ? sumTrkPtBetaStar/sumTrkPt : 0.0);
+    qcdJet.setBetaPrime(sumTrkPt ? sumTrkPtBetaPrime/sumTrkPt : 0.0);
   
     //---- jec uncertainty --------------
     double unc(0.0);
@@ -471,24 +484,24 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       unc = mPFUnc->getUncertainty(true);
     } // if (mPFPayloadName != "")
     if (mPFJECUncSrc != "") {
-      for(unsigned isrc=0;isrc<mPFJECUncSrcNames.size();isrc++) {
+      for(unsigned isrc=0;isrc<mPFJECUncSrcNames.size();++isrc) {
         mPFUncSrc[isrc]->setJetEta(ijet->eta());
         mPFUncSrc[isrc]->setJetPt(ijet->pt());
         float unc1 = mPFUncSrc[isrc]->getUncertainty(true);
         uncSrc.push_back(unc1);
-      } // for(unsigned isrc=0;isrc<mPFJECUncSrcNames.size();isrc++)
-    } // if (mPFJECUncSrc != "")
+      } // Loop: uncertainty sources
+    } // If: uncertainty sources
     
-    qcdpfjetchs.setP4(ijet->p4());
-    qcdpfjetchs.setCor(scale);
-    qcdpfjetchs.setUnc(unc);
-    qcdpfjetchs.setUncSrc(uncSrc);
-    qcdpfjetchs.setArea(ijet->jetArea());
+    qcdJet.setP4(ijet->p4());
+    qcdJet.setCor(scale);
+    qcdJet.setUnc(unc);
+    qcdJet.setUncSrc(uncSrc);
+    qcdJet.setArea(ijet->jetArea());
     
     double chf   = ijet->chargedHadronEnergyFraction();
     double nhf   = ijet->neutralHadronEnergyFraction();// hf info is included
-    double nemf  = ijet->neutralEmEnergyFraction(); // equals to deprecated phf but has HF info too
-    double cemf  = ijet->chargedEmEnergyFraction(); // equals to deprecated elf
+    double nemf  = ijet->neutralEmEnergyFraction();    // equals to deprecated phf but has HF info too
+    double cemf  = ijet->chargedEmEnergyFraction();    // equals to deprecated elf
     double muf   = ijet->muonEnergyFraction();
     double hf_hf = ijet->HFHadronEnergyFraction();
     double hf_phf= ijet->HFEMEnergyFraction();
@@ -518,48 +531,47 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
        tightID = looseID;
     }
 
-    qcdpfjetchs.setLooseID(looseID);
-    qcdpfjetchs.setTightID(tightID);
-    qcdpfjetchs.setFrac(chf,nhf,nemf,cemf,muf);
-    qcdpfjetchs.setMulti(npr,chm,nhm,phm,elm,mum,cm);
-    qcdpfjetchs.setHFFrac(hf_hf,hf_phf);
-    qcdpfjetchs.setHFMulti(hf_hm,hf_phm);
+    qcdJet.setLooseID(looseID);
+    qcdJet.setTightID(tightID);
+    qcdJet.setFrac(chf,nhf,nemf,cemf,muf);
+    qcdJet.setMulti(npr,chm,nhm,phm,elm,mum,cm);
+    qcdJet.setHFFrac(hf_hf,hf_phf);
+    qcdJet.setHFMulti(hf_hm,hf_phm);
     
     double hof = ijet->hoEnergyFraction(); // Juska
-    qcdpfjetchs.setVtxInfo(mpuTrk,mlvTrk,mjtTrk);
-    qcdpfjetchs.setHO(hof);
+    qcdJet.setVtxInfo(mpuTrk,mlvTrk,mjtTrk);
+    qcdJet.setHO(hof);
 
-    //if (ijet == patjetschs->begin()) {
+    //if (ijet == patJets->begin()) {
     //  auto pdisc = ijet->getPairDiscri();
     //  cout << "Disc" << endl;
     //  for (auto &disc : pdisc) cout << "  " << disc.first << endl;
     //}
 
     // Jet flavour tagging discriminators
-    qcdpfjetchs.pfBoosted_ = ijet->bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags");
-    qcdpfjetchs.pfCombinedCvsL_ = ijet->bDiscriminator("pfCombinedCvsLJetTags");
-    qcdpfjetchs.pfCombinedCvsB_ = ijet->bDiscriminator("pfCombinedCvsBJetTags");
+    qcdJet.pfBoosted_ = ijet->bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags");
+    qcdJet.pfCombinedCvsL_ = ijet->bDiscriminator("pfCombinedCvsLJetTags");
+    qcdJet.pfCombinedCvsB_ = ijet->bDiscriminator("pfCombinedCvsBJetTags");
 
-    qcdpfjetchs.pfDeepCSVb_  = ijet->bDiscriminator("pfDeepCSVJetTags:probb");
-    qcdpfjetchs.pfDeepCSVc_  = ijet->bDiscriminator("pfDeepCSVJetTags:probc");
-    qcdpfjetchs.pfDeepCSVl_  = ijet->bDiscriminator("pfDeepCSVJetTags:probudsg");
-    qcdpfjetchs.pfDeepCSVbb_ = ijet->bDiscriminator("pfDeepCSVJetTags:probbb");
+    qcdJet.pfDeepCSVb_  = ijet->bDiscriminator("pfDeepCSVJetTags:probb");
+    qcdJet.pfDeepCSVc_  = ijet->bDiscriminator("pfDeepCSVJetTags:probc");
+    qcdJet.pfDeepCSVl_  = ijet->bDiscriminator("pfDeepCSVJetTags:probudsg");
+    qcdJet.pfDeepCSVbb_ = ijet->bDiscriminator("pfDeepCSVJetTags:probbb");
 
-    //if (mRunYear!="2016") {
-    //  qcdpfjetchs.pfDeepFlavourb_  = ijet->bDiscriminator("pfDeepFlavourJetTags:probb");
-    //  qcdpfjetchs.pfDeepFlavourc_  = ijet->bDiscriminator("pfDeepFlavourJetTags:probc");
-    //  qcdpfjetchs.pfDeepFlavourg_  = ijet->bDiscriminator("pfDeepFlavourJetTags:probg");
-    //  qcdpfjetchs.pfDeepFlavourl_  = ijet->bDiscriminator("pfDeepFlavourJetTags:probuds");
-    //  qcdpfjetchs.pfDeepFlavourbb_ = ijet->bDiscriminator("pfDeepFlavourJetTags:probbb");
-    //}
+    if (mRunYear!="2016") {
+      qcdJet.pfDeepFlavourb_  = ijet->bDiscriminator("pfDeepFlavourJetTags:probb");
+      qcdJet.pfDeepFlavourc_  = ijet->bDiscriminator("pfDeepFlavourJetTags:probc");
+      qcdJet.pfDeepFlavourg_  = ijet->bDiscriminator("pfDeepFlavourJetTags:probg");
+      qcdJet.pfDeepFlavourl_  = ijet->bDiscriminator("pfDeepFlavourJetTags:probuds");
+      qcdJet.pfDeepFlavourbb_ = ijet->bDiscriminator("pfDeepFlavourJetTags:probbb");
+    }
 
-    qcdpfjetchs.pfBTag_JetProb_ = ijet->bDiscriminator("pfJetProbabilityBJetTags");
-    qcdpfjetchs.pfBTag_CombInclSecVtxV2_ = ijet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
-    qcdpfjetchs.pfBTag_CombMVAV2_ = ijet->bDiscriminator("pfCombinedMVAV2BJetTags");
+    qcdJet.pfBTag_JetProb_ = ijet->bDiscriminator("pfJetProbabilityBJetTags");
+    qcdJet.pfBTag_CombInclSecVtxV2_ = ijet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+    qcdJet.pfBTag_CombMVAV2_ = ijet->bDiscriminator("pfCombinedMVAV2BJetTags");
     
-    qcdpfjetchs.setQGTagger((mAK4 ? ijet->userFloat("QGTaggerAK4PFCHS:qgLikelihood") : -100 )); 
-    
-    qcdpfjetchs.SetPUJetId((ijet->hasUserFloat(mPFJetPUID) ? ijet->userFloat(mPFJetPUID) : -999));
+    qcdJet.setQGTagger((mAK4 ? ijet->userFloat("QGTaggerAK4PFCHS:qgLikelihood") : -100 )); 
+    qcdJet.SetPUJetId((ijet->hasUserFloat(mPFJetPUID) ? ijet->userFloat(mPFJetPUID) : -999));
     
     if (mIsMCarlo) {
       float partonFlavour=0;
@@ -571,65 +583,58 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
         if (ijet->genParton() != NULL) partonFlavourPhysicsDef = ijet->genParton()->pdgId();
       }
       
-      float rmin(999);
-      int imin = -1;
-      if (genjets->size()>0) {
-        float ratiouplim = (ijet->pt()>20 ? 1.5 : 2.5);
-        float ratiololim = (ijet->pt()>20 ? 0.4 : 0.25);
-        // Find approximately the closest pt and then iterate up and down
-        // If a good match is found, iteration stops
-        int dwn = genorder(ijet->pt(),genjets,0,genjets->size()-1);
-        int up = dwn+1;
-        int limit = genjets->size();
-        while (dwn>=0 or up<limit) {
-          if (dwn>=0) {
-            if ((genjets->at(dwn).pt())/(ijet->pt())<ratiouplim) {
-              float deltaR = reco::deltaR(*ijet,genjets->at(dwn));
-              if (deltaR < rmin) {
-                imin = dwn;
-                rmin = deltaR;
-                if (rmin<0.2) break;
-              }
-              --dwn;
-            } else {
-              dwn = -1;
-            }
-          }
-          if (up<limit) {
-            if ((genjets->at(up).pt())/(ijet->pt())>ratiololim) {
-              float deltaR = reco::deltaR(*ijet,genjets->at(up));
-              if (deltaR < rmin) {
-                imin = up;
-                rmin = deltaR;
-                if (rmin<0.2) break;
-              }
-              ++up;
-            } else {
-              up = limit;
-            }
-          }
-        }
-      }
+      float rmin;
+      int imin;
+      std::tie(imin,rmin) = best_genjet(*ijet);
+      if (imin>maxGenMatch) maxGenMatch = imin;
+
       if (imin!=-1 and rmin<0.4) {
-        qcdpfjetchs.setGen(genjets->at(imin).p4(),rmin);
-        // Patch the PF jet flavours
-        if (partonFlavour==0) partonFlavour = genFlavour[imin];
-        if (partonFlavourPhysicsDef==0) partonFlavourPhysicsDef = genFlavourPhys[imin];
-        if (hadronFlavour==0) hadronFlavour = genFlavourHadr[imin];
+        qcdJet.setGen(imin,rmin);
+        // Patch the PF jet flavours if these were not found earlier
+        if (mUseGenInfo) {
+          if (partonFlavour==0) partonFlavour = mGenFlavour[imin];
+          if (partonFlavourPhysicsDef==0) partonFlavourPhysicsDef = mGenFlavourPhys[imin];
+          if (hadronFlavour==0) hadronFlavour = mGenFlavourHadr[imin];
+        }
       } else {
         // Empty gen jet if no match
-        qcdpfjetchs.setGen(LorentzVector(0,0,0,0),0);
+        qcdJet.setGen(-1,-1.);
       }
-      qcdpfjetchs.setFlavour(partonFlavour,hadronFlavour,partonFlavourPhysicsDef);
+      qcdJet.setFlavour(partonFlavour,hadronFlavour,partonFlavourPhysicsDef);
     } else {
       // Empty gen jet for data
-      qcdpfjetchs.setGen(LorentzVector(0,0,0,0),0);
-      qcdpfjetchs.setFlavour(0,0,0);
+      qcdJet.setGen(-1,-1.);
+      qcdJet.setFlavour(0,0,0);
     }
-    mPFJets.push_back(qcdpfjetchs);
+    qPFJets.push_back(qcdJet);
   } // for: chs Jets
-  sort(mPFJets.begin(),mPFJets.end(),sort_pfjets);
-  mEvent->setPFJetsCHS(mPFJets); // -- later substitute chs jets
+  sort(qPFJets.begin(),qPFJets.end(),sort_pfjets);
+  mEvent->setPFJetsCHS(qPFJets);
+
+  if (mIsMCarlo) {
+    // Find the first jet with too small pt (but include all matched gen jets)
+    unsigned starter = (maxGenMatch==-1 ? 0 : maxGenMatch+1);
+    unsigned limit = mGenJets.size();
+    for (unsigned igen = starter; igen<mGenJets.size(); ++igen) {
+      auto &genP = mGenJets[igen];
+      if (genP.pt()<mMinGenPt) {
+        limit = igen;
+        break;
+      }
+    }
+    // Remove all the trailing gen info
+    while (mGenJets.size()>limit) {
+      mGenJets.pop_back();
+      mGenFlavour.pop_back();
+      mGenFlavourHadr.pop_back();
+      mGenFlavourPhys.pop_back();
+    }
+    // Save only the interesting gen info
+    mEvent->setGenJets(mGenJets);
+    mEvent->setGenFlavour(mGenFlavour);
+    mEvent->setGenFlavourHadron(mGenFlavourHadr);
+    mEvent->setGenFlavourPhysicsDef(mGenFlavourPhys);
+  }
   
   //---------------- MET ---------------------------------------------
   Handle<pat::METCollection> pfmet_t1, pfmet_t0pc, pfmet_t0pct1;
@@ -637,79 +642,16 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   event.getByToken(mPFMETt0pc, pfmet_t0pc);
   event.getByToken(mPFMETt0pct1, pfmet_t0pct1);
   const pat::MET &met_t1 = pfmet_t1->front();
-  mPFMet_t1.setVar(met_t1.et(),met_t1.sumEt(),met_t1.phi());
+  qPFMet_t1.setVar(met_t1.et(),met_t1.sumEt(),met_t1.phi());
   const pat::MET &met_t0pc = pfmet_t0pc->front();
-  mPFMet_t0pc.setVar(met_t0pc.et(),met_t0pc.sumEt(),met_t0pc.phi());
+  qPFMet_t0pc.setVar(met_t0pc.et(),met_t0pc.sumEt(),met_t0pc.phi());
   const pat::MET &met_t0pct1 = pfmet_t0pct1->front();
-  mPFMet_t0pct1.setVar(met_t0pct1.et(),met_t0pct1.sumEt(),met_t0pct1.phi());
-  mEvent->setPFMET(mPFMet_t1,mPFMet_t0pc,mPFMet_t0pct1);
+  qPFMet_t0pct1.setVar(met_t0pct1.et(),met_t0pct1.sumEt(),met_t0pct1.phi());
+  mEvent->setPFMET(qPFMet_t1,qPFMet_t0pc,qPFMet_t0pct1);
 
   //-------------- fill the tree -------------------------------------
-  if ((mEvent->nPFJetsCHS() >= (unsigned)mMinNPFJets) ) {
-    if ((mEvent->pfchsmjjcor(0) >= mMinJJMass) ) {
-      mTree->Fill();
-    }
-  }
-}
-
-
-/////////////// Matching Flavour (deprecated - corresponds to algo flav) ////
-
-int ProcessedTreeProducerBTag::getMatchedPartonGen(edm::Event const& event,GenJetCollection::const_iterator i_gen)
-{
-  int jetFlavour=-100;
-  bool switchB=false;
-  bool switchC=false;
-
-  edm::Handle<reco::GenParticleCollection> genParticles;
-  event.getByToken(mGenParticles, genParticles);
-
-  double DeltaRmin=0.3;
-  for (size_t i = 0; i < genParticles->size (); ++i) {
-    const GenParticle & genIt = (*genParticles)[i];
-    int pdgId = genIt.pdgId();
-    double DeltaR=deltaR(genIt.p4().eta(),genIt.p4().phi(),i_gen->eta(),i_gen->phi());
-    if (DeltaR < DeltaRmin ){
-      DeltaRmin=DeltaR;
-      if(abs(pdgId)==5){ jetFlavour=5; switchB=true;}
-      if(abs(pdgId)==4){ jetFlavour=4; switchC=true;}
-      if(abs(pdgId)<=3 && abs(pdgId)>=1){ jetFlavour=1; }
-      if(abs(pdgId)==21){ jetFlavour=21; }
-    } 
-    if (switchB) {jetFlavour=5;}
-    if (switchC && !switchB) {jetFlavour=4;}
-  }
-  return jetFlavour;
-}
-
-int ProcessedTreeProducerBTag::getMatchedHadronGen(edm::Event const& event,GenJetCollection::const_iterator i_gen)
-{
-  int jetFlavour=-100;
-
-  edm::Handle<reco::GenParticleCollection> genParticles;
-  event.getByToken(mGenParticles, genParticles);
-
-  for (size_t i = 0; i < genParticles->size (); ++i) {
-    const GenParticle & genIt = (*genParticles)[i];    
-    int aid = abs(genIt.pdgId());
-    if (aid/100 == 5 || aid/1000==5) {
-      // 2J+1 == 1 (mesons) or 2 (baryons)
-      if (aid%10 == 1 || aid%10 == 2) {
-        // No B decaying to B
-        if (aid != 5222 && aid != 5112 && aid != 5212 && aid != 5322) {
-          double DeltaR=deltaR(genIt.p4().eta(),genIt.p4().phi(),i_gen->eta(),i_gen->phi());
-          if(sqrt(DeltaR)<0.5){
-            jetFlavour=5;
-          }
-          else jetFlavour=21;
-        }
-      }
-    }
-  }
-  return jetFlavour;
+  if (mEvent->nPFJetsCHS() >= mMinNPFJets) mTree->Fill();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-ProcessedTreeProducerBTag::~ProcessedTreeProducerBTag() {}
-
 DEFINE_FWK_MODULE(ProcessedTreeProducerBTag);

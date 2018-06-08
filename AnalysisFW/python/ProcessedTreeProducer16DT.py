@@ -4799,11 +4799,10 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                srcPFRho                  = cms.InputTag('fixedGridRhoFastjetAll'),
                                srcPULabel                = cms.untracked.InputTag('addPileupInfo','addPileupInfo'),
                                ## preselection cuts #########################
-                               maxY                      = cms.double(5.0),
+                               maxEta                    = cms.double(5.0),
                                minPFPt                   = cms.double(10.0),
                                minPFPtThirdJet           = cms.double(5.0),
-                               minNPFJets                = cms.int32(1),
-                               minJJMass                 = cms.double(-1),
+                               minNPFJets                = cms.uint32(1),
                                isMCarlo                  = cms.untracked.bool(False),
                                runYear                   = cms.untracked.string("2016"),
                                ## trigger ###################################
@@ -4813,7 +4812,6 @@ process.ak4 =  cms.EDAnalyzer( 'ProcessedTreeProducerBTag',
                                triggerResults            = cms.untracked.InputTag("TriggerResults","","HLT"),
                                triggerEvent              = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT"),
                                ## jec services ##############################
-                               HBHENoiseFilterResultLabel = cms.untracked.InputTag("HBHENoiseFilterResultProducer", "HBHENoiseFilterResult"),
                                HBHENoiseFilterResultNoMinZLabel = cms.untracked.InputTag("HBHENoiseFilterResultProducerNoMinZ", "HBHENoiseFilterResult") )
 
 #jetToolbox( process, 'ak7', 'ak7JetSubs','CHS')
