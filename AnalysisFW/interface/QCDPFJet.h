@@ -15,8 +15,6 @@ class QCDPFJet : public QCDPFJetBTag {
      //------------ Set methods ------------------------------
      void setFrac(float fchf, float fnhf, float fnemf, float fcemf, float fmuf)  {chf_ = fchf; nhf_ = fnhf; nemf_ = fnemf; cemf_ = fcemf; muf_ = fmuf;}
      void setMulti(int fncand, int fchm, int fnhm, int fphm, int felm, int fmum, int fcm) {ncand_ = fncand; chm_ = fchm; nhm_ = fnhm; phm_ = fphm; elm_ = felm; mum_ = fmum; cm_ = fcm; }
-     void setBeta(float fbeta) {beta_ = fbeta;}
-     void setBetaStar(float fbetaStar) {betaStar_ = fbetaStar;}
      void setBetaPrime(float fbetaPrime) {betaPrime_ = fbetaPrime;}
      void setHFFrac(float fhf_hf, float fhf_phf) {hf_hf_ = fhf_hf; hf_phf_ = fhf_phf;}
      void setHFMulti(int fhf_hm, int fhf_phm) {hf_hm_ = fhf_hm; hf_phm_ = fhf_phm;}
@@ -25,8 +23,6 @@ class QCDPFJet : public QCDPFJetBTag {
      void SetPUJetId(float pujid) { pujid_ = pujid; }
 
      //------------ Get methods ------------------------------
-     float beta()     const {return beta_;}
-     float betaStar() const {return betaStar_;}
      float betaPrime() const {return betaPrime_;}
      float chf()      const {return chf_;}
      float nhf()      const {return nhf_;}
@@ -84,10 +80,6 @@ class QCDPFJet : public QCDPFJetBTag {
      int ncand_;
      // --- charged multiplicity ------
      int cm_;
-     //---- fraction of track pt coming from the signal vertex ---
-     float beta_;
-     //---- fraction of track pt NOT coming from the signal vertex ---
-     float betaStar_;
      //---- fraction of track pt NOT coming from the signal vertex, removed by chs ---
      float betaPrime_;
 

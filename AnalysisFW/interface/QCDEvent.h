@@ -36,9 +36,10 @@ class QCDEvent
       void setPrescales(const vector<int>& fPreL1, const vector<int>& fPreHLT) {L1Prescale_ = fPreL1; HLTPrescale_ = fPreHLT;}
       void setTrigDecision(const vector<int>& fTrigDecision) {TriggerDecision_ = fTrigDecision;}
 
-      void setGenFlavour(const vector<float> GenFlavour) {genFlavour_= GenFlavour;}
-      void setGenFlavourHadron(const vector<float> GenFlavourHadron) {genFlavourHadron_= GenFlavourHadron;}
-      void setGenFlavourPhysicsDef(const vector<float> GenPartonFlavourPhysicsDef) {genFlavourPartonPhysicsDef_= GenPartonFlavourPhysicsDef;}
+      void setGenFlavour(          const vector<int>& GenFlavour) {                genFlavour_= GenFlavour;}
+      void setGenFlavourHadron(    const vector<int>& GenFlavourHadron) {          genFlavourHadron_= GenFlavourHadron;}
+      void setGenFlavourPhysicsDef(const vector<int>& GenPartonFlavourPhysicsDef) {genFlavourPartonPhysicsDef_= GenPartonFlavourPhysicsDef;}
+      void setGenBPt(              const vector<float>& fGenBPt) {                 genBPt_ = fGenBPt; }
 
       //------------ Get methods -------------------------------
       unsigned int nTriggers()                         const {return TriggerDecision_.size();}
@@ -51,9 +52,9 @@ class QCDEvent
       int preL1(int i)                                 const {return L1Prescale_[i];}
       int preHLT(int i)                                const {return HLTPrescale_[i];}
 
-      float GenJetFlavour(int i)                       const {return genFlavour_[i];}
-      float GenHadronJetFlavour(int i)                       const {return genFlavourHadron_[i];}
-      float GenPartonPhysicsDefJetFlavour(int i)                       const {return genFlavourPartonPhysicsDef_[i];}
+      int GenJetFlavour(int i)                         const {return genFlavour_[i];}
+      int GenHadronJetFlavour(int i)                   const {return genFlavourHadron_[i];}
+      int GenPartonPhysicsDefJetFlavour(int i)         const {return genFlavourPartonPhysicsDef_[i];}
 
       float pfmjj();
       float genmjj();
@@ -91,8 +92,9 @@ class QCDEvent
       vector<LorentzVector>               GenJets_;
       //---- PFJetsCHS -----------------------------------------------
       vector<QCDPFJet>                    PFJetsCHS_;
-      vector<float>  genFlavour_;
-      vector<float>  genFlavourHadron_;
-      vector<float>  genFlavourPartonPhysicsDef_;
+      vector<int>  genFlavour_;
+      vector<int>  genFlavourHadron_;
+      vector<int>  genFlavourPartonPhysicsDef_;
+      vector<float> genBPt_;
 };
 #endif

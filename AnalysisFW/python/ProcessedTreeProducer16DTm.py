@@ -44,7 +44,7 @@ process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 #! Input
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))
 
 #triggers = trgZBD16 
 triggers = trgAK4D16 
@@ -99,11 +99,10 @@ process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
   srcPFRho        = cms.InputTag('fixedGridRhoFastjetAll'),
   srcPULabel      = cms.untracked.InputTag('slimmedAddPileupInfo'),
   ## preselection cuts #########################
-  maxY            = cms.double(5.0),
+  maxEta          = cms.double(5.0),
   minPFPt         = cms.double(15.0),
   minPFPtThirdJet = cms.double(5.0),
-  minJJMass       = cms.double(0.0),
-  minNPFJets      = cms.int32(1),
+  minNPFJets      = cms.uint32(1),
   minGenPt        = cms.untracked.double(20),
   isMCarlo        = cms.untracked.bool(False),
   useGenInfo      = cms.untracked.bool(False),
