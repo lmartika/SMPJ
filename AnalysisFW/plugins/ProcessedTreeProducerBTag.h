@@ -108,7 +108,6 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     bool   mZB;
     bool   mPrintTriggerMenu;
     bool   mIsPFJecUncSet; // Not to be set by the user
-    bool   mUseLegacyTag; // Not to be set by the user
     int    mGoodVtxNdof;
     double mGoodVtxZ;
     unsigned int    mMinNPFJets;
@@ -203,6 +202,14 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
       else          return parton_ptpos(pt,prtns,nxt,abv);
     } 
 
+    bool is_bhadr(int pdgid) {
+      int aid = abs(pdgid);
+      if (aid/100 == 5 or aid/1000==5) {
+        return true;
+      }
+      return false;
+    }
+
     // Find the gen jet best matching to the current jet
     template<typename T>      
     pair<int,float> best_genjet(const T &jet) {
@@ -269,54 +276,6 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
         }
       }
       return make_pair(imin,rmin);
-    }
-
-    // Do genparticles - genjet matching by hand (mGenParts needs to be filled)
-    int get_gjetpartonflav(edm::Event const& event, GenJetCollection::const_iterator igen) {
-      int jetFlavour = 0;
-      bool switchB=false;
-      bool switchC=false;
-
-      double DeltaRmin=0.3;
-      for (size_t i = 0; i < mGenParts->size(); ++i) {
-        const GenParticle &genP = mGenParts->at(i);
-        int pdgId = genP.pdgId();
-        double DeltaR=deltaR(genP,*igen);
-        if (DeltaR < DeltaRmin) {
-          DeltaRmin=DeltaR;
-          if(abs(pdgId)==5) { jetFlavour=5; switchB=true; }
-          if(abs(pdgId)==4) { jetFlavour=4; switchC=true; }
-          if(abs(pdgId)<=3 and abs(pdgId)>=1) { jetFlavour=1; }
-          if(abs(pdgId)==21){ jetFlavour=21; }
-        }
-        if (switchB) { jetFlavour=5; }
-        if (switchC && !switchB) { jetFlavour=4; }
-      }
-      return jetFlavour;
-    }
-
-    // Do genhadron - genjet matching by hand (mGenParts needs to be filled)
-    int get_gjethadronflav(edm::Event const& event, GenJetCollection::const_iterator igen) {
-      int jetFlavour = 0;
-
-      for (size_t i = 0; i < mGenParts->size(); ++i) {
-        const GenParticle &genP = mGenParts->at(i);
-        int aid = abs(genP.pdgId());
-        if (aid/100 == 5 || aid/1000==5) {
-          // 2J+1 == 1 (mesons) or 2 (baryons)
-          if (aid%10 == 1 || aid%10 == 2) {
-            // No B decaying to B
-            if (aid != 5222 && aid != 5112 && aid != 5212 && aid != 5322) {
-              double DeltaR=deltaR(genP,*igen);
-              if(sqrt(DeltaR)<0.5){
-                jetFlavour=5;
-              }
-              else jetFlavour=21;
-            }
-          }
-        }
-      }
-      return jetFlavour;
     }
 };
 

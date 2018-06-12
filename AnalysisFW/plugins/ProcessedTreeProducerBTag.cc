@@ -69,7 +69,6 @@ void ProcessedTreeProducerBTag::beginJob()
   mTriggerNamesHisto->SetBit(TH1::kUserContour);  
   mTriggerPassHisto = fs->make<TH1F>("TriggerPass","TriggerPass",1,0,1);
   mTriggerPassHisto->SetBit(TH1::kUserContour);
-  mUseLegacyTag = (mRunYear=="2016" and mMCType==1);
   mULimCEF = 0; mULimNEF = 0; mLLimNEF = 0; mULimNHF = 0; mLLimNHF = 0;
   if (mRunYear=="2016") {
     mULimCEF = 0.99;
@@ -443,7 +442,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       auto bInfo = k->second;
 
       mGenJets.push_back(igen->p4());
-      mGenFlavour.push_back((mUseLegacyTag ? get_gjetpartonflav(event,igen) : aInfo.getPartonFlavour()));
+      mGenFlavour.push_back(aInfo.getPartonFlavour());
       mGenFlavourHadr.push_back(aInfo.getHadronFlavour());
       mGenFlavourPhys.push_back(bInfo.getPartonFlavour());
     }
@@ -453,9 +452,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       auto &gPart = mGenParts->at(gidx);
       int absId = abs(gPart.pdgId());
       if (absId<100) continue; 
-      int code1 = (absId/ 100)%10;
-      int code2 = (absId/1000)%10;
-      if (code1 == 5 || code2 == 5) {
+      if (is_bhadr(absId)) {
         int imin = -1;
         float rmin = -1.;
         std::tie(imin,rmin) = best_jet4prtn(gPart);
@@ -642,6 +639,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     qcdJet.setVtxInfo(mpuTrk,mlvTrk,mjtTrk);
     qcdJet.setHO(hof);
     
+    // Check what is available
     //auto pdisc = ijet->getPairDiscri();
     //for (auto &disc : pdisc) cout << "  " << disc.first << endl;
 
@@ -668,6 +666,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     float QGAx2 = -1;
     int QGMul = -1;
     float QGPtD = -1;
+    // QGL variables only relevant for AK4
     if (mAK4) {
       edm::RefToBase<pat::Jet> jetRef(edm::Ref<edm::View<pat::Jet> >(patJets, jetNo));
       QGL = (*qglHandle)[jetRef];
@@ -696,11 +695,15 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
 
       if (imin!=-1 and rmin<0.4) {
         qcdJet.setGen(imin,rmin);
-        // Patch the PF jet flavours if these were not found earlier
         if (mUseGenInfo) {
-          if (partonFlavour==0) partonFlavour = mGenFlavour[imin]; 
+          // Patch the PF jet flavours if these were not found earlier
+          if (partonFlavour==0)     partonFlavour     = mGenFlavour[imin]; 
           if (partonFlavourPhys==0) partonFlavourPhys = mGenFlavourPhys[imin];
-          if (hadronFlavour==0) hadronFlavour = mGenFlavourHadr[imin];
+          if (hadronFlavour==0)     hadronFlavour     = mGenFlavourHadr[imin];
+          // Patch the gen flavours if these were not found earlier
+          if (mGenFlavour[imin]==0)     mGenFlavour[imin]     = partonFlavour;
+          if (mGenFlavourPhys[imin]==0) mGenFlavourPhys[imin] = partonFlavourPhys;
+          if (mGenFlavourHadr[imin]==0) mGenFlavourHadr[imin] = hadronFlavour;
         }
       } else {
         // Empty gen jet if no match
