@@ -90,6 +90,16 @@ void ProcessedTreeProducerBTag::beginJob()
   cout << "Lo nef " << mLLimNEF << endl;
   cout << "Lo nhf " << mLLimNHF << endl;
   mNewTrigs = false;
+  mRedoPhysDef = false;
+  mRedoAlgoDef = false;
+  if (mIsMCarlo) {
+    if (mMCType==1) { // Herwig++
+      if (mRunYear=="2016") {
+        mRedoPhysDef = true;
+        mRedoAlgoDef = true;
+      }
+    }
+  }
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void ProcessedTreeProducerBTag::endJob() {}
@@ -465,10 +475,26 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       if (jet2bpt.find(igen)==jet2bpt.end()) mGenBPt.push_back(-1.);
       else mGenBPt.push_back(jet2bpt[igen]);
     }
+    // Hand-made flavor definitions for when the built-in methods fail
+    if (mRedoPhysDef) {
+      flavs_physdef();
+      for (auto &res : mGenJetPhysFlav) {
+        int igen = res.first;
+        if (mGenFlavourPhys[igen]==0 and res.second!=0)
+          mGenFlavourPhys[igen] = res.second;
+      }
+    }
+    if (mRedoAlgoDef) {
+      flavs_newalgodef(); 
+      for (auto &res : mGenJetAlgoFlav) {
+        int igen = res.first;
+        if (mGenFlavour[igen]==0)
+          mGenFlavour[igen] = res.second;
+      }
+    }
   }
   
   //---------------- Jets ---------------------------------------------
-
   // Uncertainties
   edm::ESHandle<JetCorrectorParametersCollection> PFJetCorParColl;
   if (mPFPayloadName != "" and !mIsPFJecUncSet) {
@@ -547,9 +573,9 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
         
         ++mjtTrk; 
         if (dtr->fromPV()==0) {
-          // Note: dtr->pvAssociationQuality() is the modern alt, but fromPV is the one used for CHS.
+          // Note: dtr->pvAssociationQuality() is the modern alternative, but fromPV is the one used for CHS.
           // Still for some reason, not all fromPV==0 cases are removed. These events fit the old "betaStar" definition (not-from-PV).
-          // Due to CHS, these are a vanishing fraction (1/10k), so we don't store 'em anymore.
+          // Due to CHS, the trailing betaStar is a vanishing fraction (1/10k), so we don't store it anymore.
           ++mpuTrk;
           used.push_back(dtr->energy());
         } else {

@@ -48,7 +48,7 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))
 
 triggers = cms.vstring()
 follows = cms.vstring()
-inFiles = QCD16Mor17P8M1
+inFiles = QCD16Mor17HS1
 filters = flt16MC
 
 zbflag = False

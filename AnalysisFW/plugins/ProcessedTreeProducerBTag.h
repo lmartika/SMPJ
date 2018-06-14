@@ -178,6 +178,11 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
     vector<int>           mGenFlavourPhys;
     vector<float>         mGenBPt;
     vector<LorentzVector> mGenJets;
+    map<int,int>          mGenJetPhysFlav;
+    map<int,int>          mGenJetAlgoFlav;
+
+    bool                  mRedoPhysDef;
+    bool                  mRedoAlgoDef;
     
   // Private functions for various purposes
   
@@ -191,15 +196,6 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
       double nxtpt = mGenJets[nxt].pt();
       if (nxtpt<=pt) return gen_ptpos(pt,blw,nxt);
       else           return gen_ptpos(pt,nxt,abv);
-    } 
-    
-    // Search for the index of the given pt, partons
-    unsigned parton_ptpos(double pt, edm::Handle<reco::GenParticleCollection> prtns, unsigned blw, unsigned abv) {
-      unsigned nxt = (abv+blw)/2;
-      if (nxt==blw) return nxt;
-      double nxtpt = prtns->at(nxt).p4().Pt();
-      if (nxtpt>pt) return parton_ptpos(pt,prtns,blw,nxt);
-      else          return parton_ptpos(pt,prtns,nxt,abv);
     } 
 
     bool is_bhadr(int pdgid) {
@@ -277,6 +273,89 @@ class ProcessedTreeProducerBTag : public edm::EDAnalyzer
       }
       return make_pair(imin,rmin);
     }
+
+    void flavs_physdef() {
+      mGenJetPhysFlav.clear();
+      vector<int> hpParts;
+      for (unsigned i = 0; i<mGenParts->size(); ++i) {
+        if (hpParts.size()==2) break;
+        const auto &gPart = mGenParts->at(i);
+        int id = gPart.pdgId();
+        int absId = abs(id);
+        if (absId>10 and absId!=21) continue; // Non-partons
+        if (fabs(gPart.eta())>5.0) continue; // Bad eta region
+    
+        if (mMCType==0) { // Pythia 8
+          if (abs(gPart.pdgId())!=23) continue;
+        } else if (mMCType==1) { // Herwig++
+          bool hardProc = false;
+          if (gPart.numberOfMothers()==1) {
+            auto &moths = gPart.motherRefVector();
+            auto *moth = moths.at(0).get();
+            if (moth!=nullptr and moth->pdgId()!=2212 and fabs(moth->eta())>10.0) hardProc = true; 
+          }
+          if (!hardProc) continue;
+        } else {
+          return;
+        }
+        hpParts.push_back(i);
+      }
+
+      for (auto &ihp : hpParts) {
+        auto &hp = mGenParts->at(ihp);
+        float drmin = 999.;
+        int imin = -1;
+        for (unsigned igen = 0; igen < mGenJets.size(); ++igen) {
+          auto &gjet = mGenJets[igen];
+          float dR = reco::deltaR(gjet,hp);
+          if (dR<drmin) {
+            drmin = dR;
+            imin = igen;
+          }
+        }
+        if (imin!=-1 and drmin<0.4) mGenJetPhysFlav[imin] = hp.pdgId();
+      }
+    }
+
+    void flavs_newalgodef() {
+      mGenJetAlgoFlav.clear();
+      map<int,int> jet2prtn;
+      for (unsigned i = 0; i<mGenParts->size(); ++i) {
+        const auto &gPart = mGenParts->at(i);
+        int id = gPart.pdgId();
+        int absId = abs(id);
+        if (absId>10 and absId!=21) continue; // Non-partons
+        if (fabs(gPart.eta())>5.0) continue; // Bad eta region
+    
+        if (mMCType!=0 and mMCType!=1) // Non- Pythia8 & Herwig++
+          return;
+
+        float drmin = 999.;
+        int imin = -1;
+        for (unsigned igen = 0; igen < mGenJets.size(); ++igen) {
+          auto &gjet = mGenJets[igen];
+          float dR = reco::deltaR(gjet,gPart);
+          if (dR<drmin) {
+            drmin = dR;
+            imin = igen;
+          }
+        }
+        if (imin!=-1 and drmin<0.4) {
+          if (jet2prtn.find(imin)==jet2prtn.end()) {
+            jet2prtn[imin] = i;
+          } else {
+            auto &currBest = mGenParts->at(jet2prtn[imin]);
+            if (gPart.pt()>currBest.pt())
+              jet2prtn[imin] = i;
+          }
+        }
+      }
+      for (auto &j2p : jet2prtn) {
+        auto &bestPrtn = mGenParts->at(j2p.second);
+        mGenJetAlgoFlav[j2p.first] = bestPrtn.pdgId();
+      }
+    }
 };
+
 
 #endif
