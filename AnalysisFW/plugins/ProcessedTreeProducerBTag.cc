@@ -162,8 +162,6 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   vector<QCDPFJet>      qPFJets;
   QCDEventHdr           qEvtHdr;
   QCDMET                qPFMet_t1, qPFMet_t0, qPFMet_t0t1;
-
-  bool save_event=false;
   
   //-------------- Basic Event Info ------------------------------
   qEvtHdr.setRun(event.id().run());
@@ -213,11 +211,11 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     const edm::TriggerNames &names       = event.triggerNames(*triggerBits);
     const edm::TriggerNames &filterNames = event.triggerNames(*filterBits);
     if (mNewTrigs) {
-      // Update the filter positions 
+      // Update the filter positions only when the trigger menu has changed 
       mFilterIndex.clear();
-      for (auto &flt : mFilterNames) {
+      for (auto &flt : mFilterNames) { // Loop through the requested trigger names
         int fltIdx = -1;
-        for (unsigned int itrig=0; itrig<filterBits->size(); ++itrig) {
+        for (unsigned int itrig=0; itrig<filterBits->size(); ++itrig) { // Try to find this
           string filterName = filterNames.triggerName(itrig);
           if (filterName==flt) {
             fltIdx = itrig;
@@ -595,9 +593,6 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
 
     float bPrime = (che ? pue/che : 0.);
     qcdJet.setBetaPrime(bPrime);
-    
-    
-    save_event=true;
      
     //---- jec uncertainty --------------
     double unc(0.0);
@@ -678,12 +673,6 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     qcdJet.pfDeepCSVl_  = ijet->bDiscriminator("pfDeepCSVJetTags:probudsg");
     qcdJet.pfDeepCSVbb_ = ijet->bDiscriminator("pfDeepCSVJetTags:probbb");
 
-    qcdJet.pfDeepFlavourb_  = ijet->bDiscriminator("pfDeepFlavourJetTags:probb");
-    qcdJet.pfDeepFlavourc_  = ijet->bDiscriminator("pfDeepFlavourJetTags:probc");
-    qcdJet.pfDeepFlavourg_  = ijet->bDiscriminator("pfDeepFlavourJetTags:probg");
-    qcdJet.pfDeepFlavourl_  = ijet->bDiscriminator("pfDeepFlavourJetTags:probuds");
-    qcdJet.pfDeepFlavourbb_ = ijet->bDiscriminator("pfDeepFlavourJetTags:probbb");
-
     qcdJet.pfBTag_JetProb_ = ijet->bDiscriminator("pfJetProbabilityBJetTags");
     qcdJet.pfBTag_CombInclSecVtxV2_ = ijet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
     qcdJet.pfBTag_CombMVAV2_ = ijet->bDiscriminator("pfCombinedMVAV2BJetTags");
@@ -743,6 +732,8 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     }
     qPFJets.push_back(qcdJet);
   } // jet loop
+  if (qPFJets.size()<mMinNPFJets) return;
+
   sort(qPFJets.begin(),qPFJets.end(),sort_pfjets);
   mEvent->setPFJetsCHS(qPFJets);
 
@@ -788,7 +779,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   mEvent->setPFMET(qPFMet_t1,qPFMet_t0,qPFMet_t0t1);
  
   //-------------- fill the tree -------------------------------------
-  if (save_event and mEvent->nPFJetsCHS() >= mMinNPFJets) mTree->Fill();
+  mTree->Fill();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

@@ -7,7 +7,7 @@ trgAK8BI16 = cms.vstring(
   "HLT_PFHT125_v1","HLT_PFHT200_v2","HLT_PFHT250_v2","HLT_PFHT300_v2","HLT_PFHT350_v3","HLT_PFHT400_v2","HLT_PFHT475_v2","HLT_PFHT600_v3","HLT_PFHT650_v3","HLT_PFHT800_v2","HLT_PFHT900_v1"
 )
 trgZBBI16 = cms.vstring(
-  "HLT_ZeroBias_v2"
+  "HLT_PFJet40_v4","HLT_PFJet60_v4","HLT_ZeroBias_v2"
 )
 
 trgAK4BII16 = cms.vstring(
@@ -18,7 +18,7 @@ trgAK8BII16 = cms.vstring(
   "HLT_PFHT125_v1","HLT_PFHT125_v2","HLT_PFHT200_v2","HLT_PFHT200_v3","HLT_PFHT250_v2","HLT_PFHT250_v3","HLT_PFHT300_v2","HLT_PFHT300_v3","HLT_PFHT350_v3","HLT_PFHT350_v4","HLT_PFHT400_v2","HLT_PFHT400_v3","HLT_PFHT475_v2","HLT_PFHT475_v3","HLT_PFHT600_v3","HLT_PFHT600_v4","HLT_PFHT650_v3","HLT_PFHT650_v4","HLT_PFHT800_v2","HLT_PFHT800_v3","HLT_PFHT900_v1","HLT_PFHT900_v2"
 )
 trgZBBII16 = cms.vstring(
-  "HLT_ZeroBias_v2","HLT_ZeroBias_v3"
+  "HLT_PFJet40_v4","HLT_PFJet40_v5","HLT_ZeroBias_v2","HLT_ZeroBias_v3"
 )
 
 trgAK4C16 = cms.vstring(
@@ -29,7 +29,7 @@ trgAK8C16 = cms.vstring(
   "HLT_PFHT125_v2","HLT_PFHT200_v3","HLT_PFHT250_v3","HLT_PFHT300_v3","HLT_PFHT300_v4","HLT_PFHT350_v4","HLT_PFHT350_v5","HLT_PFHT400_v3","HLT_PFHT400_v4","HLT_PFHT475_v3","HLT_PFHT475_v4","HLT_PFHT600_v4","HLT_PFHT600_v5","HLT_PFHT650_v4","HLT_PFHT650_v5","HLT_PFHT800_v3","HLT_PFHT800_v4","HLT_PFHT900_v2","HLT_PFHT900_v3"
 )
 trgZBC16 = cms.vstring(
-  "HLT_ZeroBias_v3","HLT_ZeroBias_v4"
+  "HLT_PFJet40_v5","HLT_PFJet40_v6","HLT_ZeroBias_v3","HLT_ZeroBias_v4"
 )
 
 trgAK4D16 = cms.vstring(
@@ -40,7 +40,7 @@ trgAK8D16 = cms.vstring(
   "HLT_PFHT125_v2","HLT_PFHT200_v3","HLT_PFHT250_v3","HLT_PFHT300_v4","HLT_PFHT350_v5","HLT_PFHT400_v4","HLT_PFHT475_v4","HLT_PFHT600_v5","HLT_PFHT650_v5","HLT_PFHT800_v4","HLT_PFHT900_v3"
 )
 trgZBD16 = cms.vstring(
-  "HLT_ZeroBias_v4"
+  "HLT_PFJet40_v6","HLT_ZeroBias_v4"
 )
 
 trgAK4E16 = cms.vstring(
@@ -51,7 +51,7 @@ trgAK8E16 = cms.vstring(
   "HLT_PFHT125_v2","HLT_PFHT200_v3","HLT_PFHT250_v3","HLT_PFHT300_v4","HLT_PFHT350_v5","HLT_PFHT400_v4","HLT_PFHT475_v4","HLT_PFHT600_v5","HLT_PFHT650_v5","HLT_PFHT800_v4","HLT_PFHT900_v3"
 )
 trgZBE16 = cms.vstring(
-  "HLT_ZeroBias_v4"
+  "HLT_PFJet40_v6","HLT_ZeroBias_v4"
 )
 
 trgAK4Fe16 = cms.vstring(
@@ -62,7 +62,7 @@ trgAK8Fe16 = cms.vstring(
   "HLT_PFHT125_v2","HLT_PFHT125_v3","HLT_PFHT200_v3","HLT_PFHT200_v4","HLT_PFHT250_v3","HLT_PFHT250_v4","HLT_PFHT300_v4","HLT_PFHT300_v5","HLT_PFHT350_v5","HLT_PFHT350_v6","HLT_PFHT400_v4","HLT_PFHT400_v5","HLT_PFHT475_v4","HLT_PFHT475_v5","HLT_PFHT600_v5","HLT_PFHT600_v6","HLT_PFHT650_v5","HLT_PFHT650_v6","HLT_PFHT800_v4","HLT_PFHT800_v5","HLT_PFHT900_v3","HLT_PFHT900_v4"
 )
 trgZBFe16 = cms.vstring(
-  "HLT_ZeroBias_v4"
+  "HLT_PFJet40_v6","HLT_PFJet40_v7","HLT_ZeroBias_v4"
 )
 
 trgAK4Fl16 = cms.vstring(
@@ -73,7 +73,7 @@ trgAK8Fl16 = cms.vstring(
   "HLT_PFHT125_v3","HLT_PFHT200_v4","HLT_PFHT250_v4","HLT_PFHT300_v5","HLT_PFHT350_v6","HLT_PFHT400_v5","HLT_PFHT475_v5","HLT_PFHT600_v6","HLT_PFHT650_v6","HLT_PFHT800_v5","HLT_PFHT900_v4"
 )
 trgZBFl16 = cms.vstring(
-  "HLT_ZeroBias_v4"
+  "HLT_PFJet40_v7","HLT_ZeroBias_v4"
 )
 
 trgAK4G16 = cms.vstring(
@@ -84,7 +84,7 @@ trgAK8G16 = cms.vstring(
   "HLT_PFHT125_v3","HLT_PFHT200_v4","HLT_PFHT250_v4","HLT_PFHT300_v5","HLT_PFHT350_v6","HLT_PFHT400_v5","HLT_PFHT475_v5","HLT_PFHT600_v6","HLT_PFHT650_v6","HLT_PFHT800_v5","HLT_PFHT900_v4"
 )
 trgZBG16 = cms.vstring(
-  "HLT_ZeroBias_v4"
+  "HLT_PFJet40_v7","HLT_ZeroBias_v4"
 )
 
 trgAK4H16 = cms.vstring(
@@ -95,5 +95,5 @@ trgAK8H16 = cms.vstring(
   "HLT_PFHT125_v5","HLT_PFHT200_v6","HLT_PFHT250_v6","HLT_PFHT300_v7","HLT_PFHT350_v8","HLT_PFHT400_v7","HLT_PFHT475_v7","HLT_PFHT600_v8","HLT_PFHT650_v8","HLT_PFHT900_v6"
 )
 trgZBH16 = cms.vstring(
-  "HLT_ZeroBias_v4"
+  "HLT_PFJet40_v9","HLT_ZeroBias_v4"
 )

@@ -46,7 +46,7 @@ process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))
 
-triggers = trgZBFl16 
+triggers = trgZBH16 
 follows = cms.vstring()
 inFiles = cms.untracked.vstring()
 filters = flt16DT
