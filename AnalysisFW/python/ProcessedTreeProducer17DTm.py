@@ -2,7 +2,6 @@
 
 import FWCore.ParameterSet.Config as cms
 
-from RecoJets.Configuration.RecoPFJets_cff import ak4PFJets, ak4PFJetsCHS
 from RecoJets.Configuration.RecoGenJets_cff import ak4GenJets
 from RecoJets.JetProducers.SubJetParameters_cfi import SubJetParameters
 from RecoJets.JetProducers.PFJetParameters_cfi import *
@@ -12,13 +11,12 @@ from PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff import *
 from PhysicsTools.PatAlgos.selectionLayer1.jetSelector_cfi import selectedPatJets
 from PhysicsTools.PatAlgos.tools.jetTools import *
 from PhysicsTools.PatAlgos.patSequences_cff import *
-#from RecoJets.JetProducers.pileupjetidproducer_cfi import *
 from PhysicsTools.PatAlgos.patTemplate_cfg import *
 from PhysicsTools.PatAlgos.tools.jetTools import *
 from RecoJets.JetProducers.QGTagger_cfi import QGTagger
-
-## Modified version of jetToolBox from https://github.com/cms-jet/jetToolbox
-## Options for PUMethod: Puppi, CS, SK, CHS
+from triggerlists import *
+from filelists import *
+from filterlists import *
 
 # -*- coding: utf-8 -*-
 import FWCore.ParameterSet.Config as cms
@@ -37,11 +35,7 @@ process.load('RecoJets.JetProducers.TrackJetParameters_cfi')
 process.load('RecoJets.JetProducers.PileupJetIDParams_cfi')
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
 
-process.load('RecoJets.JetProducers.QGTagger_cfi')
-process.QGTagger.srcJets = cms.InputTag('ak4PFJetsCHS')    # Could be reco::PFJetCollection or pat::JetCollection (both AOD and miniAOD)
-process.QGTagger.jetsLabel  = cms.string('QGL_AK4PFchs')        # Other options: see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
-
-process.GlobalTag.globaltag = "94X_dataRun2_ReReco_EOY17_v2"
+process.GlobalTag.globaltag = "94X_dataRun2_v6"
 
 ##-------------------- Import the JEC services -----------------------
 process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
@@ -50,10 +44,22 @@ process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 #! Input
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-inFiles = cms.untracked.vstring('/store/data/Run2017C/JetHT/MINIAOD/31Mar2018-v1/00000/046FD327-5138-E811-AF93-AC162DA6E2F8.root')
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
+triggers = trgAK4B17
+follows = cms.vstring()
+inFiles = JHTB17 
+#inFiles = cms.untracked.vstring()
+filters = flt17DT
+
+zbflag = False
+
 process.source = cms.Source("PoolSource", fileNames = inFiles )
+
+process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
+process.load('CommonTools.RecoAlgos.HBHENoiseFilter_cfi')
+
+process.HBHENoiseFilterResultProducerNoMinZ = process.HBHENoiseFilterResultProducer.clone(minZeros = cms.int32(99999))
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #! Services
@@ -63,49 +69,24 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.load('CommonTools.UtilAlgos.TFileService_cfi')
 process.TFileService.fileName=cms.string('DATA.root')
 
-process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
-process.load("PhysicsTools.PatAlgos.selectionLayer1.selectedPatCandidates_cff")
+# Other options: see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
+process.load('RecoJets.JetProducers.QGTagger_cfi')
+process.QGTagger.srcJets = cms.InputTag('slimmedJets')
+process.QGTagger.jetsLabel  = cms.string('QGL_AK4PFchs')        
 
-process.patJets.addTagInfos = True
-process.patJets.addAssociatedTracks = True
-
-#process.out.outputCommands += ['keep *_QGTagger_*_*']
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
-
-triggers = cms.vstring( 
-  "HLT_PFJet40_v19", "HLT_PFJet60_v19", "HLT_PFJet450_v19", "HLT_PFJet500_v19"
-  "HLT_PFJet40_v18", "HLT_PFJet60_v18", "HLT_PFJet80_v18", "HLT_PFJet260_v18", "HLT_PFJet320_v18", "HLT_PFJet400_v18", "HLT_PFJet450_v18", "HLT_PFJet500_v18",
-  "HLT_PFJet40_v17", "HLT_PFJet60_v17", "HLT_PFJet80_v17", "HLT_PFJet140_v17", "HLT_PFJet200_v17", "HLT_PFJet260_v17", "HLT_PFJet320_v17", "HLT_PFJet400_v17", "HLT_PFJet450_v17", "HLT_PFJet500_v17",
-  "HLT_PFJet40_v16", "HLT_PFJet60_v16", "HLT_PFJet80_v16", "HLT_PFJet140_v16", "HLT_PFJet200_v16", "HLT_PFJet260_v16", "HLT_PFJet320_v16", "HLT_PFJet400_v16", "HLT_PFJet450_v16", "HLT_PFJet500_v16",
-  "HLT_PFJet40_v15", "HLT_PFJet60_v15", "HLT_PFJet80_v15", "HLT_PFJet140_v15", "HLT_PFJet200_v15", "HLT_PFJet260_v15", "HLT_PFJet320_v15", "HLT_PFJet400_v15", "HLT_PFJet450_v15", "HLT_PFJet500_v15",
-  "HLT_PFJet40_v14", "HLT_PFJet60_v14", "HLT_PFJet80_v14", "HLT_PFJet140_v14", "HLT_PFJet200_v14", "HLT_PFJet260_v14", "HLT_PFJet320_v14", "HLT_PFJet400_v14", "HLT_PFJet450_v14", "HLT_PFJet500_v14",
-  "HLT_PFJet40_v13", "HLT_PFJet60_v13", "HLT_PFJet80_v13", "HLT_PFJet140_v13", "HLT_PFJet200_v13", "HLT_PFJet260_v13", "HLT_PFJet320_v13", "HLT_PFJet400_v13", "HLT_PFJet450_v13", "HLT_PFJet500_v13",
-  "HLT_PFJet40_v12", "HLT_PFJet60_v12", "HLT_PFJet80_v12", "HLT_PFJet140_v12", "HLT_PFJet200_v12", "HLT_PFJet260_v12", "HLT_PFJet320_v12", "HLT_PFJet400_v12", "HLT_PFJet450_v12", "HLT_PFJet500_v12",
-  "HLT_PFJet40_v11", "HLT_PFJet60_v11", "HLT_PFJet80_v11", "HLT_PFJet140_v11", "HLT_PFJet200_v11", "HLT_PFJet260_v11", "HLT_PFJet320_v11", "HLT_PFJet400_v11", "HLT_PFJet450_v11", "HLT_PFJet500_v11",
-  "HLT_PFJet40_v10", "HLT_PFJet60_v10", "HLT_PFJet80_v10", "HLT_PFJet140_v10", "HLT_PFJet200_v10", "HLT_PFJet260_v10", "HLT_PFJet320_v10", "HLT_PFJet400_v10", "HLT_PFJet450_v10", "HLT_PFJet500_v10",
-  'HLT_PFJet40_v9','HLT_PFJet60_v9','HLT_PFJet80_v9','HLT_PFJet140_v9','HLT_PFJet200_v9','HLT_PFJet260_v9','HLT_PFJet320_v9','HLT_PFJet400_v9','HLT_PFJet450_v9','HLT_PFJet500_v9',
-  'HLT_PFJet40_v8','HLT_PFJet60_v8','HLT_PFJet80_v8','HLT_PFJet140_v8','HLT_PFJet200_v8','HLT_PFJet260_v8','HLT_PFJet320_v8','HLT_PFJet400_v8','HLT_PFJet450_v8','HLT_PFJet500_v8', 
-  'HLT_PFJet40_v7','HLT_PFJet60_v7','HLT_PFJet80_v7','HLT_PFJet140_v7','HLT_PFJet200_v7','HLT_PFJet260_v7','HLT_PFJet320_v7','HLT_PFJet400_v7','HLT_PFJet450_v7','HLT_PFJet500_v7',
-  'HLT_PFJet40_v6','HLT_PFJet60_v6','HLT_PFJet80_v6','HLT_PFJet140_v6','HLT_PFJet200_v6','HLT_PFJet260_v6','HLT_PFJet320_v6','HLT_PFJet400_v6','HLT_PFJet450_v6','HLT_PFJet500_v6',
-  'HLT_PFJet40_v5','HLT_PFJet60_v5','HLT_PFJet80_v5','HLT_PFJet140_v5','HLT_PFJet200_v5','HLT_PFJet260_v5','HLT_PFJet320_v5','HLT_PFJet400_v5','HLT_PFJet450_v5','HLT_PFJet500_v5',
-  'HLT_PFJet40_v4','HLT_PFJet60_v4', 'HLT_PFJet80_v4', 'HLT_PFJet140_v4','HLT_PFJet200_v4','HLT_PFJet260_v4','HLT_PFJet320_v4','HLT_PFJet400_v4','HLT_PFJet450_v4','HLT_PFJet500_v4'
-)
-
 
 process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
   ## jet collections ###########################
-  pfjets          = cms.InputTag('slimmedJets'),
   pfjetschs       = cms.InputTag('slimmedJets'),
-  pfpujetid       = cms.string('AK4PFpileupJetIdEvaluator:fullDiscriminant'),
-  pfchsjetpuid    = cms.string('AK4PFCHSpileupJetIdEvaluator:fullDiscriminant'),
+  pfchsjetpuid    = cms.string("pileupJetId:fullDiscriminant"),
+  runYear         = cms.untracked.string("2017"),
   ## MET collection ####
-  pfmet           = cms.InputTag('slimmedMETs'),
+  pfmetT1         = cms.InputTag('slimmedMETs'),
   genjets         = cms.untracked.InputTag('slimmedGenJets'),
   ## database entry for the uncertainties ######
   PFPayloadName   = cms.string(''),
-  PFPayloadNameCHS= cms.string(''),
-  jecUncSrc       = cms.string(''),
-  jecUncSrcCHS    = cms.string(''),
+  jecUncSrc       = cms.untracked.string(''),
   jecUncSrcNames  = cms.vstring(''),
   ## set the conditions for good Vtx counting ##
   offlineVertices = cms.InputTag('offlineSlimmedPrimaryVertices'),
@@ -118,40 +99,44 @@ process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
   srcPULabel      = cms.untracked.InputTag('slimmedAddPileupInfo'),
   ## preselection cuts #########################
   maxEta          = cms.double(5.0),
-  minPFPt         = cms.double(30),
+  minPFPt         = cms.double(15.0),
+  minPFPtThirdJet = cms.double(5.0),
   minNPFJets      = cms.uint32(1),
   minGenPt        = cms.untracked.double(20),
   isMCarlo        = cms.untracked.bool(False),
   useGenInfo      = cms.untracked.bool(False),
-  AK4             = cms.untracked.bool(True),      
+  AK4             = cms.untracked.bool(True),
+  ZB              = cms.untracked.bool(zbflag),
   ## trigger ###################################
-  printTriggerMenu = cms.untracked.bool(True),
-  processName     = cms.string('HLT'),
+  printTriggerMenu= cms.untracked.bool(False),
+  processName     = cms.untracked.string('HLT'),
+  filterName      = filters,
   triggerName     = triggers,
-  triggerResults  = cms.InputTag("TriggerResults","","HLT"),
-  triggerEvent    = cms.InputTag("hltTriggerSummaryAOD","","HLT"),
+  triggerFollow   = follows,
+  filterFlags    = cms.untracked.InputTag("TriggerResults","","RECO"),
+  triggerResults  = cms.untracked.InputTag("TriggerResults","","HLT"),
+  triggerHLTObjs  = cms.untracked.InputTag("slimmedPatTrigger"),
+  triggerL1Objs   = cms.untracked.InputTag("caloStage2Digis","Jet"),
+  triggerL1HTObjs = cms.untracked.InputTag("caloStage2Digis","EtSum"),
+  #triggerAllObjs   = cms.untracked.InputTag("gtStage2Digis","GlobalAlgBlk"),
   prescales       = cms.InputTag("patTrigger"),
   prescalesL1Min  = cms.InputTag("patTrigger","l1min"), 
   prescalesL1Max  = cms.InputTag("patTrigger","l1max"), 
-  triggerObjects  = cms.InputTag("slimmedPatTrigger"),
   ## jec services ##############################
-  EventInfo       = cms.InputTag("generator"),
-  GenParticles    = cms.InputTag("genparticles"),
-  jetFlavourInfos = cms.InputTag("genJetFlavourInfos"),
+  EventInfo       = cms.untracked.InputTag("generator"),
+  GenParticles    = cms.untracked.InputTag("genparticles"),
+  jetFlavourInfos = cms.untracked.InputTag("genJetFlavourInfos"),
   saveWeights     = cms.bool(False),                      
-)
-
-process.goodVertices = cms.EDFilter("VertexSelector",
-  filter = cms.bool(False),
-  src = cms.InputTag("offlineSlimmedPrimaryVertices"),
-  cut = cms.string("!isFake && ndof > 4 && abs(z) <= 24 && position.Rho <= 2"),
+  HBHENoiseFilterResultNoMinZLabel = cms.untracked.InputTag("HBHENoiseFilterResultProducerNoMinZ", "HBHENoiseFilterResult")
 )
 
 #Try scheduled processs
-process.path = cms.Path(process.goodVertices*
+process.path = cms.Path(process.QGTagger*
+                        process.HBHENoiseFilterResultProducerNoMinZ*
                         process.ak4)
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #! Output and Log
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
+process.options.allowUnscheduled = cms.untracked.bool(True)
