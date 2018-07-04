@@ -22,3 +22,9 @@ flt17MC = cms.vstring(
  "Flag_globalTightHalo2016Filter","Flag_BadChargedCandidateFilter","Flag_BadPFMuonFilter"
 )
 
+flt18DT = cms.vstring(
+ "Flag_HBHENoiseFilter","Flag_HBHENoiseIsoFilter","Flag_EcalDeadCellTriggerPrimitiveFilter",
+ "Flag_goodVertices","Flag_eeBadScFilter","Flag_ecalBadCalibFilter",
+ "Flag_globalTightHalo2016Filter","Flag_BadChargedCandidateFilter","Flag_BadPFMuonFilter"
+)
+
