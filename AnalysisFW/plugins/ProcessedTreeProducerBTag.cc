@@ -38,10 +38,6 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   mSrcPU(mayConsume<std::vector<PileupSummaryInfo> >(                              cfg.getUntrackedParameter<edm::InputTag>("srcPULabel",edm::InputTag("")))),
   mJetFlavourInfosToken(consumes<reco::JetFlavourInfoMatchingCollection>(          cfg.getUntrackedParameter<edm::InputTag>("jetFlavInfos",edm::InputTag("")))),
   mJetFlavourInfosTokenPhysicsDef(consumes<reco::JetFlavourInfoMatchingCollection>(cfg.getUntrackedParameter<edm::InputTag>("jetFlavInfosPD",edm::InputTag("")))),
-  mQGLToken(consumes<                                                                   edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood"))),
-  mQGAx2Token(consumes<                                                                 edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2"))),
-  mQGMulToken(consumes<                                                                   edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult"))),
-  mQGPtDToken(consumes<                                                                 edm::ValueMap<float>>(edm::InputTag("QGTagger", "ptD"))),
   // Trigger
   mProcessName(                                                                      cfg.getUntrackedParameter<std::string>("processName","")),
   mFilterNames(                                                                 cfg.getParameter<std::vector<std::string> >("filterName")),
@@ -58,7 +54,14 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   mHBHENoiseFilterResultNoMinZLabel(mayConsume<bool>(                              cfg.getUntrackedParameter<edm::InputTag>("HBHENoiseFilterResultNoMinZLabel",edm::InputTag("")))),
   mCands(mayConsume<pat::PackedCandidateCollection>(                                                          edm::InputTag("packedPFCandidates"))),
   mHLTPrescale(cfg, consumesCollector(), *this)
-{}
+{
+  if (mAK4) {
+    mQGLToken = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood"));
+    mQGAx2Token = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2"));
+    mQGMulToken = consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult"));
+    mQGPtDToken = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "ptD"));
+  }
+}
 //////////////////////////////////////////////////////////////////////////////////////////
 void ProcessedTreeProducerBTag::beginJob()
 {
@@ -168,6 +171,8 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   qEvtHdr.setEvt(event.id().event());
   qEvtHdr.setLumi(event.luminosityBlock());
   qEvtHdr.setBunch(event.bunchCrossing());
+  float refR = 0.4;
+  if (!mAK4) refR = 0.8;
   
   //-------------- Beam Spot --------------------------------------
   Handle<reco::BeamSpot> beamSpot;
@@ -464,7 +469,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
         int imin = -1;
         float rmin = -1.;
         std::tie(imin,rmin) = best_jet4prtn(gPart);
-        if (rmin<0.4 and (jet2bpt.find(imin)==jet2bpt.end() or jet2bpt[imin]<gPart.pt()))
+        if (rmin<refR and (jet2bpt.find(imin)==jet2bpt.end() or jet2bpt[imin]<gPart.pt()))
           jet2bpt[imin] = gPart.pt();
       }
     }
@@ -518,33 +523,37 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
 
   // Partons within the jet
   vector< vector<int> > jet2pu;
-  for (auto jet=patJets->begin(); jet!=patJets->end(); ++jet) jet2pu.emplace_back(vector<int>());
+  if (mAK4) {
+    for (auto jet=patJets->begin(); jet!=patJets->end(); ++jet) jet2pu.emplace_back(vector<int>());
 
-  // Pick the PF candidates removed by CHS (fromPV==0)
-  for (auto cidx = 0u; cidx<cands->size(); ++cidx) {
-    auto &c = cands->at(cidx);
-    if (c.fromPV()!=0) continue;
-    float dRMin = 999.;
-    int bestjet = -1;
-    // Find the jet that best matches this candidate
-    for (auto ijet=patJets->begin(); ijet!=patJets->end(); ++ijet) {
-      float dR = reco::deltaR(*ijet,c);
-      if (dR<dRMin) {
-        dRMin = dR;
-        bestjet = ijet-patJets->begin();
+    // Pick the PF candidates removed by CHS (fromPV==0)
+    for (auto cidx = 0u; cidx<cands->size(); ++cidx) {
+      auto &c = cands->at(cidx);
+      if (c.fromPV()!=0) continue;
+      float dRMin = 999.;
+      int bestjet = -1;
+      // Find the jet that best matches this candidate
+      for (auto ijet=patJets->begin(); ijet!=patJets->end(); ++ijet) {
+        float dR = reco::deltaR(*ijet,c);
+        if (dR<dRMin) {
+          dRMin = dR;
+          bestjet = ijet-patJets->begin();
+        }
       }
+      // If the candidate is closer than the jet radius to the jet axis, this is a PU particle for the selected jet
+      if (dRMin<refR) jet2pu[bestjet].push_back(cidx);
     }
-    // If the candidate is closer than the jet radius to the jet axis, this is a PU particle for the selected jet
-    if (dRMin<0.4) jet2pu[bestjet].push_back(cidx);
   }
 
   // QG stuff needs to be taken as a separate entity for MiniAOD
   edm::Handle<edm::ValueMap<float>> qglHandle, qgax2Handle, qgptdHandle;
   edm::Handle<edm::ValueMap<int>> qgmulHandle;
-  event.getByToken(mQGLToken, qglHandle);
-  event.getByToken(mQGAx2Token, qgax2Handle);
-  event.getByToken(mQGMulToken, qgmulHandle);
-  event.getByToken(mQGPtDToken, qgptdHandle);
+  if (mAK4) {
+    event.getByToken(mQGLToken, qglHandle);
+    event.getByToken(mQGAx2Token, qgax2Handle);
+    event.getByToken(mQGMulToken, qgmulHandle);
+    event.getByToken(mQGPtDToken, qgptdHandle);
+  }
   
   // Jet loop
   int maxGenMatch = -1;
@@ -562,31 +571,33 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     // Track parameters by Juska. Not-so-useful for chs jets.
     int mpuTrk(0), mlvTrk(0), mjtTrk(0); // # of pile-up tracks & lead-vertex tracks & all tracks ## Juska
 
-    // Loop through the PF candidates within the jet.
-    vector<double> used;
-    for (auto pidx = 0u; pidx < ijet->numberOfDaughters(); ++pidx) {
-      auto dtr = dynamic_cast<const pat::PackedCandidate*>(ijet->daughter(pidx));
-      if (dtr->charge()!=0) {
-        che += dtr->energy();
-        
-        ++mjtTrk; 
-        if (dtr->fromPV()==0) {
-          // Note: dtr->pvAssociationQuality() is the modern alternative, but fromPV is the one used for CHS.
-          // Still for some reason, not all fromPV==0 cases are removed. These events fit the old "betaStar" definition (not-from-PV).
-          // Due to CHS, the trailing betaStar is a vanishing fraction (1/10k), so we don't store it anymore.
-          ++mpuTrk;
-          used.push_back(dtr->energy());
-        } else {
-          ++mlvTrk;
+    if (mAK4) {
+      // Loop through the PF candidates within the jet.
+      vector<double> used;
+      for (auto pidx = 0u; pidx < ijet->numberOfDaughters(); ++pidx) {
+        auto dtr = dynamic_cast<const pat::PackedCandidate*>(ijet->daughter(pidx));
+        if (dtr->charge()!=0) {
+          che += dtr->energy();
+          
+          ++mjtTrk; 
+          if (dtr->fromPV()==0) {
+            // Note: dtr->pvAssociationQuality() is the modern alternative, but fromPV is the one used for CHS.
+            // Still for some reason, not all fromPV==0 cases are removed. These events fit the old "betaStar" definition (not-from-PV).
+            // Due to CHS, the trailing betaStar is a vanishing fraction (1/10k), so we don't store it anymore.
+            ++mpuTrk;
+            used.push_back(dtr->energy());
+          } else {
+            ++mlvTrk;
+          }
         }
       }
-    }
-    // Loop through the pileup PF candidates within the jet.
-    for (auto &pidx : jet2pu[jetNo]) {
-      auto dtr = cands->at(pidx);
-      // We take the candidates that have not appeared before: these were removed by CHS
-      if (dtr.charge()!=0 and std::find(used.begin(),used.end(),dtr.energy())==used.end())
-        pue += dtr.energy();
+      // Loop through the pileup PF candidates within the jet.
+      for (auto &pidx : jet2pu[jetNo]) {
+        auto dtr = cands->at(pidx);
+        // We take the candidates that have not appeared before: these were removed by CHS
+        if (dtr.charge()!=0 and std::find(used.begin(),used.end(),dtr.energy())==used.end())
+          pue += dtr.energy();
+      }
     }
 
     QCDPFJet qcdJet;
@@ -708,7 +719,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       std::tie(imin,rmin) = best_genjet(*ijet);
       if (imin>maxGenMatch) maxGenMatch = imin;
 
-      if (imin!=-1 and rmin<0.4) {
+      if (imin!=-1 and rmin<refR) {
         qcdJet.setGen(imin,rmin);
         if (mUseGenInfo) {
           // Patch the PF jet flavours if these were not found earlier

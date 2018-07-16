@@ -20,6 +20,7 @@ from filterlists import *
 
 # -*- coding: utf-8 -*-
 import FWCore.ParameterSet.Config as cms
+import sys
 
 process = cms.Process("Ntuplizer")
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -44,14 +45,15 @@ process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
 #! Input
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
 
-triggers = trgZBH16 
-follows = cms.vstring()
+trgs = trgBII16 
+#inFiles = JHTD16
 inFiles = cms.untracked.vstring()
 filters = flt16DT
 
-zbflag = True
+ak4flag = True
+zbflag = False
 
 process.source = cms.Source("PoolSource", fileNames = inFiles )
 
@@ -68,21 +70,43 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.load('CommonTools.UtilAlgos.TFileService_cfi')
 process.TFileService.fileName=cms.string('DATA.root')
 
-# Other options: see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
-process.load('RecoJets.JetProducers.QGTagger_cfi')
-process.QGTagger.srcJets = cms.InputTag('slimmedJets')
-process.QGTagger.jetsLabel  = cms.string('QGL_AK4PFchs')        
+triggers=cms.vstring()
+follows=cms.vstring()
+jetname='slimmedJets'
+gjetname='slimmedGenJets'
+jetnolim=1
+if ak4flag:
+  # Other options: see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
+  process.load('RecoJets.JetProducers.QGTagger_cfi')
+  process.QGTagger.srcJets = cms.InputTag('slimmedJets')
+  process.QGTagger.jetsLabel  = cms.string('QGL_AK4PFchs')        
+
+  if zbflag:
+    triggers=trgs['zb']
+  else: 
+    triggers=trgs['ak4']
+    follows=trgs['ak8']
+else:
+  jetname='slimmedJetsAK8'
+  gjetname='slimmedGenJetsAK8'
+  jetnolim=0
+  if zbflag:
+    sys.exit()
+  else: 
+    triggers=trgs['ak8']
+    follows=trgs['ak4']
 
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
 
+#process.ak8 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
 process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
   ## jet collections ###########################
-  pfjetschs       = cms.InputTag('slimmedJets'),
+  pfjetschs       = cms.InputTag(jetname),
   pfchsjetpuid    = cms.string("pileupJetId:fullDiscriminant"),
   runYear         = cms.untracked.string("2016"),
   ## MET collection ####
   pfmetT1         = cms.InputTag('slimmedMETs'),
-  genjets         = cms.untracked.InputTag('slimmedGenJets'),
+  genjets         = cms.untracked.InputTag(gjetname),
   ## database entry for the uncertainties ######
   PFPayloadName   = cms.string(''),
   jecUncSrc       = cms.untracked.string(''),
@@ -100,11 +124,11 @@ process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
   maxEta          = cms.double(5.0),
   minPFPt         = cms.double(15.0),
   minPFPtThirdJet = cms.double(5.0),
-  minNPFJets      = cms.uint32(1),
+  minNPFJets      = cms.uint32(jetnolim),
   minGenPt        = cms.untracked.double(20),
   isMCarlo        = cms.untracked.bool(False),
   useGenInfo      = cms.untracked.bool(False),
-  AK4             = cms.untracked.bool(True),
+  AK4             = cms.untracked.bool(ak4flag),
   ZB              = cms.untracked.bool(zbflag),
   ## trigger ###################################
   printTriggerMenu= cms.untracked.bool(False),

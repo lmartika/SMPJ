@@ -39,18 +39,18 @@ config.JobType.pluginName = 'Analysis'
 #config.Data.inputDataset = '/ZeroBias/Run2016F-07Aug17-v1/MINIAOD'
 #config.Data.unitsPerJob = 10
 # Flate16 Legacy
-#config.General.requestName = 'ZB16Fl'
-#config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/MAOD8029/src/SMPJ/AnalysisFW/triggerinfo/ZB16runs/Fl/lumis.json'
-#config.Data.inputDataset = '/ZeroBias/Run2016F-07Aug17-v1/MINIAOD'
-#config.Data.unitsPerJob = 10
+config.General.requestName = 'ZB16Fl_new'
+config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/MAOD8029/src/SMPJ/AnalysisFW/triggerinfo/ZB16runs/Fl/lumis.json'
+config.Data.inputDataset = '/ZeroBias/Run2016F-07Aug17-v1/MINIAOD'
+config.Data.unitsPerJob = 10
 # G16 Legacy
 #config.General.requestName = 'ZB16G'
 #config.Data.inputDataset = '/ZeroBias/Run2016G-07Aug17-v1/MINIAOD'
 #config.Data.unitsPerJob = 10
 # H16 Legacy
-config.General.requestName = 'ZB16H'
-config.Data.inputDataset = '/ZeroBias/Run2016H-07Aug17-v1/MINIAOD'
-config.Data.unitsPerJob = 10
+#config.General.requestName = 'ZB16H'
+#config.Data.inputDataset = '/ZeroBias/Run2016H-07Aug17-v1/MINIAOD'
+#config.Data.unitsPerJob = 10
 
 #config.section_("Data")
 config.Data.splitting = 'LumiBased'

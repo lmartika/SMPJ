@@ -16,8 +16,8 @@ config.JobType.pluginName = 'Analysis'
 
 #config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/Final/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt'
 # Herwig++ Flat
-config.General.requestName = 'QCD16_HS1_Flat_TIV_v6-1'
-config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCUETHS1_FlatP6_13TeV_herwigpp/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
+config.General.requestName = 'QCD16_HS1_Flat_TIV_v6'
+config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCUETHS1_Flat_13TeV_herwigpp/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
 
 #config.section_("Data")
 config.Data.splitting = 'LumiBased'

@@ -52,6 +52,7 @@ inFiles = QCD16Mor17HS1
 filters = flt16MC
 
 zbflag = False
+ak4flag = False
 
 process.source = cms.Source("PoolSource", fileNames = inFiles )
 
@@ -77,13 +78,16 @@ process.MessageLogger = cms.Service("MessageLogger",
 process.load('CommonTools.UtilAlgos.TFileService_cfi')
 process.TFileService.fileName=cms.string('DATA.root')
 
-# Other options: see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
-process.load('RecoJets.JetProducers.QGTagger_cfi')
-process.QGTagger.srcJets = cms.InputTag('slimmedJets')
-process.QGTagger.jetsLabel  = cms.string('QGL_AK4PFchs')
-
 genParticleCollection = 'prunedGenParticles'
-genJetCollection = 'slimmedGenJets'
+#jetname='slimmedJets'
+#gjetname='slimmedGenJets'
+jetname='slimmedJetsAK8'
+gjetname='slimmedGenJetsAK8'
+
+# Other options: see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
+#process.load('RecoJets.JetProducers.QGTagger_cfi')
+#process.QGTagger.srcJets = cms.InputTag(jetname)
+#process.QGTagger.jetsLabel  = cms.string('QGL_AK4PFchs')
 
 genSrc = "generator"
 process.load('PhysicsTools.JetMCAlgos.HadronAndPartonSelector_cfi')
@@ -93,20 +97,20 @@ process.selectedHadronsAndPartons.partonMode = cms.string("Auto")
 process.physDefHadronsAndPartons = process.selectedHadronsAndPartons.clone( fullChainPhysPartons = cms.bool(False) )
 
 from PhysicsTools.JetMCAlgos.AK4PFJetsMCFlavourInfos_cfi import ak4JetFlavourInfos
-process.jetFlavs = ak4JetFlavourInfos.clone( jets = genJetCollection,
+process.jetFlavs = ak4JetFlavourInfos.clone( jets = gjetname,
                                              partons = cms.InputTag("selectedHadronsAndPartons","algorithmicPartons") )
 process.jetFlavsPD = process.jetFlavs.clone( partons = cms.InputTag("physDefHadronsAndPartons","physicsPartons") )
 
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
 
-process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
+process.ak8 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
   ## jet collections ###########################
-  pfjetschs       = cms.InputTag('slimmedJets'),
+  pfjetschs       = cms.InputTag(jetname),
   pfchsjetpuid    = cms.string('pileupJetId:fullDiscriminant'),
   runYear         = cms.untracked.string("2016"),
   ## MET collection ####
   pfmetT1         = cms.InputTag('slimmedMETs'),
-  genjets         = cms.untracked.InputTag(genJetCollection),
+  genjets         = cms.untracked.InputTag(gjetname),
   ## database entry for the uncertainties ######
   PFPayloadName   = cms.string(''),
   jecUncSrc       = cms.untracked.string(''),
@@ -124,11 +128,12 @@ process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
   maxEta          = cms.double(5.0),
   minPFPt         = cms.double(15.0),
   minPFPtThirdJet = cms.double(5.0),
-  minNPFJets      = cms.uint32(1),
+#  minNPFJets      = cms.uint32(1), #AK4
+  minNPFJets      = cms.uint32(0), #AK8
   minGenPt        = cms.untracked.double(15.0),
   isMCarlo        = cms.untracked.bool(True),
   useGenInfo      = cms.untracked.bool(True),
-  AK4             = cms.untracked.bool(True),
+  AK4             = cms.untracked.bool(ak4flag),
   mcType          = cms.untracked.int32(1),
   ZB              = cms.untracked.bool(zbflag),
   ## trigger ###################################
@@ -155,7 +160,7 @@ process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
 )
 
 #Try scheduled processs
-process.path = cms.Path(process.ak4)
+process.path = cms.Path(process.ak8)
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #! Output and Log
