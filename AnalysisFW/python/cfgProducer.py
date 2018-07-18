@@ -22,12 +22,12 @@ GTags = {
     'mc' : "80X_mcRun2_asymptotic_2016_TrancheIV_v6"
   },
   '17' : {
-    'dt' : "80X_dataRun2_2016LegacyRepro_v4",
-    'mc' : "80X_mcRun2_asymptotic_2016_TrancheIV_v6"
+    'dt' : "94X_dataRun2_v6",
+    'mc' : "94X_mc2017_realistic_v14"
   },
   '18' : {
-    'dt' : "80X_dataRun2_2016LegacyRepro_v4",
-    'mc' : "80X_mcRun2_asymptotic_2016_TrancheIV_v6"
+    'dt' : "101X_dataRun2_Prompt_v11",
+    'mc' : "Missing!"
   }
 }
 
@@ -171,6 +171,22 @@ def producer(era,jettype):
         f.write('QCD16Mor17P8M1\n')
       else:
         f.write('QCD16Mor17HS1\n')
+    elif RunYear=='17':
+      if jettype=='zb':
+        f.write('JHTB17\n')
+      elif Mode=='dt':
+        f.write('JHTB17\n')
+      elif MC=='py':
+        f.write('QCD17P8CP5\n')
+      else:
+        f.write('QCD17HS1\n')
+    elif RunYear=='18':
+      if jettype=='zb':
+        f.write('JHTA18\n')
+      elif Mode=='dt':
+        f.write('JHTA18\n')
+      else:
+        f.write('cms.untracked.vstring()\n')
     else:
       f.write('cms.untracked.vstring()\n')
     # Remaining input stuff   
