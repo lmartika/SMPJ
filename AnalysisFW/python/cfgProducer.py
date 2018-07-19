@@ -10,11 +10,11 @@ DOAK8=True
 DOZB=True
 
 # This should match GTags, triggerlists.py and filterlists.py
-RunYear='16' #16/17/18
+RunYear='17' #16/17/18
 # This should match GTags and filterlists.py
-Mode='dt' #dt/mc
+Mode='mc' #dt/mc
 # This is only used locally here
-MC='py' #py/hw
+MC='hw' #py/hw
 
 GTags = {
   '16' : {
@@ -119,7 +119,7 @@ flavors = [
   'process.selectedHadronsAndPartons.src = "generator"',
   'process.physDefHadronsAndPartons = process.selectedHadronsAndPartons.clone( fullChainPhysPartons = cms.bool(False) )\n',
   'process.jetFlavs = ak4JetFlavourInfos.clone( jets = gjetname,',
-  '                                             partons = cms.InputTag("selectedHadronsAndPartons","algorithmicPartons") )',
+  '                                             partons = cms.InputTag("selectedHadronsAndPartons","physicsPartons") )',
   'process.jetFlavsPD = process.jetFlavs.clone( partons = cms.InputTag("physDefHadronsAndPartons","physicsPartons") )',
 ]
 
@@ -173,7 +173,7 @@ def producer(era,jettype):
         f.write('QCD16Mor17HS1\n')
     elif RunYear=='17':
       if jettype=='zb':
-        f.write('JHTB17\n')
+        f.write('ZBB17\n')
       elif Mode=='dt':
         f.write('JHTB17\n')
       elif MC=='py':
@@ -244,7 +244,7 @@ def producer(era,jettype):
     f.write("  triggerFollow   = follows,\n")
     f.write("  filterFlags     = cms.untracked.InputTag('TriggerResults','','RECO'),\n")
     f.write("  triggerResults  = cms.untracked.InputTag('TriggerResults','','HLT'),\n")
-    f.write("  triggerHLTObjs  = cms.untracked.InputTag('selectedPatTrigger'),\n")
+    f.write("  triggerHLTObjs  = cms.untracked.InputTag('"+("selected" if RunYear=='16' else "slimmed")+"PatTrigger'),\n")
     f.write("  triggerL1Objs   = cms.untracked.InputTag('caloStage2Digis','Jet'),\n")
     f.write("  triggerL1HTObjs = cms.untracked.InputTag('caloStage2Digis','EtSum'),\n")
     f.write("  #triggerAllObjs = cms.untracked.InputTag('gtStage2Digis','GlobalAlgBlk'),\n")
@@ -269,7 +269,9 @@ def producer(era,jettype):
     if Mode=="dt":
       f.write("process.HBHENoiseFilterResultProducerNoMinZ*\n                        ")
     else:
+      f.write("process.selectedHadronsAndPartons*\n                        ")
       f.write("process.jetFlavs*\n                        ")
+      f.write("process.physDefHadronsAndPartons*\n                        ")
       f.write("process.jetFlavsPD*\n                        ")
     f.write("process.ak"+("8" if jettype=='ak8' else "4")+")\n\n")
     for line in logging:

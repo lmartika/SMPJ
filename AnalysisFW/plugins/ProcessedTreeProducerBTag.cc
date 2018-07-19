@@ -105,7 +105,9 @@ void ProcessedTreeProducerBTag::beginJob()
   }
 }
 //////////////////////////////////////////////////////////////////////////////////////////
-void ProcessedTreeProducerBTag::endJob() {}
+void ProcessedTreeProducerBTag::endJob() {
+  cout << "Happily finished processing! :)" << endl;
+}
 //////////////////////////////////////////////////////////////////////////////////////////
 void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup const& iSetup)
 {
@@ -313,6 +315,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       // HLT sector
       regex pfjet(Form("HLT_%sPFJet([0-9]*)_v([0-9]*)",mAK4 ? "" : "AK8"));
       regex jetht("HLT_PFHT([0-9]*)_v[0-9]*");
+      bool saveHT = false;
       for (pat::TriggerObjectStandAlone obj : *triggerHLTObjs) { // note: not "const &" since we want to call unpackPathNames
         obj.unpackPathNames(names);
         vector<string> pathNamesAll  = obj.pathNames(false);
@@ -326,6 +329,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
             P4.SetPtEtaPhiM(obj.pt(),obj.eta(),obj.phi(),obj.mass());
             vvHLT[trgName].emplace_back(P4.Px(),P4.Py(),P4.Pz(),P4.E());
           } else if (!mAK4 and regex_match(trgName,jetht)) {
+            saveHT = true;
             // We store JetHT stuff into AK8 tuples
             TLorentzVector P4;
             P4.SetPtEtaPhiM(obj.pt(),obj.eta(),obj.phi(),obj.mass());
@@ -345,8 +349,8 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       }
       qL1Objs.push_back(vvL1);
 
-      // L1 sector: JetHT (only stored into AK8 tuples)
-      if (!mAK4) {
+      // L1 sector: JetHT (only stored into AK8 tuples - if PFHT triggers are followed)
+      if (saveHT) {
         vector<LorentzVector> vvL1HT;
         for (auto obj = triggerL1HTObjs->begin(0); obj != triggerL1HTObjs->end(0); ++obj) {
           if (obj->getType()==l1t::EtSum::kTotalHt) {
