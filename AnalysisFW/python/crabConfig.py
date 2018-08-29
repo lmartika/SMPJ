@@ -2,9 +2,9 @@ from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
 # Choose True for DT, False for MC
-DTMode=False
+DTMode=True
 # Choose 16/17/18
-RunYear='17'
+RunYear='18'
 # Choose ak4/ak8, zb (DT only)
 Mode='ak4'
 
@@ -160,48 +160,54 @@ if __name__ == '__main__':
       submit(config)
 
     elif RunYear=='18':
-      # A18-PR-v1
-      config.JobType.psetName = 'cfg/'+Mode+'18A.py'
-      config.General.requestName = 'Run18A1'+Tag+'_PR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018A-PromptReco-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-      # A18-PR-v2
-      config.JobType.psetName = 'cfg/'+Mode+'18A.py'
-      config.General.requestName = 'Run18A2'+Tag+'_PR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018A-PromptReco-v2/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-      # A18-PR-v3
-      config.JobType.psetName = 'cfg/'+Mode+'18A.py'
-      config.General.requestName = 'Run18A3'+Tag+'_PR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018A-PromptReco-v3/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
-      # B18-PR-v1
-      config.JobType.psetName = 'cfg/'+Mode+'18B.py'
-      config.General.requestName = 'Run18B1'+Tag+'_PR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018B-PromptReco-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-      # B18-PR-v2
-      config.JobType.psetName = 'cfg/'+Mode+'18B.py'
-      config.General.requestName = 'Run18B2'+Tag+'_PR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018B-PromptReco-v2/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
-      # C18-PR-v1
+#      # A18-PR-v1
+#      config.JobType.psetName = 'cfg/'+Mode+'18A.py'
+#      config.General.requestName = 'Run18A1'+Tag+'_PR_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2018A-PromptReco-v1/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+#      # A18-PR-v2
+#      config.JobType.psetName = 'cfg/'+Mode+'18A.py'
+#      config.General.requestName = 'Run18A2'+Tag+'_PR_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2018A-PromptReco-v2/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+#      # A18-PR-v3
+#      config.JobType.psetName = 'cfg/'+Mode+'18A.py'
+#      config.General.requestName = 'Run18A3'+Tag+'_PR_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2018A-PromptReco-v3/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+#
+#      # B18-PR-v1
+#      config.JobType.psetName = 'cfg/'+Mode+'18B.py'
+#      config.General.requestName = 'Run18B1'+Tag+'_PR_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2018B-PromptReco-v1/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+#      # B18-PR-v2
+#      config.JobType.psetName = 'cfg/'+Mode+'18B.py'
+#      config.General.requestName = 'Run18B2'+Tag+'_PR_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2018B-PromptReco-v2/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+#
+#      # C18-PR-v1
+#      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
+#      config.General.requestName = 'Run18C1'+Tag+'_PR_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v1/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+#      # C18-PR-v2
+#      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
+#      config.General.requestName = 'Run18C2'+Tag+'_PR_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v2/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+#      # C18-PR-v3
       config.JobType.psetName = 'cfg/'+Mode+'18C.py'
-      config.General.requestName = 'Run18C1'+Tag+'_PR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-      # C18-PR-v2
-      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
-      config.General.requestName = 'Run18C2'+Tag+'_PR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v2/MINIAOD'
+      config.General.requestName = 'Run18C3'+Tag+'_PR_mAOD'
+      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v3/MINIAOD'
       config.Data.unitsPerJob = 10
       submit(config)
 

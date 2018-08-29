@@ -10,9 +10,9 @@ DOAK8=True
 DOZB=True
 
 # This should match GTags, triggerlists.py and filterlists.py
-RunYear='17' #16/17/18
+RunYear='18' #16/17/18
 # This should match GTags and filterlists.py
-Mode='mc' #dt/mc
+Mode='dt' #dt/mc
 # This is only used locally here
 MC='hw' #py/hw
 
@@ -22,12 +22,12 @@ GTags = {
     'mc' : "80X_mcRun2_asymptotic_2016_TrancheIV_v6"
   },
   '17' : {
-    'dt' : "94X_dataRun2_v6",
+    'dt' : "94X_dataRun2_ReReco_EOY17_v6", #"94X_dataRun2_v6",
     'mc' : "94X_mc2017_realistic_v14"
   },
   '18' : {
     'dt' : "101X_dataRun2_Prompt_v11",
-    'mc' : "Missing!"
+    'mc' : "100X_upgrade2018_realistic_v10"
   }
 }
 
