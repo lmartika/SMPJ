@@ -79,7 +79,7 @@ void ProcessedTreeProducerBTag::beginJob()
     mULimNHF = 0.98;
     mLLimNEF = 0.01;
     mLLimNHF = -1.00;
-  } else if (mRunYear=="2017") {
+  } else if (mRunYear=="2017" or mRunYear=="2018") {
     mULimCEF = 1.01;
     mULimNEF = 0.99;
     mULimNHF = 1.01;

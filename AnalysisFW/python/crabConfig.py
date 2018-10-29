@@ -6,7 +6,7 @@ DTMode=True
 # Choose 16/17/18
 RunYear='18'
 # Choose ak4/ak8, zb (DT only)
-Mode='ak4'
+Mode='zb'
 
 
 Tag=''
