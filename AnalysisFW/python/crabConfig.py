@@ -124,38 +124,66 @@ if __name__ == '__main__':
       submit(config)
 
     elif RunYear=='17':
-      # B17 March18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'17B.py'
-      config.General.requestName = 'Run17B'+Tag+'_Mar18_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2017B-31Mar2018-v1/MINIAOD'
+#      # B17 March18 ReReco
+#      config.JobType.psetName = 'cfg/'+Mode+'17B.py'
+#      config.General.requestName = 'Run17B'+Tag+'_Mar18_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2017B-31Mar2018-v1/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+#
+#      # C17 March18 ReReco
+#      config.JobType.psetName = 'cfg/'+Mode+'17C.py'
+#      config.General.requestName = 'Run17C'+Tag+'_Mar18_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2017C-31Mar2018-v1/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+#
+#      # D17 March18 ReReco
+#      config.JobType.psetName = 'cfg/'+Mode+'17D.py'
+#      config.General.requestName = 'Run17D'+Tag+'_Mar18_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2017D-31Mar2018-v1/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+#
+#      # E17 March18 ReReco
+#      config.JobType.psetName = 'cfg/'+Mode+'17E.py'
+#      config.General.requestName = 'Run17E'+Tag+'_Mar18_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2017E-31Mar2018-v1/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+#
+#      # F17 March18 ReReco
+#      config.JobType.psetName = 'cfg/'+Mode+'17F.py'
+#      config.General.requestName = 'Run17F'+Tag+'_Mar18_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2017F-31Mar2018-v1/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+
+      # H17 Fall17 ReReco FSQJet2
+      config.JobType.psetName = 'cfg/ak4ak817H.py'
+      config.General.requestName = 'Run17H_FSQ2_Fall17_mAOD'
+      config.Data.inputDataset = '/FSQJet2/Run2017H-17Nov2017-v1/MINIAOD'
       config.Data.unitsPerJob = 10
       submit(config)
 
-      # C17 March18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'17C.py'
-      config.General.requestName = 'Run17C'+Tag+'_Mar18_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2017C-31Mar2018-v1/MINIAOD'
+      # H17 Fall17 ReReco LowEGJet
+      config.JobType.psetName = 'cfg/ak4ak817H.py'
+      config.General.requestName = 'Run17H_LEG_Fall17_mAOD'
+      config.Data.inputDataset = '/LowEGJet/Run2017H-17Nov2017-v2/MINIAOD'
       config.Data.unitsPerJob = 10
       submit(config)
 
-      # D17 March18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'17D.py'
-      config.General.requestName = 'Run17D'+Tag+'_Mar18_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2017D-31Mar2018-v1/MINIAOD'
+      # H17 Fall17 ReReco HighEGJet
+      config.JobType.psetName = 'cfg/ak4ak817H.py'
+      config.General.requestName = 'Run17H_HEG_Fall17_mAOD'
+      config.Data.inputDataset = '/HighEGJet/Run2017H-17Nov2017-v1/MINIAOD'
       config.Data.unitsPerJob = 10
       submit(config)
 
-      # E17 March18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'17E.py'
-      config.General.requestName = 'Run17E'+Tag+'_Mar18_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2017E-31Mar2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
-      # D17 March18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'17F.py'
-      config.General.requestName = 'Run17F'+Tag+'_Mar18_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2017F-31Mar2018-v1/MINIAOD'
+      # H17 Fall17 ReReco ZeroBias
+      config.JobType.psetName = 'cfg/zb17H.py'
+      config.General.requestName = 'Run17H_ZB_Fall17_mAOD'
+      config.Data.inputDataset = '/ZeroBias/Run2017H-17Nov2017-v1/MINIAOD'
       config.Data.unitsPerJob = 10
       submit(config)
 
