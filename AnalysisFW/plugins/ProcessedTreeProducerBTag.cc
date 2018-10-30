@@ -786,8 +786,11 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   const pat::MET &mett1 = pfmett1->front();
   qPFMet_t1.setVar(mett1.et(),mett1.sumEt(),mett1.phi());
   // MET T0 is obtained through a custom patch
-  auto mett0 = mett1.corP2(pat::MET::Type0);
-  qPFMet_t0.setVar(mett0.pt(),mett1.corSumEt(pat::MET::Type0),mett0.phi());
+  auto mett0 = mett1.corP2(pat::MET::RawChs);
+  qPFMet_t0.setVar(mett0.pt(),mett1.corSumEt(pat::MET::RawChs),mett0.phi());
+  // The old T0 for 8029
+  //auto mett0 = mett1.corP2(pat::MET::Type0);
+  //qPFMet_t0.setVar(mett0.pt(),mett1.corSumEt(pat::MET::Type0),mett0.phi());
   // MET T0T1 is found using standard routines
   auto mett0t1 = mett1.corP2(pat::MET::Type01);
   qPFMet_t0t1.setVar(mett0t1.pt(),mett1.corSumEt(pat::MET::Type01),mett0t1.phi());
