@@ -6,7 +6,7 @@
 ###########################
 
 DOAK4=True
-DOAK8=True
+DOAK8=False
 DOZB=True
 
 # This should match GTags, triggerlists.py and filterlists.py
@@ -22,12 +22,12 @@ GTags = {
     'mc' : "80X_mcRun2_asymptotic_2016_TrancheIV_v6"
   },
   '17' : {
-    'dt' : "94X_dataRun2_ReReco_EOY17_v6", #"94X_dataRun2_v6",
-    'mc' : "94X_mc2017_realistic_v14"
+    'dt' : "94X_dataRun2_ReReco_EOY17_v6",
+    'mc' : "94X_mc2017_realistic_v16"
   },
   '18' : {
-    'dt' : "101X_dataRun2_Prompt_v11",
-    'mc' : "100X_upgrade2018_realistic_v10"
+    'dt' : "102X_dataRun2_Prompt_v11",
+    'mc' : "102X_upgrade2018_realistic_v15"
   }
 }
 
