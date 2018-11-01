@@ -2,11 +2,11 @@ from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
 # Choose True for DT, False for MC
-DTMode=True
+DTMode=False
 # Choose 16/17/18
 RunYear='18'
 # Choose ak4/ak8, zb (DT only)
-Mode='zb'
+Mode='ak4'
 
 
 Tag=''
@@ -233,10 +233,16 @@ if __name__ == '__main__':
 #      config.Data.unitsPerJob = 10
 #      submit(config)
 #      # C18-PR-v3
-      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
-      config.General.requestName = 'Run18C3'+Tag+'_PR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v3/MINIAOD'
-      config.Data.unitsPerJob = 10
+#      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
+#      config.General.requestName = 'Run18C3'+Tag+'_PR_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v3/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+      # D18-PR-v2
+      config.JobType.psetName = 'cfg/'+Mode+'18D.py'
+      config.General.requestName = 'Run18D'+Tag+'_PR_mAOD'
+      config.Data.inputDataset = DTLoc+'/Run2018D-PromptReco-v2/MINIAOD'
+      config.Data.unitsPerJob = 25
       submit(config)
 
   else:
@@ -603,6 +609,28 @@ if __name__ == '__main__':
       if not ExtMode:
         config.General.requestName = 'QCD17'+Tag+'_P8CP5_3200toInf_mc17r_v14'
         config.Data.inputDataset = '/QCD_Pt_3200toInf_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
+        config.Data.unitsPerJob = 10
+        submit(config)
+
+    elif RunYear=='18':
+
+      # Pythia8 settings
+      config.JobType.psetName = 'cfg/'+Mode+'18py.py'
+      
+      ##### Pythia 8 Flat
+      if not ExtMode:
+        config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc17r_v12'
+        config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIIFall18MiniAOD-102X_upgrade2018_realistic_v12-v1/MINIAODSIM'
+        config.Data.unitsPerJob = 10
+        submit(config)
+      else:
+        config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc18r_v12_ext1'
+        config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIIFall18MiniAOD-102X_upgrade2018_realistic_v12_ext1-v1/MINIAODSIM'
+        config.Data.unitsPerJob = 10
+        submit(config)
+
+        config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc18r_v12_ext1b'
+        config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIIFall18MiniAOD-102X_upgrade2018_realistic_v12_ext1-v1/MINIAODSIM'
         config.Data.unitsPerJob = 10
         submit(config)
 
