@@ -10,11 +10,11 @@ DOAK8=True
 DOZB=True
 
 # This should match GTags, triggerlists.py and filterlists.py
-RunYear='18' #16/17/18
+RunYear='17' #16/17/18
 # This should match GTags and filterlists.py
-Mode='dt' #dt/mc
+Mode='mc' #dt/mc
 # This is only used locally here
-MC='hw' #py/hw
+MC='py' #py/hw
 
 GTags = {
   '16' : {
