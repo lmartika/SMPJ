@@ -80,7 +80,7 @@ trglist = {
     'H' : {
       'ak4' : cms.vstring("HLT_HIAK4PFJet15_v1","HLT_HIPFJet25_v1","HLT_HIAK4PFJet40_v1","HLT_HIAK4PFJet60_v1","HLT_HIAK4PFJet80_v1","HLT_HIPFJet140_v1","HLT_HIPFJetFwd15_v1","HLT_HIPFJetFwd25_v1","HLT_HIAK4PFJet40FWD_v1","HLT_HIAK4PFJet60FWD_v1","HLT_HIAK4PFJet80FWD_v1","HLT_HIPFJetFwd140_v1"),
       'ak8' : cms.vstring("HLT_HIAK8PFJet15_v1","HLT_HIAK8PFJet25_v1","HLT_HIAK8PFJet40_v1","HLT_HIAK8PFJet60_v1","HLT_HIAK8PFJet80_v1","HLT_HIAK8PFJet140_v1","HLT_HIAK8PFJetFwd15_v1","HLT_HIAK8PFJetFwd25_v1","HLT_HIAK8PFJetFwd40_v1","HLT_HIAK8PFJetFwd60_v1","HLT_HIAK8PFJetFwd80_v1","HLT_HIAK8PFJetFwd140_v1"),
-      'zb' : cms.vstring("HLT_ZeroBias_v6","HLT_HIZeroBias_part0_v6","HLT_HIZeroBias_part1_v6","HLT_HIZeroBias_part2_v6","HLT_HIZeroBias_part3_v6","HLT_HIZeroBias_part4_v6","HLT_HIZeroBias_part5_v6","HLT_HIZeroBias_part6_v6","HLT_HIZeroBias_part7_v6","HLT_HIZeroBias_part8_v6","HLT_HIZeroBias_part9_v6","HLT_HIZeroBias_part10_v6","HLT_HIZeroBias_part11_v6")
+      'zb' : cms.vstring("HLT_ZeroBias_v6")
     },
   },
   '18' : {
