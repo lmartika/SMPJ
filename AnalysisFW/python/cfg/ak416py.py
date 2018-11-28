@@ -41,7 +41,7 @@ process.load("JetMETCorrections.Configuration.DefaultJEC_cff")
 #! Input
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-process.GlobalTag.globaltag = "80X_mcRun2_asymptotic_2016_TrancheIV_v6"
+process.GlobalTag.globaltag = "80X_mcRun2_asymptotic_2016_TrancheIV_v8"
 
 triggers=cms.vstring()
 
@@ -89,7 +89,7 @@ process.selectedHadronsAndPartons.src = "generator"
 process.physDefHadronsAndPartons = process.selectedHadronsAndPartons.clone( fullChainPhysPartons = cms.bool(False) )
 
 process.jetFlavs = ak4JetFlavourInfos.clone( jets = gjetname,
-                                             partons = cms.InputTag("selectedHadronsAndPartons","algorithmicPartons") )
+                                             partons = cms.InputTag("selectedHadronsAndPartons","physicsPartons") )
 process.jetFlavsPD = process.jetFlavs.clone( partons = cms.InputTag("physDefHadronsAndPartons","physicsPartons") )
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
 process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
@@ -147,7 +147,9 @@ process.ak4 =  cms.EDAnalyzer('ProcessedTreeProducerBTag',
 )
 
 process.path = cms.Path(process.QGTagger*
+                        process.selectedHadronsAndPartons*
                         process.jetFlavs*
+                        process.physDefHadronsAndPartons*
                         process.jetFlavsPD*
                         process.ak4)
 
