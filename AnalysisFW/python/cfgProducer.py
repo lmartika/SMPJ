@@ -6,8 +6,8 @@
 ###########################
 
 DOAK4=True
-DOAK8=True
-DOZB=True
+DOAK8=False
+DOZB=False
 
 # This should match GTags, triggerlists.py and filterlists.py
 RunYear='17' #16/17/18
@@ -19,15 +19,15 @@ MC='py' #py/hw
 GTags = {
   '16' : {
     'dt' : "80X_dataRun2_2016LegacyRepro_v4",
-    'mc' : "80X_mcRun2_asymptotic_2016_TrancheIV_v6"
+    'mc' : "80X_mcRun2_asymptotic_2016_TrancheIV_v8" # "94X_mcRun2_asymptotic_v3"
   },
   '17' : {
-    'dt' : "94X_dataRun2_ReReco_EOY17_v6", #"94X_dataRun2_v6",
-    'mc' : "94X_mc2017_realistic_v14"
+    'dt' : "94X_dataRun2_ReReco_EOY17_v6",
+    'mc' : "94X_mc2017_realistic_v16"
   },
   '18' : {
-    'dt' : "101X_dataRun2_Prompt_v11",
-    'mc' : "100X_upgrade2018_realistic_v10"
+    'dt' : "102X_dataRun2_Sep2018Rereco_v1", #"102X_dataRun2_Prompt_v11" 
+    'mc' : "102X_upgrade2018_realistic_v15"
   }
 }
 

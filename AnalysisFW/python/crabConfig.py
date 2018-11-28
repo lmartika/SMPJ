@@ -2,11 +2,11 @@ from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
 # Choose True for DT, False for MC
-DTMode=True
+DTMode=False
 # Choose 16/17/18
 RunYear='17'
 # Choose ak4/ak8, zb (DT only)
-Mode='zb'
+Mode='ak4'
 
 
 Tag=''
@@ -124,31 +124,59 @@ if __name__ == '__main__':
       submit(config)
 
     elif RunYear=='17':
-#      # B17 March18 ReReco
-#      config.JobType.psetName = 'cfg/'+Mode+'17B.py'
-#      config.General.requestName = 'Run17B'+Tag+'_Mar18_mAOD'
-#      config.Data.inputDataset = DTLoc+'/Run2017B-31Mar2018-v1/MINIAOD'
+      # B17 March18 ReReco
+      config.JobType.psetName = 'cfg/'+Mode+'17B.py'
+      config.General.requestName = 'Run17B'+Tag+'_Mar18_mAOD'
+      config.Data.inputDataset = DTLoc+'/Run2017B-31Mar2018-v1/MINIAOD'
+      config.Data.unitsPerJob = 10
+      submit(config)
+
+      # C17 March18 ReReco
+      config.JobType.psetName = 'cfg/'+Mode+'17C.py'
+      config.General.requestName = 'Run17C'+Tag+'_Mar18_mAOD'
+      config.Data.inputDataset = DTLoc+'/Run2017C-31Mar2018-v1/MINIAOD'
+      config.Data.unitsPerJob = 10
+      submit(config)
+
+      # D17 March18 ReReco
+      config.JobType.psetName = 'cfg/'+Mode+'17D.py'
+      config.General.requestName = 'Run17D'+Tag+'_Mar18_mAOD'
+      config.Data.inputDataset = DTLoc+'/Run2017D-31Mar2018-v1/MINIAOD'
+      config.Data.unitsPerJob = 10
+      submit(config)
+
+      # E17 March18 ReReco
+      config.JobType.psetName = 'cfg/'+Mode+'17E.py'
+      config.General.requestName = 'Run17E'+Tag+'_Mar18_mAOD'
+      config.Data.inputDataset = DTLoc+'/Run2017E-31Mar2018-v1/MINIAOD'
+      config.Data.unitsPerJob = 10
+      submit(config)
+
+      # F17 March18 ReReco
+      config.JobType.psetName = 'cfg/'+Mode+'17F.py'
+      config.General.requestName = 'Run17F'+Tag+'_Mar18_mAOD'
+      config.Data.inputDataset = DTLoc+'/Run2017F-31Mar2018-v1/MINIAOD'
+      config.Data.unitsPerJob = 10
+      submit(config)
+
+#      # H17 Fall17 ReReco FSQJet2
+#      config.JobType.psetName = 'cfg/ak4ak817H.py'
+#      config.General.requestName = 'Run17H_FSQ2_Fall17_mAOD'
+#      config.Data.inputDataset = '/FSQJet2/Run2017H-17Nov2017-v1/MINIAOD'
 #      config.Data.unitsPerJob = 10
 #      submit(config)
 #
-#      # C17 March18 ReReco
-#      config.JobType.psetName = 'cfg/'+Mode+'17C.py'
-#      config.General.requestName = 'Run17C'+Tag+'_Mar18_mAOD'
-#      config.Data.inputDataset = DTLoc+'/Run2017C-31Mar2018-v1/MINIAOD'
+#      # H17 Fall17 ReReco LowEGJet
+#      config.JobType.psetName = 'cfg/ak4ak817H.py'
+#      config.General.requestName = 'Run17H_LEG_Fall17_mAOD'
+#      config.Data.inputDataset = '/LowEGJet/Run2017H-17Nov2017-v2/MINIAOD'
 #      config.Data.unitsPerJob = 10
 #      submit(config)
 #
-#      # D17 March18 ReReco
-#      config.JobType.psetName = 'cfg/'+Mode+'17D.py'
-#      config.General.requestName = 'Run17D'+Tag+'_Mar18_mAOD'
-#      config.Data.inputDataset = DTLoc+'/Run2017D-31Mar2018-v1/MINIAOD'
-#      config.Data.unitsPerJob = 10
-#      submit(config)
-#
-#      # E17 March18 ReReco
-#      config.JobType.psetName = 'cfg/'+Mode+'17E.py'
-#      config.General.requestName = 'Run17E'+Tag+'_Mar18_mAOD'
-#      config.Data.inputDataset = DTLoc+'/Run2017E-31Mar2018-v1/MINIAOD'
+#      # H17 Fall17 ReReco HighEGJet
+#      config.JobType.psetName = 'cfg/ak4ak817H.py'
+#      config.General.requestName = 'Run17H_HEG_Fall17_mAOD'
+#      config.Data.inputDataset = '/HighEGJet/Run2017H-17Nov2017-v1/MINIAOD'
 #      config.Data.unitsPerJob = 10
 #      submit(config)
 #
@@ -188,6 +216,20 @@ if __name__ == '__main__':
 #      submit(config)
 
     elif RunYear=='18':
+      # A18-Sep18 ReReco
+      config.JobType.psetName = 'cfg/'+Mode+'18A.py'
+      config.General.requestName = 'Run18A'+Tag+'_17Sep18RR_mAOD'
+      config.Data.inputDataset = DTLoc+'/Run2018A-17Sep2018-v1/MINIAOD'
+      config.Data.unitsPerJob = 10
+      submit(config)
+
+      # B18-Sep18 ReReco
+      config.JobType.psetName = 'cfg/'+Mode+'18B.py'
+      config.General.requestName = 'Run18B'+Tag+'_17Sep18RR_mAOD'
+      config.Data.inputDataset = DTLoc+'/Run2018B-17Sep2018-v1/MINIAOD'
+      config.Data.unitsPerJob = 10
+      submit(config)
+
 #      # A18-PR-v1
 #      config.JobType.psetName = 'cfg/'+Mode+'18A.py'
 #      config.General.requestName = 'Run18A1'+Tag+'_PR_mAOD'
@@ -220,24 +262,31 @@ if __name__ == '__main__':
 #      config.Data.unitsPerJob = 10
 #      submit(config)
 #
-#      # C18-PR-v1
+#      # C18-PR-v1 (trash)
 #      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
 #      config.General.requestName = 'Run18C1'+Tag+'_PR_mAOD'
 #      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v1/MINIAOD'
 #      config.Data.unitsPerJob = 10
 #      submit(config)
-#      # C18-PR-v2
+#      # C18-PR-v2 (trash)
 #      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
 #      config.General.requestName = 'Run18C2'+Tag+'_PR_mAOD'
 #      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v2/MINIAOD'
 #      config.Data.unitsPerJob = 10
 #      submit(config)
 #      # C18-PR-v3
-      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
-      config.General.requestName = 'Run18C3'+Tag+'_PR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v3/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
+#      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
+#      config.General.requestName = 'Run18C3'+Tag+'_PR_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v3/MINIAOD'
+#      config.Data.unitsPerJob = 10
+#      submit(config)
+#      # D18-PR-v1 excluded in the json
+#      # D18-PR-v2
+#      config.JobType.psetName = 'cfg/'+Mode+'18D.py'
+#      config.General.requestName = 'Run18D'+Tag+'_PR_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2018D-PromptReco-v2/MINIAOD'
+#      config.Data.unitsPerJob = 25
+#      submit(config)
 
   else:
     if RunYear=='16':
@@ -613,4 +662,29 @@ if __name__ == '__main__':
       #  config.Data.inputDataset = '/QCD_Pt_3200toInf_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
       #  config.Data.unitsPerJob = 10
       #  submit(config)
+
+    elif RunYear=='18':
+
+      # Pythia8 settings
+      config.JobType.psetName = 'cfg/'+Mode+'18py.py'
+      
+      ##### Pythia 8 Flat
+      if not ExtMode:
+        config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc18r_v15nnn'
+        config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM'
+        #config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM'
+        #config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM'
+        #config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIIFall18MiniAOD-102X_upgrade2018_realistic_v12-v1/MINIAODSIM'
+        config.Data.unitsPerJob = 1
+        submit(config)
+      else:
+        config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc18r_v12_ext1'
+        config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIIFall18MiniAOD-102X_upgrade2018_realistic_v12_ext1-v1/MINIAODSIM'
+        config.Data.unitsPerJob = 10
+        submit(config)
+
+        config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc18r_v12_ext1b'
+        config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIIFall18MiniAOD-102X_upgrade2018_realistic_v12_ext1-v1/MINIAODSIM'
+        config.Data.unitsPerJob = 10
+        submit(config)
 
