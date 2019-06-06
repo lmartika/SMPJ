@@ -10,7 +10,7 @@ DOAK8=False
 DOZB=False
 
 # This should match GTags, triggerlists.py and filterlists.py
-RunYear='16' #16/17/18
+RunYear='18' #16/17/18
 # This should match GTags and filterlists.py
 Mode='mc' #dt/mc
 # This is only used locally here
@@ -185,6 +185,8 @@ def producer(era,jettype):
         f.write('JHTA18\n')
       elif Mode=='dt':
         f.write('JHTA18\n')
+      elif MC=='py':
+        f.write('QCD18P8CP5\n')
       else:
         f.write('cms.untracked.vstring()\n')
     else:

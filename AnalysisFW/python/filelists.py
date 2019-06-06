@@ -2050,3 +2050,7 @@ ZBB17 = cms.untracked.vstring(
 FSQ17 = cms.untracked.vstring(
   '/store/data/Run2017H/FSQJet2/MINIAOD/17Nov2017-v1/00000/D4DE8239-5E3E-E811-8069-002618FDA287.root'
 )
+
+QCD18P8CP5 = cms.untracked.vstring(
+  '/store/mc/RunIIAutumn18MiniAOD/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15_ext1-v1/110000/02CCAE3F-A631-3D4D-B5A6-6B5B81B4E210.root'
+)

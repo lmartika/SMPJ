@@ -4,7 +4,7 @@ config = config()
 # Choose True for DT, False for MC
 DTMode=False
 # Choose 16/17/18
-RunYear='17'
+RunYear='18'
 # Choose ak4/ak8, zb (DT only)
 Mode='ak4'
 
@@ -216,70 +216,29 @@ if __name__ == '__main__':
 #      submit(config)
 
     elif RunYear=='18':
-      # A18-Sep18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'18A.py'
-      config.General.requestName = 'Run18A'+Tag+'_17Sep18RR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018A-17Sep2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
-      # B18-Sep18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'18B.py'
-      config.General.requestName = 'Run18B'+Tag+'_17Sep18RR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018B-17Sep2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
-#      # A18-PR-v1
+#      # A18-Sep18 ReReco
 #      config.JobType.psetName = 'cfg/'+Mode+'18A.py'
-#      config.General.requestName = 'Run18A1'+Tag+'_PR_mAOD'
-#      config.Data.inputDataset = DTLoc+'/Run2018A-PromptReco-v1/MINIAOD'
-#      config.Data.unitsPerJob = 10
-#      submit(config)
-#      # A18-PR-v2
-#      config.JobType.psetName = 'cfg/'+Mode+'18A.py'
-#      config.General.requestName = 'Run18A2'+Tag+'_PR_mAOD'
-#      config.Data.inputDataset = DTLoc+'/Run2018A-PromptReco-v2/MINIAOD'
-#      config.Data.unitsPerJob = 10
-#      submit(config)
-#      # A18-PR-v3
-#      config.JobType.psetName = 'cfg/'+Mode+'18A.py'
-#      config.General.requestName = 'Run18A3'+Tag+'_PR_mAOD'
-#      config.Data.inputDataset = DTLoc+'/Run2018A-PromptReco-v3/MINIAOD'
+#      config.General.requestName = 'Run18A'+Tag+'_17Sep18RR_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2018A-17Sep2018-v1/MINIAOD'
 #      config.Data.unitsPerJob = 10
 #      submit(config)
 #
-#      # B18-PR-v1
+#      # B18-Sep18 ReReco
 #      config.JobType.psetName = 'cfg/'+Mode+'18B.py'
-#      config.General.requestName = 'Run18B1'+Tag+'_PR_mAOD'
-#      config.Data.inputDataset = DTLoc+'/Run2018B-PromptReco-v1/MINIAOD'
+#      config.General.requestName = 'Run18B'+Tag+'_17Sep18RR_mAOD'
+#      config.Data.inputDataset = DTLoc+'/Run2018B-17Sep2018-v1/MINIAOD'
 #      config.Data.unitsPerJob = 10
 #      submit(config)
-#      # B18-PR-v2
-#      config.JobType.psetName = 'cfg/'+Mode+'18B.py'
-#      config.General.requestName = 'Run18B2'+Tag+'_PR_mAOD'
-#      config.Data.inputDataset = DTLoc+'/Run2018B-PromptReco-v2/MINIAOD'
-#      config.Data.unitsPerJob = 10
-#      submit(config)
-#
-#      # C18-PR-v1 (trash)
-#      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
-#      config.General.requestName = 'Run18C1'+Tag+'_PR_mAOD'
-#      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v1/MINIAOD'
-#      config.Data.unitsPerJob = 10
-#      submit(config)
-#      # C18-PR-v2 (trash)
-#      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
-#      config.General.requestName = 'Run18C2'+Tag+'_PR_mAOD'
-#      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v2/MINIAOD'
-#      config.Data.unitsPerJob = 10
-#      submit(config)
-#      # C18-PR-v3
-#      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
-#      config.General.requestName = 'Run18C3'+Tag+'_PR_mAOD'
-#      config.Data.inputDataset = DTLoc+'/Run2018C-PromptReco-v3/MINIAOD'
-#      config.Data.unitsPerJob = 10
-#      submit(config)
+
+      # C18-Sep18 ReReco
+      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
+      config.General.requestName = 'Run18C'+Tag+'_17Sep18RR_mAOD1'
+      config.Data.inputDataset = DTLoc+'/Run2018C-17Sep2018-v1/MINIAOD'
+      config.Data.unitsPerJob = 10
+      #config.Data.lumiMask = "left.json"
+      submit(config)
+
+#      # D18: PromptReco equal to ReReco in previous eras
 #      # D18-PR-v1 excluded in the json
 #      # D18-PR-v2
 #      config.JobType.psetName = 'cfg/'+Mode+'18D.py'
@@ -503,7 +462,6 @@ if __name__ == '__main__':
         config.Data.unitsPerJob = 1
         submit(config)
 
-
       ###### Pythia 8 Flat (old tune)
       #if not ExtMode:
       #  config.General.requestName = 'QCD17'+Tag+'_P8M1_15to7k_mc17r_v14'
@@ -671,34 +629,31 @@ if __name__ == '__main__':
       #  submit(config)
 
     elif RunYear=='18':
+      # Herwig7 settings
+      config.JobType.psetName = 'cfg/'+Mode+'18hw.py'
+
+      # Herwig7 Flat
+      if not ExtMode:
+        config.General.requestName = 'QCD18'+Tag+'_CH2_15to7k_mc18r_v15'
+        config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCH2_Flat_13TeV_herwig7/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
+        config.Data.unitsPerJob = 10
+        submit(config)
 
       # Pythia8 settings
       config.JobType.psetName = 'cfg/'+Mode+'18py.py'
 
-      ##### Neutrino Gun
-      if not ExtMode:
-        config.General.requestName = 'QCD18'+Tag+'_SingleNu_mc18r_v15'
-        config.Data.inputDataset = '/SingleNeutrino/RunIISummer16MiniAODv2-PUMoriond17_magnetOff_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM '
-        config.Data.unitsPerJob = 1
-        submit(config)
-      
-      ###### Pythia 8 Flat
+      ###### Neutrino Gun
       #if not ExtMode:
-      #  config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc18r_v15nnn'
-      #  config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM'
-      #  #config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM'
-      #  #config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM'
-      #  #config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIIFall18MiniAOD-102X_upgrade2018_realistic_v12-v1/MINIAODSIM'
+      #  config.General.requestName = 'QCD18'+Tag+'_SingleNu_mc18r_v15'
+      #  config.Data.inputDataset = '/SingleNeutrino/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM'
       #  config.Data.unitsPerJob = 1
       #  submit(config)
-      #else:
-      #  config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc18r_v12_ext1'
-      #  config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIIFall18MiniAOD-102X_upgrade2018_realistic_v12_ext1-v1/MINIAODSIM'
-      #  config.Data.unitsPerJob = 10
-      #  submit(config)
-
-      #  config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc18r_v12_ext1b'
-      #  config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIIFall18MiniAOD-102X_upgrade2018_realistic_v12_ext1-v1/MINIAODSIM'
-      #  config.Data.unitsPerJob = 10
-      #  submit(config)
+      
+      # Pythia 8 Flat
+      if not ExtMode:
+        config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc18r_v15_re'
+        #config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM'
+        config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM'
+        config.Data.unitsPerJob = 10
+        submit(config)
 
