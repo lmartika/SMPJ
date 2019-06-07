@@ -10,11 +10,11 @@ DOAK8=False
 DOZB=False
 
 # This should match GTags, triggerlists.py and filterlists.py
-RunYear='17' #16/17/18
+RunYear='16' #16/17/18
 # This should match GTags and filterlists.py
-Mode='dt' #dt/mc
+Mode='mc' #dt/mc
 # This is only used locally here
-MC='py' #py/hw
+MC='hw' #py/hw/nu/mg
 
 GTags = {
   '16' : {
@@ -169,8 +169,10 @@ def producer(era,jettype):
         f.write('JHTD16\n')
       elif MC=='py':
         f.write('QCD16Mor17P8M1\n')
-      else:
+      elif MC=='py':
         f.write('QCD16Mor17HS1\n')
+      else:
+        f.write('cms.untracked.vstring()\n')
     elif RunYear=='17':
       if jettype=='zb':
         f.write('ZBB17\n')
@@ -178,8 +180,10 @@ def producer(era,jettype):
         f.write('JHTB17\n')
       elif MC=='py':
         f.write('QCD17P8CP5\n')
-      else:
+      else if MC=='hw':
         f.write('QCD17HS1\n')
+      else:
+        f.write('cms.untracked.vstring()\n')
     elif RunYear=='18':
       if jettype=='zb':
         f.write('JHTA18\n')
@@ -261,7 +265,7 @@ def producer(era,jettype):
       f.write("  GenParticles    = cms.untracked.InputTag('prunedGenParticles'),\n")
       f.write("  jetFlavInfos    = cms.untracked.InputTag('jetFlavs'),\n")
       f.write("  jetFlavInfosPD  = cms.untracked.InputTag('jetFlavsPD'),\n")
-      if MC=='hw':
+      if MC!='py':
         f.write("  mcType          = cms.untracked.int32(1),\n")
     else:
       f.write("  HBHENoiseFilterResultNoMinZLabel = cms.untracked.InputTag('HBHENoiseFilterResultProducerNoMinZ', 'HBHENoiseFilterResult'),\n")
