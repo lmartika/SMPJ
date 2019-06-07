@@ -39,10 +39,12 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   mJetFlavourInfosToken(consumes<reco::JetFlavourInfoMatchingCollection>(          cfg.getUntrackedParameter<edm::InputTag>("jetFlavInfos",edm::InputTag("")))),
   mJetFlavourInfosTokenPhysicsDef(consumes<reco::JetFlavourInfoMatchingCollection>(cfg.getUntrackedParameter<edm::InputTag>("jetFlavInfosPD",edm::InputTag("")))),
   // Trigger
+  mTrigSimple(                                                                              cfg.getUntrackedParameter<bool>("trigSimple",false)),
+  mTrigObjs(                                                                                cfg.getUntrackedParameter<bool>("trigObjs",false)),
   mProcessName(                                                                      cfg.getUntrackedParameter<std::string>("processName","")),
   mFilterNames(                                                                 cfg.getParameter<std::vector<std::string> >("filterName")),
   mTriggerNames(                                                                cfg.getParameter<std::vector<std::string> >("triggerName")),
-  mTriggerFlwNames(                                                             cfg.getParameter<std::vector<std::string> >("triggerFollow")),
+  mTriggerNamesFlw(                                                             cfg.getParameter<std::vector<std::string> >("triggerFollow")),
   mFilterBits(mayConsume<edm::TriggerResults>(                                     cfg.getUntrackedParameter<edm::InputTag>("filterFlags",edm::InputTag("")))),
   mTriggerBits(mayConsume<edm::TriggerResults>(                                    cfg.getUntrackedParameter<edm::InputTag>("triggerResults",edm::InputTag("")))),
   mTriggerHLTObjs(mayConsume<pat::TriggerObjectStandAloneCollection>(              cfg.getUntrackedParameter<edm::InputTag>("triggerHLTObjs",edm::InputTag("")))),
@@ -61,10 +63,6 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
     mQGMulToken = consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult"));
     mQGPtDToken = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "ptD"));
   }
-}
-//////////////////////////////////////////////////////////////////////////////////////////
-void ProcessedTreeProducerBTag::beginJob()
-{
   mTree = fs->make<TTree>("ProcessedTree","ProcessedTree");
   mEvent = new QCDEvent();
   mTree->Branch("events","QCDEvent",&mEvent);
@@ -73,6 +71,9 @@ void ProcessedTreeProducerBTag::beginJob()
   mTriggerPassHisto = fs->make<TH1F>("TriggerPass","TriggerPass",1,0,1);
   mTriggerPassHisto->SetBit(TH1::kUserContour);
   mULimCEF = 0; mULimNEF = 0; mLLimNEF = 0; mULimNHF = 0; mLLimNHF = 0;
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+void ProcessedTreeProducerBTag::beginJob() {
   if (mRunYear=="2016") {
     mULimCEF = 0.99;
     mULimNEF = 1.01;
@@ -92,6 +93,8 @@ void ProcessedTreeProducerBTag::beginJob()
   cout << "Up nhf " << mULimNHF << endl;
   cout << "Lo nef " << mLLimNEF << endl;
   cout << "Lo nhf " << mLLimNHF << endl;
+  // Generic boolean indicators
+  mSatisfactory = true;
   mNewTrigs = false;
   mRedoPhysDef = false;
   mRedoAlgoDef = false;
@@ -109,8 +112,7 @@ void ProcessedTreeProducerBTag::endJob() {
   cout << "Happily finished processing! :)" << endl;
 }
 //////////////////////////////////////////////////////////////////////////////////////////
-void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup const& iSetup)
-{
+void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup const& iSetup) {
   bool changed(true);
   if (!(mHLTConfig.init(iRun,iSetup,mProcessName,changed) and mHLTPrescale.init(iRun, iSetup, mProcessName, changed))) {
     cout << "ProcessedTreeProducerBTag::analyze: config extraction failure with process name " << mProcessName << endl;
@@ -119,42 +121,16 @@ void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup 
   if (!changed) return;
   cout << "Running on global tag " << mHLTConfig.globalTag() << "!!!" << endl;
   if (mIsMCarlo) return;
+
+  // Additional steps to be performed first time in the analysis loop!
+  mNewTrigs = true;
   cout << "New trigger menu found!!!" << endl;
 
-  mNewTrigs = true;
-  mTriggerIndex.clear();
-  mTriggerFlwIndex.clear();
-  const unsigned int n = mHLTConfig.size();
-  // We check out what triggers are to be actively monitored
-  for (unsigned itrig=0; itrig<mTriggerNames.size(); ++itrig) {
-    auto &trgName = mTriggerNames[itrig];
-    auto trgIdx = mHLTConfig.triggerIndex(trgName);
-    cout << "Actively monitored trigger " << mTriggerNames[itrig] << " " << trgIdx << " ";
-    if (trgIdx >= n) {
-      cout << "does not exist in the current menu" << endl;
-      mTriggerIndex.push_back(-1);
-      mTriggerNamesHisto->Fill(trgName.c_str(),0);
-    } else {
-      cout << "exists" <<endl;
-      mTriggerIndex.push_back(trgIdx);
-      mTriggerNamesHisto->Fill(trgName.c_str(),1);
-    }
-    mTriggerPassHisto->Fill(trgName.c_str(),0);
-  }
-  // These triggers are not saved in the current run, but we save the events with these for compatibility reasons.
-  // Usage example: when AK4 and AK8 jets are saved into separate files, we still want the same events to be available in both.
-  for (unsigned itrig=0; itrig<mTriggerFlwNames.size(); ++itrig) {
-    auto &trgName = mTriggerFlwNames[itrig];
-    auto trgIdx = mHLTConfig.triggerIndex(trgName);
-    cout << "Passively monitored trigger " << mTriggerFlwNames[itrig] << " " << trgIdx << " ";
-    if (trgIdx >= n) {
-      cout << "does not exist in the current menu" << endl;
-      mTriggerFlwIndex.push_back(-1);
-    } else {
-      cout << "exists" <<endl;
-      mTriggerFlwIndex.push_back(trgIdx);
-    }
-  }
+  // The triggers that are actively and passively monitored will be set up according to the wishes of the user.
+  // mTriggerNames(Flw) is the trigger name list set by the user.
+  // We check mHLTConfig, which triggers of these are actually present.
+  // Usage example for the passively monitored triggers: when AK4 and AK8 jets are saved into separate files, we still want the same events to be available in both.
+  mSatisfactory = mSatisfactory and trigUpdate(mTriggerNames,mTriggerIndex,true) and trigUpdate(mTriggerNamesFlw,mTriggerIndexFlw,false); 
 
   if (mPrintTriggerMenu) {
     cout << "Available TriggerNames are: " << endl;
@@ -162,8 +138,98 @@ void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup 
   }
 }
 //////////////////////////////////////////////////////////////////////////////////////////
-void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup const& iSetup)
-{
+bool ProcessedTreeProducerBTag::trigUpdate(const vector<string> &tNames, vector<int> &tIndex, bool active) {
+  tIndex.clear();
+  const auto &hltNames = mHLTConfig.triggerNames();
+  const unsigned int nHLTs = mHLTConfig.size();
+  assert(hltNames.size()==nHLTs);
+
+  if (mTrigSimple and active) {
+    mTriggerNamesIndexMap.clear();
+    mTriggerNamesMap.clear();
+    mTriggerIndexMap.clear();
+  }
+  for (const auto &tName : tNames) {
+    // For active triggers, we will add the base information in any case.
+    if (active) {
+      mTriggerPassHisto->Fill(tName.c_str(),0);
+      mTriggerNamesHisto->Fill(tName.c_str(),0);
+    }
+    if (mTrigSimple) {
+      // Create a temporary string and strip the zero from the end, in order to use this with regex.
+      string tmpName = tName;
+      tmpName.pop_back();
+      regex trgversions(Form("%s([0-9]*)",tmpName.c_str()));
+      if (tName.back()!='0' and tmpName.back()!='v') {
+        cout << "In the 'simpleTrigs = True' mode the trigger names should end with 'v0'! Please correct!" << endl;
+        return false;
+      }
+      // Loop through all the hlt names with any version number matching the generic trigger type.
+      int counter = 0;
+      for (const auto &hName : hltNames) {
+        if (regex_match(hName,trgversions)) {
+          ++counter;
+          if (mTriggerNamesMap.count(tName)==0) {
+            mTriggerNamesMap[tName] = vector<string>();
+            mTriggerIndexMap[tName] = vector<int>();
+          }
+
+          mTriggerNamesIndexMap[hName] = tIndex.size();
+          mTriggerNamesMap[tName].emplace_back(hName); 
+          mTriggerIndexMap[tName].emplace_back(mHLTConfig.triggerIndex(hName)); 
+          if (active) mTriggerNamesHisto->Fill(tName.c_str(),1);
+          cout << (active ? "Actively" : "Passively") << " monitored trigger " << hName << " " << mTriggerIndexMap[tName].back() << " exists" << endl;
+        }
+      }
+      tIndex.push_back(counter==0 ? -1 : counter);
+    } else {
+      unsigned tIdx = mHLTConfig.triggerIndex(tName);
+      bool accept = tIdx < nHLTs;
+      cout << (active ? "Actively" : "Passively") << " monitored trigger " << tName << " " << tIdx << " ";
+      cout << (accept ? "exists" : "does not exist in the current menu") << endl; 
+      tIndex.push_back(accept ? tIdx : -1);
+      if (active and accept) mTriggerNamesHisto->Fill(tName.c_str(),1);
+    }
+  }
+  return true;
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+bool ProcessedTreeProducerBTag::trigCheck(const edm::TriggerNames &names, const vector<string> &tNames, vector<int> &tIndex, bool active) {
+  // Go trough all monitored triggers and check that these have the same names.
+  assert(tIndex.size()==tNames.size());
+  for (auto itrig = 0u; itrig<tIndex.size(); ++itrig) {
+    int tIdx = tIndex[itrig];
+    if (tIdx<0) continue; // Trigger not monitored or present, OK!
+    const string &tName = tNames[itrig];
+
+    if (mTrigSimple) {
+      const auto &tNames2 = mTriggerNamesMap[tName];
+      const auto &tIndex2 = mTriggerIndexMap[tName];
+      assert(tNames2.size()==tIndex2.size());
+      for (unsigned itrig2 = 0; itrig2 < tIndex2.size(); ++itrig2) {
+        const string &tName2  = tNames2[itrig2];
+        const auto &tIdx2 = tIndex2[itrig2];
+        if (tName2!=names.triggerName(tIdx2)) {
+          cout << "Mismatch in trigger names: " << tName << " " << tName2 << endl;
+          return false;
+        }
+      }
+    } else {
+      const auto &tName2 = names.triggerName(tIdx);
+      if (tName != tName2) {
+        cout << "Mismatch in trigger names: " << tName << " " << tName2 << endl;
+        return false;
+      }
+    }
+  }
+  cout << (active ? "Actively" : "Passively") << " monitored triggers checked!" << endl;
+  return true;
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup const& iSetup) {
+  // If the trigger information is not satisfactory, we should not enter the event analysis.
+  if (!mSatisfactory) return;
+
   vector<QCDPFJet>      qPFJets;
   QCDEventHdr           qEvtHdr;
   QCDMET                qPFMet_t1, qPFMet_t0, qPFMet_t0t1;
@@ -197,6 +263,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     vector<vector<LorentzVector> >      qL1Objs, qHLTObjs;  
     map<string, vector<LorentzVector> > vvHLT;
 
+    // Fetching data using tokens.
     edm::Handle<edm::TriggerResults>                    filterBits;
     edm::Handle<edm::TriggerResults>                    triggerBits;
     edm::Handle<pat::TriggerObjectStandAloneCollection> triggerHLTObjs;
@@ -217,15 +284,19 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     
     const edm::TriggerNames &names       = event.triggerNames(*triggerBits);
     const edm::TriggerNames &filterNames = event.triggerNames(*filterBits);
+    
+    // Update the filter positions only when the trigger menu has changed.
+    // These steps cannot be taken within "beginRun", as event.triggerNames() is not available there. 
     if (mNewTrigs) {
-      // Update the filter positions only when the trigger menu has changed 
+      mNewTrigs = false;
+
       mFilterIndex.clear();
-      for (auto &flt : mFilterNames) { // Loop through the requested trigger names
+      for (auto &flt : mFilterNames) { // Loop through the requested filter names
         int fltIdx = -1;
-        for (unsigned int itrig=0; itrig<filterBits->size(); ++itrig) { // Try to find this
-          string filterName = filterNames.triggerName(itrig);
+        for (unsigned int iflt=0; iflt<filterBits->size(); ++iflt) { // Try to find this
+          string filterName = filterNames.triggerName(iflt);
           if (filterName==flt) {
-            fltIdx = itrig;
+            fltIdx = iflt;
             break;
           }
         }
@@ -235,30 +306,11 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
         else cout << " found! :)" << endl;
       }
 
-      // When the triggers are changed, check that the info we got from hltConfig is good
-      // Acitve filters:
-      assert(mTriggerIndex.size()==mTriggerNames.size());
-      for (auto itrig = 0u; itrig<mTriggerIndex.size(); ++itrig) {
-        int trgIdx = mTriggerIndex[itrig];
-        if (trgIdx<0) continue; // Trigger not present in the file, OK!
-
-        string trgName1 = mTriggerNames[itrig];
-        string trgName2 = names.triggerName(trgIdx);
-        if (trgName1!=trgName2) cout << "Mismatch in trigger names: " << trgName1 << " " << trgName2 << endl;
+      // When the triggers are changed, check that the info we got from hltConfig matches with that from event.triggerNames
+      if (!trigCheck(names,mTriggerNames,mTriggerIndex,true) or !trigCheck(names,mTriggerNamesFlw,mTriggerIndexFlw,false)) {
+        mSatisfactory = false;
+        return;
       }
-      cout << "Actively monitored triggers checked!" << endl;
-      // Passive filters:
-      assert(mTriggerFlwIndex.size()==mTriggerFlwNames.size());
-      for (auto itrig = 0u; itrig<mTriggerFlwIndex.size(); ++itrig) {
-        int trgFlwIdx = mTriggerFlwIndex[itrig];
-        if (trgFlwIdx<0) continue; // Trigger not present in the file, OK!
-
-        string trgName1 = mTriggerFlwNames[itrig];
-        string trgName2 = names.triggerName(trgFlwIdx);
-        if (trgName1!=trgName2) cout << "Mismatch in followed trigger names: " << trgName1 << " " << trgName2 << endl;
-      }
-      cout << "Passively monitored triggers checked!" << endl;
-      mNewTrigs = false;
     }
 
     // Go through the filters and check that all of them are good
@@ -280,30 +332,57 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     // Trigger counts
     unsigned fire = 0;
     // Primary triggers
-    for (auto itrig = 0u; itrig<mTriggerIndex.size(); ++itrig) {
-      int trgIdx = mTriggerIndex[itrig]; 
-      if (trgIdx<0) continue; // We skip the triggers not present (perfectly normal!)
+    for (auto itrig = 0u; itrig<mTriggerNames.size(); ++itrig) {
+      int tIdx = mTriggerIndex[itrig]; 
+      if (tIdx<0) continue; // We skip the triggers not present (perfectly normal!)
+      const string &tName = mTriggerNames[itrig];
 
-      if (triggerBits->accept(trgIdx)) {
-        const string &trgName = mTriggerNames[itrig];      
-        L1Prescales.push_back(max(triggerPrescalesL1Max->getPrescaleForIndex(trgIdx),triggerPrescalesL1Min->getPrescaleForIndex(trgIdx)));
-        HLTPrescales.push_back(triggerPrescales->getPrescaleForIndex(trgIdx));
-        mTriggerPassHisto->Fill(trgName.c_str(),1);
-        Fired.push_back(itrig);
-        ++fire;
-        if (vvHLT.find(trgName)==vvHLT.end()) vvHLT[trgName] = vector<LorentzVector>();
+      if (mTrigSimple) {
+        const auto &tIndex2 = mTriggerIndexMap[tName];
+        for (unsigned itrig2 = 0; itrig2 < tIndex2.size(); ++itrig2) {
+          const auto &tIdx2 = tIndex2[itrig2];
+          if (triggerBits->accept(tIdx2)) {
+            L1Prescales.push_back(max(triggerPrescalesL1Max->getPrescaleForIndex(tIdx2),triggerPrescalesL1Min->getPrescaleForIndex(tIdx2)));
+            HLTPrescales.push_back(triggerPrescales->getPrescaleForIndex(tIdx2));
+            mTriggerPassHisto->Fill(tName.c_str(),1);
+            Fired.push_back(itrig);
+            ++fire;
+            if (mTrigObjs and vvHLT.find(tName)==vvHLT.end()) vvHLT[tName] = vector<LorentzVector>();
+          }
+        } 
+      } else {
+        if (triggerBits->accept(tIdx)) {
+          L1Prescales.push_back(max(triggerPrescalesL1Max->getPrescaleForIndex(tIdx),triggerPrescalesL1Min->getPrescaleForIndex(tIdx)));
+          HLTPrescales.push_back(triggerPrescales->getPrescaleForIndex(tIdx));
+          mTriggerPassHisto->Fill(tName.c_str(),1);
+          Fired.push_back(itrig);
+          ++fire;
+          if (mTrigObjs and vvHLT.find(tName)==vvHLT.end()) vvHLT[tName] = vector<LorentzVector>();
+        }
       }
     }
     // When the primary trigger has not fired, check if a "followed" secondary trigger has fired
     if (fire==0) {
       bool nofireoth = true;
-      for (auto itrig = 0u; itrig<mTriggerFlwIndex.size(); ++itrig) {
-        int trgIdx = mTriggerFlwIndex[itrig]; 
-        if (trgIdx<0) continue; // Skip the triggers not present (perfectly normal!)
+      for (auto itrig = 0u; itrig<mTriggerIndexFlw.size(); ++itrig) {
+        int tIdx = mTriggerIndexFlw[itrig]; 
+        if (tIdx<0) continue; // Skip the triggers not present (perfectly normal!)
 
-        if (triggerBits->accept(trgIdx)) {
-          nofireoth = false;
-          break;
+        if (mTrigSimple) {
+          const auto &tIndex2 = mTriggerIndexMap[mTriggerNamesFlw[itrig]];
+          for (unsigned itrig2 = 0; itrig2 < tIndex2.size(); ++itrig2) {
+            const auto &tIdx2 = tIndex2[itrig2];
+            if (triggerBits->accept(tIdx2)) {
+              nofireoth = false;
+              break;
+            }
+          }
+          if (!nofireoth) break;
+        } else {
+          if (triggerBits->accept(tIdx)) {
+            nofireoth = false;
+            break;
+          }
         }
       }
       // If none of the actively/passively monitored triggers have fired, skip this as a redundant event
@@ -311,11 +390,9 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     }
 
     // The trigger objects are saved only when the actively monitored trigger has fired (in ZB events we pay no attention)
-    if (fire>0 and !mZB) {
+    if (mTrigObjs and !mZB and fire>0) {
       // HLT sector
       regex pfjet(Form("HLT_%sPFJet([0-9]*)_v([0-9]*)",mAK4 ? "" : "AK8"));
-      regex jetht("HLT_PFHT([0-9]*)_v[0-9]*");
-      bool saveHT = false;
       for (pat::TriggerObjectStandAlone obj : *triggerHLTObjs) { // note: not "const &" since we want to call unpackPathNames
         obj.unpackPathNames(names);
         vector<string> pathNamesAll  = obj.pathNames(false);
@@ -323,17 +400,27 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
         if (pathNamesAll.size()==0) continue; 
         
         for (unsigned hpn = 0, npn = pathNamesAll.size(); hpn < npn; ++hpn) {
-          string trgName = pathNamesAll[hpn];
-          if (regex_match(trgName,pfjet)) {
+          string tName = pathNamesAll[hpn];
+          if (regex_match(tName,pfjet)) {
             TLorentzVector P4;
             P4.SetPtEtaPhiM(obj.pt(),obj.eta(),obj.phi(),obj.mass());
-            vvHLT[trgName].emplace_back(P4.Px(),P4.Py(),P4.Pz(),P4.E());
-          } else if (!mAK4 and regex_match(trgName,jetht)) {
-            saveHT = true;
-            // We store JetHT stuff into AK8 tuples
-            TLorentzVector P4;
-            P4.SetPtEtaPhiM(obj.pt(),obj.eta(),obj.phi(),obj.mass());
-            vvHLT[trgName].emplace_back(P4.Px(),P4.Py(),P4.Pz(),P4.E());
+            string refName = tName;
+            if (mTrigSimple) {
+              if (mTriggerNamesIndexMap.count(tName)==0) {
+                cout << "Trigger name not found in trigger name map!" << endl;
+                mSatisfactory = false;
+                return;
+              }
+              unsigned refIdx = mTriggerNamesIndexMap[tName];
+              if (refIdx<mTriggerNames.size()) {
+                refName = mTriggerNames[refIdx];
+              } else {
+                cout << "Trigger index too big in trigger name map!" << endl;
+                mSatisfactory = false;
+                return;
+              }
+            }
+            vvHLT[refName].emplace_back(P4.Px(),P4.Py(),P4.Pz(),P4.E());
           }
         }
       }
@@ -348,19 +435,6 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
         vvL1.emplace_back(P4.Px(),P4.Py(),P4.Pz(),P4.E());
       }
       qL1Objs.push_back(vvL1);
-
-      // L1 sector: JetHT (only stored into AK8 tuples - if PFHT triggers are followed)
-      if (saveHT) {
-        vector<LorentzVector> vvL1HT;
-        for (auto obj = triggerL1HTObjs->begin(0); obj != triggerL1HTObjs->end(0); ++obj) {
-          if (obj->getType()==l1t::EtSum::kTotalHt) {
-            TLorentzVector P4;
-            P4.SetPtEtaPhiM(obj->pt(),obj->eta(),obj->phi(),obj->mass());
-            vvL1HT.emplace_back(P4.Px(),P4.Py(),P4.Pz(),P4.E());
-          }
-        }
-        qL1Objs.push_back(vvL1HT);
-      }
     }
     mEvent->setTrigDecision(Fired);
     mEvent->setPrescales(L1Prescales,HLTPrescales);

@@ -10,9 +10,9 @@ DOAK8=False
 DOZB=False
 
 # This should match GTags, triggerlists.py and filterlists.py
-RunYear='18' #16/17/18
+RunYear='17' #16/17/18
 # This should match GTags and filterlists.py
-Mode='mc' #dt/mc
+Mode='dt' #dt/mc
 # This is only used locally here
 MC='py' #py/hw
 
@@ -240,6 +240,8 @@ def producer(era,jettype):
     f.write("  ZB              = cms.untracked.bool("+("True" if jettype=='zb' else "False")+"),\n")
     f.write("  ## trigger ###################################\n")
     f.write("  printTriggerMenu= cms.untracked.bool(False),\n")
+    f.write("  trigSimple      = cms.untracked.bool(True),\n")
+    f.write("  trigObjs        = cms.untracked.bool(False),\n")
     f.write("  processName     = cms.untracked.string('HLT'),\n")
     f.write("  filterName      = filters,\n")
     f.write("  triggerName     = triggers,\n")
