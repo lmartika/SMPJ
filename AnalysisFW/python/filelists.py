@@ -24,6 +24,10 @@ QCD16Mor17HS1 = cms.untracked.vstring(
   '/store/mc/RunIISummer16MiniAODv2/QCD_Pt-15to7000_TuneCUETHS1_Flat_13TeV_herwigpp/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/FA6E7F70-A8CF-E611-803A-0CC47A745294.root' 
 )
 
+QCD16MG = cms.untracked.vstring(
+  '/store/mc/RunIISummer16MiniAODv3/QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/110000/FA09D351-D9EA-E811-8956-0025904C68DC.root'
+)
+
 QCD17P8M1 = cms.untracked.vstring(
   '/store/mc/RunIIFall17MiniAODv2/QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/FE205E21-8042-E811-BA86-509A4C730E2E.root'
 )
@@ -36,6 +40,9 @@ QCD17HS1 = cms.untracked.vstring(
   '/store/mc/RunIIFall17MiniAODv2/QCD_Pt-15to7000_TuneCUETHS1_Flat_13TeV_herwigpp/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/FE935FB1-DD44-E811-B398-0CC47AA53D66.root'
 )
 
+QCD17MG = cms.untracked.vstring(
+  '/store/mc/RunIIFall17MiniAODv2/QCD_HT100to200_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/860EBA88-26B3-E811-8FC4-0025907859B8.root'
+)
 
 JHTB17 = cms.untracked.vstring(
   '/store/data/Run2017B/JetHT/MINIAOD/31Mar2018-v1/00000/0205C4D3-463A-E811-86BD-0CC47A4C8E2A.root'
@@ -51,4 +58,8 @@ FSQ17 = cms.untracked.vstring(
 
 QCD18P8CP5 = cms.untracked.vstring(
   '/store/mc/RunIIAutumn18MiniAOD/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15_ext1-v1/110000/02CCAE3F-A631-3D4D-B5A6-6B5B81B4E210.root'
+)
+
+QCD18MG = cms.untracked.vstring(
+  '/store/mc/RunIIAutumn18MiniAOD/QCD_HT100to200_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v1/60000/FD3F4D79-58BB-A442-BA89-66190498EFEB.root'
 )

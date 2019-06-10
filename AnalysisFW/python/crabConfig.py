@@ -1,14 +1,18 @@
 from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
+## Configurable parameters begin
+
 # Choose 16/17/18
 RunYear='17'
 # Choose ak4/ak8, zb (DT only)
 Mode='ak4'
 # Choose True for DT, False for MC
 DTMode=False
-# Choose pyshort/pylong/hw/nu/mg (MC only)
-MCType = 'py'
+# Choose py/pylong/hw/nu/mg (MC only)
+MCType = 'mg'
+
+## Configurable parameters end
 
 Tag=''
 DTLoc='/JetHT'

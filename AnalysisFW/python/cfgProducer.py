@@ -12,9 +12,9 @@ DOZB=False
 # This should match GTags, triggerlists.py and filterlists.py
 RunYear='16' #16/17/18
 # This should match GTags and filterlists.py
-Mode='dt' #dt/mc
+Mode='mc' #dt/mc
 # This is only used locally here
-MC='hw' #py/hw/nu/mg
+MC='mg' #py/hw/nu/mg
 
 # The global tags should be checked from time to time.
 # See: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions#Global_Tags_for_2016_legacy_data
@@ -176,6 +176,8 @@ def producer(era,jettype):
         f.write('QCD16Mor17P8M1\n')
       elif MC=='hw':
         f.write('QCD16Mor17HS1\n')
+      elif MC=='mg':
+        f.write('QCD16MG\n')
       else:
         f.write('cms.untracked.vstring()\n')
     elif RunYear=='17':
@@ -187,6 +189,8 @@ def producer(era,jettype):
         f.write('QCD17P8CP5\n')
       elif MC=='hw':
         f.write('QCD17HS1\n')
+      elif MC=='mg':
+        f.write('QCD17MG\n')
       else:
         f.write('cms.untracked.vstring()\n')
     elif RunYear=='18':
@@ -196,6 +200,8 @@ def producer(era,jettype):
         f.write('JHTA18\n')
       elif MC=='py':
         f.write('QCD18P8CP5\n')
+      elif MC=='mg':
+        f.write('QCD18MG\n')
       else:
         f.write('cms.untracked.vstring()\n')
     else:
