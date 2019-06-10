@@ -4,7 +4,7 @@ config = config()
 ## Configurable parameters begin
 
 # Choose 16/17/18
-RunYear='17'
+RunYear='18'
 # Choose ak4/ak8, zb (DT only)
 Mode='ak4'
 # Choose True for DT, False for MC
@@ -1008,7 +1008,7 @@ if __name__ == '__main__':
 
       elif MCType=='mg':
         # Madgraph + Pythia8 settings
-        config.JobType.psetName = 'cfg/'+Mode+'17mg.py'
+        config.JobType.psetName = 'cfg/'+Mode+'18mg.py'
 
         ##### Madgraph + Pythia8 slices 50-100
         if not ExtMode:
