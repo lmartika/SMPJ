@@ -74,18 +74,30 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void ProcessedTreeProducerBTag::beginJob() {
+  // Jet ID settings. General page:
+  // https://twiki.cern.ch/twiki/bin/view/CMS/JetID#Recommendations_for_13_TeV_2018
+  // These should be checked from time to time.
+  // We prefer using (Tight)LepVeto, which is the most conservative JetID.
   if (mRunYear=="2016") {
-    mULimCEF = 0.99;
-    mULimNEF = 1.01;
-    mULimNHF = 0.98;
+    // See, https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016
+    mULimCEF = 0.90;
     mLLimNEF = 0.01;
-    mLLimNHF = -1.00;
-  } else if (mRunYear=="2017" or mRunYear=="2018") {
-    mULimCEF = 1.01;
-    mULimNEF = 0.99;
-    mULimNHF = 1.01;
+    mULimNEF = 1.01; // Dummy value
+    mLLimNHF = -0.01; // Dummy value
+    mULimNHF = 0.98;
+  } else if (mRunYear=="2017") {
+    // See, https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2017
+    mULimCEF = 0.80;
     mLLimNEF = 0.02;
+    mULimNEF = 0.99;
     mLLimNHF = 0.02;
+    mULimNHF = 1.01; // Dummy value
+  } else if (mRunYear=="2018") {
+    mULimCEF = 0.80;
+    mLLimNEF = 0.02;
+    mULimNEF = 0.99;
+    mLLimNHF = 0.20;
+    mULimNHF = 1.01; // Dummy value
   }
   cout << "Run year " << mRunYear << " using the following JetID limit parameter values:" << endl;
   cout << "Up cef " << mULimCEF << endl;
@@ -726,16 +738,18 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     int nm       = ijet->neutralMultiplicity();
     int cm       = ijet->chargedMultiplicity();
     // https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
-    bool looseID, tightID;
+    bool looseID = true, tightID = true;
     if (abseta <= 2.7) {
-       looseID = nhf<0.99 and nemf<0.99 and npr>1 and (abseta>2.4 || (chf>0 and chm>0 and cemf<mULimCEF));
-       tightID = looseID and nhf<0.90 and nemf<0.90;
+      tightID = nhf<0.90 and muf<0.80 and ((mRunYear=="2018") ?
+                (chm>0 and cemf<mULimCEF and nemf<0.99 and (absEta>=2.6 or (nemf<0.90 and npr>1 and chf>0))) :
+                (npr>1 and nemf<0.90 and (abseta>=2.4 or (chf>0 and chm>0 and cemf<mULimCEF))));
+      looseID = (mRunYear=="2016") ? (npr>1 and nemf<0.99 and nhf<0.99 and (abseta>mLimEta or (chf>0 and chm>0 and cemf<0.99))) : tightID; 
     } else if (abseta <= 3.0) {
-       looseID = nemf<mULimNEF and nemf>mLLimNEF and nm>2 and nhf<mULimNHF;
-       tightID = looseID;
+      tightID = nemf<mULimNEF and nemf>mLLimNEF and nm>2 and nhf<mULimNHF;
+      looseID = tightID;
     } else {
-       looseID = nemf<0.90 and nm>10 and nhf>mLLimNHF;
-       tightID = looseID;
+      tightID = nemf<0.90 and nm>10 and nhf>mLLimNHF;
+      looseID = tightID;
     }
      
     qcdJet.setLooseID(looseID);

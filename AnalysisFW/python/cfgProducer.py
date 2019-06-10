@@ -12,7 +12,7 @@ DOZB=False
 # This should match GTags, triggerlists.py and filterlists.py
 RunYear='16' #16/17/18
 # This should match GTags and filterlists.py
-Mode='mc' #dt/mc
+Mode='dt' #dt/mc
 # This is only used locally here
 MC='hw' #py/hw/nu/mg
 
@@ -31,7 +31,7 @@ GTags = {
     'mc' : "94X_mc2017_realistic_v17"
   },
   '18' : {
-    'dt' : "102X_dataRun2_v11" 
+    'dt' : "102X_dataRun2_v11", 
     'mc' : "102X_upgrade2018_realistic_v19"
   }
 }
@@ -171,10 +171,10 @@ def producer(era,jettype):
       if jettype=='zb':
         f.write('ZBD16\n')
       elif Mode=='dt':
-        f.write('JHTD16\n')
+        f.write('JHTG16\n')
       elif MC=='py':
         f.write('QCD16Mor17P8M1\n')
-      elif MC=='py':
+      elif MC=='hw':
         f.write('QCD16Mor17HS1\n')
       else:
         f.write('cms.untracked.vstring()\n')
@@ -185,7 +185,7 @@ def producer(era,jettype):
         f.write('JHTB17\n')
       elif MC=='py':
         f.write('QCD17P8CP5\n')
-      else if MC=='hw':
+      elif MC=='hw':
         f.write('QCD17HS1\n')
       else:
         f.write('cms.untracked.vstring()\n')
