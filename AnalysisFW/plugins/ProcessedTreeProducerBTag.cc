@@ -39,6 +39,7 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   mJetFlavourInfosToken(consumes<reco::JetFlavourInfoMatchingCollection>(          cfg.getUntrackedParameter<edm::InputTag>("jetFlavInfos",edm::InputTag("")))),
   mJetFlavourInfosTokenPhysicsDef(consumes<reco::JetFlavourInfoMatchingCollection>(cfg.getUntrackedParameter<edm::InputTag>("jetFlavInfosPD",edm::InputTag("")))),
   // Trigger
+  mDiscardFilter(                                                                           cfg.getUntrackedParameter<bool>("discardFilter",true)),
   mTrigSimple(                                                                              cfg.getUntrackedParameter<bool>("trigSimple",false)),
   mTrigObjs(                                                                                cfg.getUntrackedParameter<bool>("trigObjs",false)),
   mProcessName(                                                                      cfg.getUntrackedParameter<std::string>("processName","")),
@@ -70,6 +71,8 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   mTriggerNamesHisto->SetBit(TH1::kUserContour);  
   mTriggerPassHisto = fs->make<TH1F>("TriggerPass","TriggerPass",1,0,1);
   mTriggerPassHisto->SetBit(TH1::kUserContour);
+  mFilterActiveHisto = fs->make<TH1F>("FilterActive","FilterActive",1,0,1); 
+  mFilterActiveHisto->SetBit(TH1::kUserContour);
   mULimCEF = 0; mULimNEF = 0; mLLimNEF = 0; mULimNHF = 0; mLLimNHF = 0;
 }
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -143,6 +146,12 @@ void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup 
   // We check mHLTConfig, which triggers of these are actually present.
   // Usage example for the passively monitored triggers: when AK4 and AK8 jets are saved into separate files, we still want the same events to be available in both.
   mSatisfactory = mSatisfactory and trigUpdate(mTriggerNames,mTriggerIndex,true) and trigUpdate(mTriggerNamesFlw,mTriggerIndexFlw,false); 
+
+  // Save MET filter pass information
+  mFilterActiveHisto->Fill("PassAll",0);
+  for (auto &fName : mFilterNames) {
+    mFilterActiveHisto->Fill(fName.c_str(),0);
+  }
 
   if (mPrintTriggerMenu) {
     cout << "Available TriggerNames are: " << endl;
@@ -327,19 +336,26 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
 
     // Go through the filters and check that all of them are good
     assert(mFilterIndex.size()==mFilterNames.size());
+    bool passMET = true;
     for (auto iflt = 0u; iflt<mFilterIndex.size(); ++iflt) {
       int fltIdx = mFilterIndex[iflt];
       if (fltIdx<0) continue; // If a filter was not found, we skip it 
       
-      string fltName1 = mFilterNames[iflt];
-      string fltName2 = filterNames.triggerName(fltIdx);
-      if (fltName1!=fltName2) {
-        cout << "Mismatch in filter names: " << fltName1 << " " << fltName2 << endl;
-      } else if (!filterBits->accept(fltIdx)) {
-        // A filter is allowed to reject the event
+      string fName1 = mFilterNames[iflt];
+      string fName2 = filterNames.triggerName(fltIdx);
+      if (fName1!=fName2) {
+        cout << "Mismatch in filter names: " << fName1 << " " << fName2 << endl;
+        mSatisfactory = false;
         return;
       }
+      if (!filterBits->accept(fltIdx)) {
+        passMET = false;
+        mFilterActiveHisto->Fill(fName1.c_str(),1);
+      }
     }
+    if (passMET) mFilterActiveHisto->Fill("PassAll",1);
+    // A filter is allowed to reject the event
+    if (mDiscardFilter and !passMET) return;
 
     // Trigger counts
     unsigned fire = 0;
@@ -741,9 +757,9 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     bool looseID = true, tightID = true;
     if (abseta <= 2.7) {
       tightID = nhf<0.90 and muf<0.80 and ((mRunYear=="2018") ?
-                (chm>0 and cemf<mULimCEF and nemf<0.99 and (absEta>=2.6 or (nemf<0.90 and npr>1 and chf>0))) :
+                (chm>0 and cemf<mULimCEF and nemf<0.99 and (abseta>=2.6 or (nemf<0.90 and npr>1 and chf>0))) :
                 (npr>1 and nemf<0.90 and (abseta>=2.4 or (chf>0 and chm>0 and cemf<mULimCEF))));
-      looseID = (mRunYear=="2016") ? (npr>1 and nemf<0.99 and nhf<0.99 and (abseta>mLimEta or (chf>0 and chm>0 and cemf<0.99))) : tightID; 
+      looseID = (mRunYear=="2016") ? (npr>1 and nemf<0.99 and nhf<0.99 and (abseta>2.4 or (chf>0 and chm>0 and cemf<0.99))) : tightID; 
     } else if (abseta <= 3.0) {
       tightID = nemf<mULimNEF and nemf>mLLimNEF and nm>2 and nhf<mULimNHF;
       looseID = tightID;

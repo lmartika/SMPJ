@@ -249,6 +249,7 @@ def producer(era,jettype):
     f.write("  ZB              = cms.untracked.bool("+("True" if jettype=='zb' else "False")+"),\n")
     f.write("  ## trigger ###################################\n")
     f.write("  printTriggerMenu= cms.untracked.bool(False),\n")
+    f.write("  discardFilter   = cms.untracked.bool(False),\n")
     f.write("  trigSimple      = cms.untracked.bool(True),\n")
     f.write("  trigObjs        = cms.untracked.bool(False),\n")
     f.write("  processName     = cms.untracked.string('HLT'),\n")

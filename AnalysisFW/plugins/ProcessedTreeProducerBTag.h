@@ -144,7 +144,8 @@ private:
   edm::EDGetTokenT<edm::ValueMap<float>>                   mQGAx2Token;
   edm::EDGetTokenT<edm::ValueMap<int>>                     mQGMulToken;
   edm::EDGetTokenT<edm::ValueMap<float>>                   mQGPtDToken;
-  // TRIGGER // 
+  // TRIGGER & FILTER // 
+  bool                                                     mDiscardFilter;
   bool                                                     mTrigSimple;
   bool                                                     mTrigObjs;
   string                                                   mProcessName;
@@ -176,7 +177,7 @@ private:
 
   edm::Service<TFileService>                               fs;
   TTree                                                   *mTree;
-  TH1F                                                    *mTriggerPassHisto,*mTriggerNamesHisto;
+  TH1F                                                    *mTriggerPassHisto,*mTriggerNamesHisto,*mFilterActiveHisto;
   QCDEvent                                                *mEvent;
 
   vector<int>           mGenFlavour;
