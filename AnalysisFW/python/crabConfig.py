@@ -826,7 +826,12 @@ if __name__ == '__main__':
         ##### Madgraph + Pythia8 slices 2000-Inf
         if not ExtMode:
           config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT2000toInf_mc17r_v14'
-          config.Data.inputDataset = ''
+          config.Data.inputDataset = '/QCD_HT2000toInf_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM'
+          config.Data.unitsPerJob = 10
+          submit(config)
+        else:
+          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT2000toInf_mc17r_v14_opmx'
+          config.Data.inputDataset = '/QCD_HT2000toInf_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_old_pmx_94X_mc2017_realistic_v14-v1/MINIAODSIM'
           config.Data.unitsPerJob = 10
           submit(config)
 
