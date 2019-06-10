@@ -16,18 +16,23 @@ Mode='mc' #dt/mc
 # This is only used locally here
 MC='hw' #py/hw/nu/mg
 
+# The global tags should be checked from time to time.
+# See: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions#Global_Tags_for_2016_legacy_data
+# However, the info on this page is not always up-to-date.
+# If in doubt, use the browser https://cms-conddb.cern.ch/cmsDbBrowser/index/Prod
+
 GTags = {
   '16' : {
     'dt' : "80X_dataRun2_2016LegacyRepro_v4",
-    'mc' : "80X_mcRun2_asymptotic_2016_TrancheIV_v8" # "94X_mcRun2_asymptotic_v3"
+    'mc' : "80X_mcRun2_asymptotic_2016_TrancheIV_v10"
   },
   '17' : {
-    'dt' : "94X_dataRun2_ReReco_EOY17_v6",
-    'mc' : "94X_mc2017_realistic_v16"
+    'dt' : "94X_dataRun2_v11",
+    'mc' : "94X_mc2017_realistic_v17"
   },
   '18' : {
-    'dt' : "102X_dataRun2_Sep2018Rereco_v1", #"102X_dataRun2_Prompt_v11" 
-    'mc' : "102X_upgrade2018_realistic_v15"
+    'dt' : "102X_dataRun2_v11" 
+    'mc' : "102X_upgrade2018_realistic_v19"
   }
 }
 
