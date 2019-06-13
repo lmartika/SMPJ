@@ -135,10 +135,20 @@ void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup 
   }
   if (!changed) return;
   cout << "Running on global tag " << mHLTConfig.globalTag() << "!!!" << endl;
-  if (mIsMCarlo) return;
+
+  // Save MET filter pass information
+  for (auto &fName : mFilterNames) {
+    mFilterActiveHisto->Fill(fName.c_str(),0);
+  }
+  // As a last piece of info, we indicate if all filters are passed.
+  mFilterActiveHisto->Fill("PassAll",0);
 
   // Additional steps to be performed first time in the analysis loop!
+  // For MC, this means only updating MET Filter info
   mNewTrigs = true;
+
+  if (mIsMCarlo) return;
+
   cout << "New trigger menu found!!!" << endl;
 
   // The triggers that are actively and passively monitored will be set up according to the wishes of the user.
@@ -146,12 +156,6 @@ void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup 
   // We check mHLTConfig, which triggers of these are actually present.
   // Usage example for the passively monitored triggers: when AK4 and AK8 jets are saved into separate files, we still want the same events to be available in both.
   mSatisfactory = mSatisfactory and trigUpdate(mTriggerNames,mTriggerIndex,true) and trigUpdate(mTriggerNamesFlw,mTriggerIndexFlw,false); 
-
-  // Save MET filter pass information
-  mFilterActiveHisto->Fill("PassAll",0);
-  for (auto &fName : mFilterNames) {
-    mFilterActiveHisto->Fill(fName.c_str(),0);
-  }
 
   if (mPrintTriggerMenu) {
     cout << "Available TriggerNames are: " << endl;
@@ -255,7 +259,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   QCDEventHdr           qEvtHdr;
   QCDMET                qPFMet_t1, qPFMet_t0, qPFMet_t0t1;
   
-  //-------------- Basic Event Info ------------------------------
+  //-------------- Basic Event Info -----------------------------------
   qEvtHdr.setRun(event.id().run());
   qEvtHdr.setEvt(event.id().event());
   qEvtHdr.setLumi(event.luminosityBlock());
@@ -263,13 +267,13 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   float refR = 0.4;
   if (!mAK4) refR = 0.8;
   
-  //-------------- Beam Spot --------------------------------------
+  //-------------- Beam Spot ------------------------------------------
   Handle<reco::BeamSpot> beamSpot;
   event.getByToken(mBeamSpot,beamSpot);
   if (beamSpot.isValid()) qEvtHdr.setBS(beamSpot->x0(),beamSpot->y0(),beamSpot->z0());
   else qEvtHdr.setBS(-999,-999,-999);
 
-  //-------------- HCAL Noise Summary -----------------------------
+  //-------------- HCAL Noise Summary ---------------------------------
   if (mIsMCarlo) {
     qEvtHdr.setHCALNoiseNoMinZ(true);
   } else {
@@ -278,84 +282,35 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     qEvtHdr.setHCALNoiseNoMinZ(*noiseSummary_NoMinZ);
   }
 
-  //-------------- Trigger Info ----------------------------------- 
+  //-------------- Trigger Info (exlusively Data) --------------------- 
   if (!mIsMCarlo) {
     vector<int>                         L1Prescales, HLTPrescales, Fired;
     vector<vector<LorentzVector> >      qL1Objs, qHLTObjs;  
     map<string, vector<LorentzVector> > vvHLT;
 
     // Fetching data using tokens.
-    edm::Handle<edm::TriggerResults>                    filterBits;
     edm::Handle<edm::TriggerResults>                    triggerBits;
-    edm::Handle<pat::TriggerObjectStandAloneCollection> triggerHLTObjs;
-    edm::Handle<BXVector<l1t::Jet> >                    triggerL1Objs;
-    edm::Handle<BXVector<l1t::EtSum> >                  triggerL1HTObjs;
-    edm::Handle<pat::PackedTriggerPrescales>            triggerPrescales;
-    edm::Handle<pat::PackedTriggerPrescales>            triggerPrescalesL1Max;
-    edm::Handle<pat::PackedTriggerPrescales>            triggerPrescalesL1Min;
-
-    event.getByToken(mFilterBits,                       filterBits);
     event.getByToken(mTriggerBits,                      triggerBits);
+    edm::Handle<pat::TriggerObjectStandAloneCollection> triggerHLTObjs;
     event.getByToken(mTriggerHLTObjs,                   triggerHLTObjs);
+    edm::Handle<BXVector<l1t::Jet> >                    triggerL1Objs;
     event.getByToken(mTriggerL1Objs,                    triggerL1Objs);
+    edm::Handle<BXVector<l1t::EtSum> >                  triggerL1HTObjs;
     event.getByToken(mTriggerL1HTObjs,                  triggerL1HTObjs);
+    edm::Handle<pat::PackedTriggerPrescales>            triggerPrescales;
     event.getByToken(mTriggerPrescales,                 triggerPrescales);
+    edm::Handle<pat::PackedTriggerPrescales>            triggerPrescalesL1Max;
     event.getByToken(mTriggerPrescalesL1Min,            triggerPrescalesL1Min);
+    edm::Handle<pat::PackedTriggerPrescales>            triggerPrescalesL1Min;
     event.getByToken(mTriggerPrescalesL1Max,            triggerPrescalesL1Max);
     
-    const edm::TriggerNames &names       = event.triggerNames(*triggerBits);
-    const edm::TriggerNames &filterNames = event.triggerNames(*filterBits);
+    const edm::TriggerNames &names = event.triggerNames(*triggerBits);
     
-    // Update the filter positions only when the trigger menu has changed.
-    // These steps cannot be taken within "beginRun", as event.triggerNames() is not available there. 
-    if (mNewTrigs) {
-      mNewTrigs = false;
-
-      mFilterIndex.clear();
-      for (auto &flt : mFilterNames) { // Loop through the requested filter names
-        int fltIdx = -1;
-        for (unsigned int iflt=0; iflt<filterBits->size(); ++iflt) { // Try to find this
-          string filterName = filterNames.triggerName(iflt);
-          if (filterName==flt) {
-            fltIdx = iflt;
-            break;
-          }
-        }
-        mFilterIndex.push_back(fltIdx);
-        cout << "MET filter " << flt;
-        if (fltIdx==-1) cout << " not found! :(" << endl;
-        else cout << " found! :)" << endl;
-      }
-
-      // When the triggers are changed, check that the info we got from hltConfig matches with that from event.triggerNames
-      if (!trigCheck(names,mTriggerNames,mTriggerIndex,true) or !trigCheck(names,mTriggerNamesFlw,mTriggerIndexFlw,false)) {
-        mSatisfactory = false;
-        return;
-      }
+    // When the triggers are changed, check that the info we got from hltConfig matches with that from event.triggerNames
+    if (mNewTrigs and (!trigCheck(names,mTriggerNames,mTriggerIndex,true) or !trigCheck(names,mTriggerNamesFlw,mTriggerIndexFlw,false))) {
+      mSatisfactory = false;
+      return;
     }
-
-    // Go through the filters and check that all of them are good
-    assert(mFilterIndex.size()==mFilterNames.size());
-    bool passMET = true;
-    for (auto iflt = 0u; iflt<mFilterIndex.size(); ++iflt) {
-      int fltIdx = mFilterIndex[iflt];
-      if (fltIdx<0) continue; // If a filter was not found, we skip it 
-      
-      string fName1 = mFilterNames[iflt];
-      string fName2 = filterNames.triggerName(fltIdx);
-      if (fName1!=fName2) {
-        cout << "Mismatch in filter names: " << fName1 << " " << fName2 << endl;
-        mSatisfactory = false;
-        return;
-      }
-      if (!filterBits->accept(fltIdx)) {
-        passMET = false;
-        mFilterActiveHisto->Fill(fName1.c_str(),1);
-      }
-    }
-    if (passMET) mFilterActiveHisto->Fill("PassAll",1);
-    // A filter is allowed to reject the event
-    if (mDiscardFilter and !passMET) return;
 
     // Trigger counts
     unsigned fire = 0;
@@ -415,7 +370,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       }
       // If none of the actively/passively monitored triggers have fired, skip this as a redundant event
       if (nofireoth) return;
-    }
+    } // Primary trigger not fired
 
     // The trigger objects are saved only when the actively monitored trigger has fired (in ZB events we pay no attention)
     if (mTrigObjs and !mZB and fire>0) {
@@ -463,18 +418,78 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
         vvL1.emplace_back(P4.Px(),P4.Py(),P4.Pz(),P4.E());
       }
       qL1Objs.push_back(vvL1);
-    }
+    } // mTrigObjs and !mZB
+    // Saving the info to the event
     mEvent->setTrigDecision(Fired);
     mEvent->setPrescales(L1Prescales,HLTPrescales);
     mEvent->setL1Obj(qL1Objs);
     mEvent->setHLTObj(qHLTObjs);
+  } // !mIsMCarlo
+
+  //-------------- Filter Info ---------------------------------------- 
+  vector<int> Filtered;
+
+  // Fetching data using tokens.
+  edm::Handle<edm::TriggerResults>                    filterBits;
+  event.getByToken(mFilterBits,                       filterBits);
+
+  const edm::TriggerNames &filterNames = event.triggerNames(*filterBits);
+
+  // Update the filter positions only when the trigger menu has changed.
+  // These steps cannot be taken within "beginRun", as event.triggerNames() is not available there. 
+  if (mNewTrigs) {
+    mNewTrigs = false;
+
+    mFilterIndex.clear();
+    for (auto &flt : mFilterNames) { // Loop through the requested filter names
+      int fltIdx = -1;
+      for (unsigned int iflt=0; iflt<filterBits->size(); ++iflt) { // Try to find this
+        string filterName = filterNames.triggerName(iflt);
+        if (filterName==flt) {
+          fltIdx = iflt;
+          break;
+        }
+      }
+      mFilterIndex.push_back(fltIdx);
+      cout << "MET filter " << flt;
+      if (fltIdx==-1) cout << " not found! :(" << endl;
+      else cout << " found! :)" << endl;
+    }
   }
+
+  // Go through the filters and check that all of them are good
+  assert(mFilterIndex.size()==mFilterNames.size());
+  bool passMET = true;
+  for (auto iflt = 0u; iflt<mFilterIndex.size(); ++iflt) {
+    int fltIdx = mFilterIndex[iflt];
+    if (fltIdx<0) continue; // If a filter was not found, we skip it 
+    
+    string fName1 = mFilterNames[iflt];
+    string fName2 = filterNames.triggerName(fltIdx);
+    if (fName1!=fName2) {
+      cout << "Mismatch in filter names: " << fName1 << " " << fName2 << endl;
+      mSatisfactory = false;
+      return;
+    }
+    if (!filterBits->accept(fltIdx)) {
+      Filtered.push_back(iflt);
+      passMET = false;
+      mFilterActiveHisto->Fill(fName1.c_str(),1);
+    }
+  }
+  // We log the knowledge that all filters have passed. This knowledge is not saved on a per-event 
+  // basis, as an empty vector 'Filtered' already indicates that no MET filters have been active.
+  if (passMET) mFilterActiveHisto->Fill("PassAll",1);
+  // A filter is allowed to reject the event
+  if (mDiscardFilter and !passMET) return;
+
+  mEvent->setFltDecision(Filtered);
   
-  //-------------- Vertex Info -----------------------------------
+  //-------------- Vertex Info ----------------------------------------
   Handle<reco::VertexCollection> recVtxs;
   event.getByToken(mOfflineVertices,recVtxs);
   
-  //------------- reject events without reco vertices ------------
+  //------------- reject events without reco vertices -----------------
   int VtxGood(0);
   bool isPVgood(false);
   float PVx(0),PVy(0),PVz(0),PVndof(0);
@@ -501,7 +516,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   event.getByToken(mSrcPFRho,rhoPF);
   qEvtHdr.setRho(*rhoCalo,*rhoPF);
 
-  //-------------- Generator (incl. simulated PU) Info -------------------------------------
+  //-------------- Generator (incl. simulated PU) Info ----------------
   if (mIsMCarlo and mUseGenInfo) {
     Handle<GenEventInfoProduct> hEventInfo;
     Handle<std::vector<PileupSummaryInfo> > PupInfo;
@@ -535,7 +550,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   }
   mEvent->setEvtHdr(qEvtHdr);
   
-  //---------------- GenJets ---------------------------------------------
+  //---------------- GenJets ------------------------------------------
   if (mIsMCarlo) {
     // Setting up handy handles
     Handle<GenJetCollection> genJets;
@@ -711,7 +726,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     float bPrime = (che ? pue/che : 0.);
     qcdJet.setBetaPrime(bPrime);
      
-    //---- jec uncertainty --------------
+    // JEC uncertainty
     double unc(0.0);
     vector<float> uncSrc(0);
     if (mPFPayloadName != "") {
@@ -753,7 +768,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     float abseta = fabs(ijet->eta());
     int nm       = ijet->neutralMultiplicity();
     int cm       = ijet->chargedMultiplicity();
-    // https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
+    // See, https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
     bool looseID = true, tightID = true;
     if (abseta <= 2.7) {
       tightID = nhf<0.90 and muf<0.80 and ((mRunYear=="2018") ?
@@ -883,7 +898,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     mEvent->setGenFlavourPhysicsDef(mGenFlavourPhys);
   }
   
-  //---------------- MET ---------------------------------------------
+  //---------------- MET ----------------------------------------------
   Handle<pat::METCollection> pfmett1;
   event.getByToken(mPFMETt1, pfmett1);
   // MET T1 is available by default in MINIAOD
@@ -892,15 +907,12 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   // MET T0 is obtained through a custom patch
   auto mett0 = mett1.corP2(pat::MET::RawChs);
   qPFMet_t0.setVar(mett0.pt(),mett1.corSumEt(pat::MET::RawChs),mett0.phi());
-  // The old T0 for 8029
-  //auto mett0 = mett1.corP2(pat::MET::Type0);
-  //qPFMet_t0.setVar(mett0.pt(),mett1.corSumEt(pat::MET::Type0),mett0.phi());
   // MET T0T1 is found using standard routines
   auto mett0t1 = mett1.corP2(pat::MET::Type01);
   qPFMet_t0t1.setVar(mett0t1.pt(),mett1.corSumEt(pat::MET::Type01),mett0t1.phi());
   mEvent->setPFMET(qPFMet_t1,qPFMet_t0,qPFMet_t0t1);
  
-  //-------------- fill the tree -------------------------------------
+  //-------------- fill the tree --------------------------------------
   mTree->Fill();
 }
 

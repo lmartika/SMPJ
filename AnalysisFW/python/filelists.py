@@ -25,7 +25,11 @@ QCD16Mor17HS1 = cms.untracked.vstring(
 )
 
 QCD16MG = cms.untracked.vstring(
-  '/store/mc/RunIISummer16MiniAODv3/QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/110000/FA09D351-D9EA-E811-8956-0025904C68DC.root'
+  '/store/mc/RunIISummer16MiniAODv3/QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/110000/FCE7FD1A-D8EA-E811-9A91-0025905C2CB8.root',
+  '/store/mc/RunIISummer16MiniAODv3/QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/110000/FA38AFD9-EBEA-E811-9523-0CC47AFCC3EA.root',
+  '/store/mc/RunIISummer16MiniAODv3/QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/110000/FA09D351-D9EA-E811-8956-0025904C68DC.root',
+  '/store/mc/RunIISummer16MiniAODv3/QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/110000/F620F065-E5EA-E811-B70F-0025904CF764.root',
+  '/store/mc/RunIISummer16MiniAODv3/QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/110000/F49053C7-DAEA-E811-A8D5-0025905C2CD0.root'
 )
 
 QCD17P8M1 = cms.untracked.vstring(

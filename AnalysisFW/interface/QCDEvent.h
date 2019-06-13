@@ -35,6 +35,7 @@ class QCDEvent
       void setHLTObj(const vector<vector<LorentzVector> >& fHLTObj);
       void setPrescales(const vector<int>& fPreL1, const vector<int>& fPreHLT) {L1Prescale_ = fPreL1; HLTPrescale_ = fPreHLT;}
       void setTrigDecision(const vector<int>& fTrigDecision) {TriggerDecision_ = fTrigDecision;}
+      void setFltDecision(const vector<int>& fFltDecision) {FilterDecision_ = fFltDecision;}
 
       void setGenFlavour(          const vector<int>& GenFlavour) {                genFlavour_= GenFlavour;}
       void setGenFlavourHadron(    const vector<int>& GenFlavourHadron) {          genFlavourHadron_= GenFlavourHadron;}
@@ -80,6 +81,8 @@ class QCDEvent
       QCDMET                                   PFMetT0T1_;
       //---- trigger decision vector ---------------------------------
       vector<int>                         TriggerDecision_;
+      //---- filter decision vector ---------------------------------
+      vector<int>                         FilterDecision_;
       //---- L1 prescale vector --------------------------------------
       vector<int>                         L1Prescale_;
       //---- HLT prescale vector -------------------------------------
