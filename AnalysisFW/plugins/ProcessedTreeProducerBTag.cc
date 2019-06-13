@@ -299,9 +299,9 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     event.getByToken(mTriggerL1HTObjs,                  triggerL1HTObjs);
     edm::Handle<pat::PackedTriggerPrescales>            triggerPrescales;
     event.getByToken(mTriggerPrescales,                 triggerPrescales);
-    edm::Handle<pat::PackedTriggerPrescales>            triggerPrescalesL1Max;
-    event.getByToken(mTriggerPrescalesL1Min,            triggerPrescalesL1Min);
     edm::Handle<pat::PackedTriggerPrescales>            triggerPrescalesL1Min;
+    event.getByToken(mTriggerPrescalesL1Min,            triggerPrescalesL1Min);
+    edm::Handle<pat::PackedTriggerPrescales>            triggerPrescalesL1Max;
     event.getByToken(mTriggerPrescalesL1Max,            triggerPrescalesL1Max);
     
     const edm::TriggerNames &names = event.triggerNames(*triggerBits);
