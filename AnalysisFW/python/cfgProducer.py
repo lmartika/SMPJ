@@ -12,9 +12,9 @@ DOZB=False
 # This should match GTags, triggerlists.py and filterlists.py
 RunYear='17' #16/17/18
 # This should match GTags and filterlists.py
-Mode='dt' #dt/mc
+Mode='mc' #dt/mc
 # This is only used locally here
-MC='mg' #py/hw/nu/mg
+MC='hw' #py/hw/nu/mg
 
 # The global tags should be checked from time to time.
 # See: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions#Global_Tags_for_2016_legacy_data

@@ -4,13 +4,13 @@ config = config()
 ## Configurable parameters begin
 
 # Choose 16/17/18
-RunYear='17'
+RunYear='16'
 # Choose ak4/ak8, zb (DT only)
 Mode='ak4'
 # Choose True for DT, False for MC
 DTMode=False
 # Choose py/pylong/hw/nu/mg (MC only)
-MCType = 'mg'
+MCType = 'nu'
 
 ## Configurable parameters end
 
@@ -258,7 +258,7 @@ if __name__ == '__main__':
           config.Data.inputDataset = '/SingleNeutrino/RunIISummer16MiniAODv3-PUMoriond17_magnetOff_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
           config.Data.unitsPerJob = 1
           submit(config)
-      if MCType=='hw':
+      elif MCType=='hw':
         # Herwig++ settings
         config.JobType.psetName = 'cfg/'+Mode+'16hw.py'
 
