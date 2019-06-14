@@ -14,7 +14,7 @@ RunYear='17' #16/17/18
 # This should match GTags and filterlists.py
 Mode='dt' #dt/mc
 # This is only used locally here
-MC='py' #py/hw/nu/mg
+MC='mg' #py/hw/nu/mg
 
 # The global tags should be checked from time to time.
 # See: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions#Global_Tags_for_2016_legacy_data
@@ -316,7 +316,7 @@ def producer(era,jettype):
     f.write(")\n\n")
     f.write("process.path = cms.Path(")
     if RunYear!='16':
-      f.write("process.ecalBadCalibReducedMINIAODFilter*\n")
+      f.write("process.ecalBadCalibReducedMINIAODFilter*\n                        ")
     if jettype!='ak8':
       f.write("process.QGTagger*\n                        ")
     if Mode=="dt":
