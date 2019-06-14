@@ -4,7 +4,7 @@ config = config()
 ## Configurable parameters begin
 
 # Choose 16/17/18
-RunYear='18'
+RunYear='16'
 # Choose ak4/ak8, zb (DT only)
 Mode='ak4'
 # Choose True for DT, False for MC

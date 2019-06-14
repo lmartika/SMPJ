@@ -12,7 +12,7 @@ DOZB=False
 # This should match GTags, triggerlists.py and filterlists.py
 RunYear='17' #16/17/18
 # This should match GTags and filterlists.py
-Mode='mc' #dt/mc
+Mode='dt' #dt/mc
 # This is only used locally here
 MC='py' #py/hw/nu/mg
 
@@ -136,6 +136,35 @@ logging = [
   'process.options.allowUnscheduled = cms.untracked.bool(True)',
 ]
 
+ecalBad = [
+  'process.load("RecoMET.METFilters.ecalBadCalibFilter_cfi")',
+  '',
+  'baddetEcallist = cms.vuint32(',
+  '    [872439604,872422825,872420274,872423218,',
+  '     872423215,872416066,872435036,872439336,',
+  '     872420273,872436907,872420147,872439731,',
+  '     872436657,872420397,872439732,872439339,',
+  '     872439603,872422436,872439861,872437051,',
+  '     872437052,872420649,872421950,',
+  '     872437185,872422564,872421566,872421695,',
+  '     872421955,872421567,872437184,872421951,',
+  '     872421694,872437056,872437057,872437313,',
+  '     872438182,872438951,872439990,872439864,# NEW',
+  '     872439609,872437181,872437182,872437053,',
+  '     872436794,872436667,872436536,872421541,',
+  '     872421413,872421414,872421031,872423083,',
+  '     872421439])',
+  '',
+  'process.ecalBadCalibReducedMINIAODFilter = cms.EDFilter(',
+  '    "EcalBadCalibFilter",',
+  '    EcalRecHitSource = cms.InputTag("reducedEgamma:reducedEERecHits"),',
+  '    ecalMinEt        = cms.double(50.),',
+  '    baddetEcal    = baddetEcallist,',
+  '    taggingMode = cms.bool(True),',
+  '    debug = cms.bool(False)',
+  '    )',
+]
+
 # jettype: 'ak4', 'ak8', 'zb'
 def producer(era,jettype):
   fname="cfg/"+jettype+RunYear+era+".py"
@@ -165,6 +194,9 @@ def producer(era,jettype):
       f.write('cms.vstring()\n\n')
     # MET filters
     f.write('filters=fltlist["'+RunYear+'"]["'+Mode+'"]\n\n')
+    if RunYear!='16':
+      for line in ecalBad:
+        f.write(line+'\n')
     # Testing input files
     f.write('inFiles=')
     if RunYear=='16':
@@ -178,6 +210,8 @@ def producer(era,jettype):
         f.write('QCD16Mor17HS1\n')
       elif MC=='mg':
         f.write('QCD16MG\n')
+      elif MC=='nu':
+        f.write('QCD16NU\n')
       else:
         f.write('cms.untracked.vstring()\n')
     elif RunYear=='17':
@@ -281,6 +315,8 @@ def producer(era,jettype):
     f.write("  saveWeights     = cms.bool(False)\n")
     f.write(")\n\n")
     f.write("process.path = cms.Path(")
+    if RunYear!='16':
+      f.write("process.ecalBadCalibReducedMINIAODFilter*\n")
     if jettype!='ak8':
       f.write("process.QGTagger*\n                        ")
     if Mode=="dt":

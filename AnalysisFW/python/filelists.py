@@ -17,11 +17,11 @@ ZBD16 = cms.untracked.vstring(
 )
 
 QCD16Mor17P8M1 = cms.untracked.vstring(
-  '/store/mc/RunIISummer16MiniAODv2/QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8/MINIAODSIM/PUMoriond17_magnetOn_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/FA7A80D9-6CEF-E611-9933-FA163E036391.root' 
+  '/store/mc/RunIISummer16MiniAODv3/QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8/MINIAODSIM/PUMoriond17_magnetOn_94X_mcRun2_asymptotic_v3-v2/40000/FA41F4B8-D320-E911-9AC4-0CC47AC52CFE.root' 
 )
 
 QCD16Mor17HS1 = cms.untracked.vstring(
-  '/store/mc/RunIISummer16MiniAODv2/QCD_Pt-15to7000_TuneCUETHS1_Flat_13TeV_herwigpp/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/FA6E7F70-A8CF-E611-803A-0CC47A745294.root' 
+  '/store/mc/RunIISummer16MiniAODv3/QCD_Pt-15to7000_TuneCUETHS1_Flat_13TeV_herwigpp/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/280000/FE251B18-D420-E911-8570-0090FAA57730.root' 
 )
 
 QCD16MG = cms.untracked.vstring(
@@ -34,6 +34,10 @@ QCD16MG = cms.untracked.vstring(
 
 QCD17P8M1 = cms.untracked.vstring(
   '/store/mc/RunIIFall17MiniAODv2/QCD_Pt-15to7000_TuneCUETP8M1_Flat_13TeV_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/FE205E21-8042-E811-BA86-509A4C730E2E.root'
+)
+
+QCD16NU = cms.untracked.vstring(
+  '/store/mc/RunIISummer16MiniAODv3/SingleNeutrino/MINIAODSIM/PUMoriond17_magnetOff_94X_mcRun2_asymptotic_v3-v2/40000/F8DD9168-1E21-E911-A81B-A0369F7FC714.root' 
 )
 
 QCD17P8CP5 = cms.untracked.vstring(

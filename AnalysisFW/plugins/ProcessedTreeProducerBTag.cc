@@ -43,8 +43,12 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   mTrigSimple(                                                                              cfg.getUntrackedParameter<bool>("trigSimple",false)),
   mTrigObjs(                                                                                cfg.getUntrackedParameter<bool>("trigObjs",false)),
   mFilterNames(                                                                 cfg.getParameter<std::vector<std::string> >("filterName")),
+  mFilterBitEcal(mayConsume<bool>(                                                                            edm::InputTag("ecalBadCalibReducedMINIAODFilter"))),
+  mFilterBitsRECO(mayConsume<edm::TriggerResults>(                                                            edm::InputTag("TriggerResults","","RECO"))),
+  mFilterBitsPAT(mayConsume<edm::TriggerResults>(                                                             edm::InputTag("TriggerResults","","PAT"))),
   mTriggerNames(                                                                cfg.getParameter<std::vector<std::string> >("triggerName")),
   mTriggerNamesFlw(                                                             cfg.getParameter<std::vector<std::string> >("triggerFollow")),
+  mTriggerBits(mayConsume<edm::TriggerResults>(                                                               edm::InputTag("TriggerResults","","HLT"))),
   mTriggerHLTObjs(mayConsume<pat::TriggerObjectStandAloneCollection>(              cfg.getUntrackedParameter<edm::InputTag>("triggerHLTObjs",edm::InputTag("")))),
   mTriggerL1Objs(mayConsume<BXVector<l1t::Jet> >(                                  cfg.getUntrackedParameter<edm::InputTag>("triggerL1Objs",edm::InputTag("")))),
   mTriggerL1HTObjs(mayConsume<BXVector<l1t::EtSum> >(                              cfg.getUntrackedParameter<edm::InputTag>("triggerL1HTObjs",edm::InputTag("")))),
@@ -70,6 +74,7 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   mTriggerPassHisto->SetBit(TH1::kUserContour);
   mFilterActiveHisto = fs->make<TH1F>("FilterActive","FilterActive",1,0,1); 
   mFilterActiveHisto->SetBit(TH1::kUserContour);
+
   mULimCEF = 0; mULimNEF = 0; mLLimNEF = 0; mULimNHF = 0; mLLimNHF = 0;
 }
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -286,28 +291,22 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   if (mNewTrigs) {
     if (mIsMCarlo) mNewTrigs = false; // In data, this is set to false later.
 
-    edm::Handle<edm::TriggerResults> trigResults; //our trigger result object
-    edm::InputTag trigResultsTag("TriggerResults","","RECO"); //make sure have correct process on MC
-    //data process=HLT, MC depends, Spring11 is REDIGI311X
-    event.getByLabel(trigResultsTag,trigResults);
-    const edm::TriggerNames& filNames = event.triggerNames(*trigResults);   
-    for (auto &fil : filNames.triggerNames()) cout << fil << endl;
-
     cout << "Found MET filters:" << endl;
+    mFilterPAT = false;
     for (unsigned ifloc = 0; ifloc<2; ++ifloc) {
-      cout << "Godel" << endl;
-      if (ifloc==0) mFltLoc = "RECO";
-      else          mFltLoc = "PAT";
       edm::Handle<edm::TriggerResults> fBits;
-      event.getByLabel(edm::InputTag("TriggerResults","","RECO"),fBits);
-      cout << "Kikulos" << endl;
+      if (ifloc==0) {
+        event.getByToken(mFilterBitsRECO,fBits); 
+      } else { 
+        event.getByToken(mFilterBitsPAT,fBits);
+        mFilterPAT = true;
+      }
+
       const edm::TriggerNames &fNames = event.triggerNames(*fBits);
-      cout << "Pekos: " << fNames.size() << endl;
-      cout << mFilterNames.size() << endl;
       mFilterMissing.clear();
       mFilterIndex.clear();
-      for (auto &flt : mFilterNames) { // Loop through the requested filter names
-        cout << flt << endl;
+      for (unsigned fltpos = 0; fltpos < mFilterNames.size(); ++fltpos) { // Loop through the requested filter names
+        auto &flt = mFilterNames[fltpos];
         int fltIdx = -1;
         for (unsigned int iflt=0; iflt<fBits->size(); ++iflt) { // Try to find this
           string filterName = fNames.triggerName(iflt);
@@ -316,27 +315,31 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
             break;
           }
         }
-        cout << "Huhuu " << fltIdx << endl;
         mFilterIndex.push_back(fltIdx);
-        if (fltIdx==-1) mFilterMissing.emplace_back(flt);
+        if (fltIdx==-1) mFilterMissing.emplace_back(fltpos);
         else cout << " " << flt << " :)" << endl;
       }
       if (mFilterMissing.size() < mFilterNames.size()) break;
     }
-    cout << "Using MET filters from " << mFltLoc << endl;
+    cout << "Using MET filters from " << (mFilterPAT ? "PAT" : "RECO") << endl;
+    mFilterEcalBad = -1;
     if (mFilterMissing.size()>0) {
-      cout << "Missing MET filters:" << endl;
-      for (auto &flt : mFilterMissing) cout << " " << flt << " :(" << endl;
+      for (auto &fltpos : mFilterMissing) {
+        auto &flt = mFilterNames[fltpos];
+        if (flt == "Flag_ecalBadCalibReducedMINIAODFilter") {
+          cout << "MET filter " << flt << " requires special attention." << endl;
+          mFilterEcalBad = fltpos;
+        } else {
+          cout << "MET filter " << flt << " missing :(" << endl;
+        }
+      }
     }
   }
-  cout << "Gordon" << endl;
 
   vector<int> Filtered;
   // Fetching data using tokens.
   edm::Handle<edm::TriggerResults> filterBits;
-
-  edm::InputTag fltResultsTag("TriggerResults","",mFltLoc.c_str());
-  event.getByLabel(fltResultsTag,filterBits);
+  event.getByToken(mFilterPAT ? mFilterBitsPAT : mFilterBitsRECO,filterBits); 
   const edm::TriggerNames &filterNames = event.triggerNames(*filterBits);
 
   // Go through the filters and check that all of them are good
@@ -344,19 +347,33 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   bool passMET = true;
   for (auto iflt = 0u; iflt<mFilterIndex.size(); ++iflt) {
     int fltIdx = mFilterIndex[iflt];
-    if (fltIdx<0) continue; // If a filter was not found, we skip it 
+    string flt2;
+    bool reject = false;
+    if (fltIdx<0) {
+      if (mFilterEcalBad>=0 and iflt == abs(mFilterEcalBad)) {
+        // This filter needs to be fetched separately.
+        edm::Handle<bool> filterBitEcal;
+        event.getByToken(mFilterBitEcal,filterBitEcal);
+        reject =  !(*filterBitEcal);
+        flt2 = "Flag_ecalBadCalibReducedMINIAODFilter";
+      } else {
+        continue; // If a filter was not found, we skip it
+      }
+    } else {
+      reject = !filterBits->accept(fltIdx);
+      flt2 = filterNames.triggerName(fltIdx);
+    }
     
-    string fName1 = mFilterNames[iflt];
-    string fName2 = filterNames.triggerName(fltIdx);
-    if (fName1!=fName2) {
-      cout << "Mismatch in filter names: " << fName1 << " " << fName2 << endl;
+    string flt = mFilterNames[iflt];
+    if (flt!=flt2) {
+      cout << "Mismatch in filter names: " << flt << " " << flt2 << endl;
       mSatisfactory = false;
       return;
     }
-    if (!filterBits->accept(fltIdx)) {
+    if (reject) {
       Filtered.push_back(iflt);
       passMET = false;
-      mFilterActiveHisto->Fill(fName1.c_str(),1);
+      mFilterActiveHisto->Fill(flt.c_str(),1);
     }
   }
   // We log the knowledge that all filters have passed. This knowledge is not saved on a per-event 
@@ -373,12 +390,6 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     vector<vector<LorentzVector> >      qL1Objs, qHLTObjs;  
     map<string, vector<LorentzVector> > vvHLT;
     
-    // Fetching trigger bits and names.
-    edm::InputTag trgResultsTag("TriggerResults","","HLT");
-    edm::Handle<edm::TriggerResults> triggerBits;
-    event.getByLabel(trgResultsTag,triggerBits);
-    const edm::TriggerNames &names = event.triggerNames(*triggerBits);
-
     // Fetching data using tokens.
     edm::Handle<pat::TriggerObjectStandAloneCollection> triggerHLTObjs;
     event.getByToken(mTriggerHLTObjs,                   triggerHLTObjs);
@@ -392,6 +403,10 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     event.getByToken(mTriggerPrescalesL1Min,            triggerPrescalesL1Min);
     edm::Handle<pat::PackedTriggerPrescales>            triggerPrescalesL1Max;
     event.getByToken(mTriggerPrescalesL1Max,            triggerPrescalesL1Max);
+ 
+    edm::Handle<edm::TriggerResults> triggerBits;
+    event.getByToken(mTriggerBits,triggerBits);
+    const edm::TriggerNames &names = event.triggerNames(*triggerBits);
     
     // When the triggers are changed, check that the info we got from hltConfig matches with that from event.triggerNames
     if (mNewTrigs) {
