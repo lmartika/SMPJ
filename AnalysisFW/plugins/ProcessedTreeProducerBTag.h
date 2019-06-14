@@ -148,7 +148,8 @@ private:
   bool                                                     mDiscardFilter;
   bool                                                     mTrigSimple;
   bool                                                     mTrigObjs;
-  string                                                   mProcessName;
+  string                                                   mFltLoc;
+  vector<string>                                           mFilterMissing;
   const vector<string>                                     mFilterNames;
   const vector<string>                                     mTriggerNames;
   const vector<string>                                     mTriggerNamesFlw;
@@ -158,8 +159,6 @@ private:
   vector<int>                                              mTriggerIndexFlw;
   map<string,vector<int>>                                  mTriggerIndexMap;
   vector<int>                                              mFilterIndex;
-  edm::EDGetTokenT<edm::TriggerResults>                    mFilterBits;
-  edm::EDGetTokenT<edm::TriggerResults>                    mTriggerBits;
   edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> mTriggerHLTObjs;
   edm::EDGetTokenT<BXVector<l1t::Jet> >                    mTriggerL1Objs;
   edm::EDGetTokenT<BXVector<l1t::EtSum> >                  mTriggerL1HTObjs;

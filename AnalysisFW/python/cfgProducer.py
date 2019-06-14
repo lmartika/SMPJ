@@ -10,11 +10,11 @@ DOAK8=False
 DOZB=False
 
 # This should match GTags, triggerlists.py and filterlists.py
-RunYear='16' #16/17/18
+RunYear='17' #16/17/18
 # This should match GTags and filterlists.py
-Mode='dt' #dt/mc
+Mode='mc' #dt/mc
 # This is only used locally here
-MC='mg' #py/hw/nu/mg
+MC='py' #py/hw/nu/mg
 
 # The global tags should be checked from time to time.
 # See: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions#Global_Tags_for_2016_legacy_data
@@ -258,12 +258,9 @@ def producer(era,jettype):
     f.write("  discardFilter   = cms.untracked.bool(False),\n")
     f.write("  trigSimple      = cms.untracked.bool(True),\n")
     f.write("  trigObjs        = cms.untracked.bool(False),\n")
-    f.write("  processName     = cms.untracked.string('HLT'),\n")
     f.write("  filterName      = filters,\n")
     f.write("  triggerName     = triggers,\n")
     f.write("  triggerFollow   = follows,\n")
-    f.write("  filterFlags     = cms.untracked.InputTag('TriggerResults','','RECO'),\n")
-    f.write("  triggerResults  = cms.untracked.InputTag('TriggerResults','','HLT'),\n")
     f.write("  triggerHLTObjs  = cms.untracked.InputTag('"+("selected" if RunYear=='16' else "slimmed")+"PatTrigger'),\n")
     f.write("  triggerL1Objs   = cms.untracked.InputTag('caloStage2Digis','Jet'),\n")
     f.write("  triggerL1HTObjs = cms.untracked.InputTag('caloStage2Digis','EtSum'),\n")
