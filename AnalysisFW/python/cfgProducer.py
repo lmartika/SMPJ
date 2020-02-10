@@ -5,14 +5,14 @@
 # Configurable parameters #
 ###########################
 
-DOAK4=True
+DOAK4=False
 DOAK8=False
-DOZB=False
+DOZB=True
 
 # This should match GTags, triggerlists.py and filterlists.py
-RunYear='17' #16/17/18
+RunYear='16' #16/17/18
 # This should match GTags and filterlists.py
-Mode='mc' #dt/mc
+Mode='dt' #dt/mc
 # This is only used locally here
 MC='hw' #py/hw/nu/mg
 

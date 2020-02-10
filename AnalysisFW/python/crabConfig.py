@@ -6,11 +6,11 @@ config = config()
 # Choose 16/17/18
 RunYear='16'
 # Choose ak4/ak8, zb (DT only)
-Mode='ak4'
+Mode='zb'
 # Choose True for DT, False for MC
-DTMode=False
+DTMode=True
 # Choose py/pylong/hw/nu/mg (MC only)
-MCType = 'nu'
+MCType = 'mg'
 
 ## Configurable parameters end
 
@@ -73,56 +73,59 @@ if __name__ == '__main__':
       #config.Data.unitsPerJob = 10
       #submit(config)
 
-      # B16-ver2 Legacy ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'16BII.py'
-      config.General.requestName = 'Run16B2'+Tag+'_Legacy_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2016B-17Jul2018_ver2-v2/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
+      ## B16-ver2 Legacy ReReco
+      #config.JobType.psetName = 'cfg/'+Mode+'16BII.py'
+      #config.General.requestName = 'Run16B2'+Tag+'_Legacy_mAOD'
+      #if Mode=='zb':
+      #  config.Data.inputDataset = DTLoc+'/Run2016B-17Jul2018_ver2-v1/MINIAOD'
+      #else:
+      #  config.Data.inputDataset = DTLoc+'/Run2016B-17Jul2018_ver2-v2/MINIAOD'
+      #config.Data.unitsPerJob = 10
+      #submit(config)
 
-      # C16 Legacy ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'16C.py'
-      config.General.requestName = 'Run16C'+Tag+'_Legacy_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2016C-17Jul2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
+      ## C16 Legacy ReReco
+      #config.JobType.psetName = 'cfg/'+Mode+'16C.py'
+      #config.General.requestName = 'Run16C'+Tag+'_Legacy_mAOD'
+      #config.Data.inputDataset = DTLoc+'/Run2016C-17Jul2018-v1/MINIAOD'
+      #config.Data.unitsPerJob = 10
+      #submit(config)
 
-      # D16 Legacy ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'16D.py'
-      config.General.requestName = 'Run16D'+Tag+'_Legacy_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2016D-17Jul2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
+      ## D16 Legacy ReReco
+      #config.JobType.psetName = 'cfg/'+Mode+'16D.py'
+      #config.General.requestName = 'Run16D'+Tag+'_Legacy_mAOD'
+      #config.Data.inputDataset = DTLoc+'/Run2016D-17Jul2018-v1/MINIAOD'
+      #config.Data.unitsPerJob = 10
+      #submit(config)
 
-      # E16 Legacy ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'16E.py'
-      config.General.requestName = 'Run16E'+Tag+'_Legacy_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2016E-17Jul2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
+      ## E16 Legacy ReReco
+      #config.JobType.psetName = 'cfg/'+Mode+'16E.py'
+      #config.General.requestName = 'Run16E'+Tag+'_Legacy_mAOD'
+      #config.Data.inputDataset = DTLoc+'/Run2016E-17Jul2018-v1/MINIAOD'
+      #config.Data.unitsPerJob = 10
+      #submit(config)
 
-      # Fearly16 Legacy ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'16Fe.py'
-      config.Data.lumiMask = 'Fe16lumis.json'
-      config.General.requestName = 'Run16Fe'+Tag+'_Legacy_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2016F-17Jul2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
+      ## Fearly16 Legacy ReReco
+      #config.JobType.psetName = 'cfg/'+Mode+'16Fe.py'
+      #config.Data.lumiMask = 'Fe16lumis.json'
+      #config.General.requestName = 'Run16Fe'+Tag+'_Legacy_mAOD'
+      #config.Data.inputDataset = DTLoc+'/Run2016F-17Jul2018-v1/MINIAOD'
+      #config.Data.unitsPerJob = 10
+      #submit(config)
 
-      # Flate16 Legacy ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'16Fl.py'
-      config.Data.lumiMask = 'Fl16lumis.json'
-      config.General.requestName = 'Run16Fl'+Tag+'_Legacy_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2016F-17Jul2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
+      ## Flate16 Legacy ReReco
+      #config.JobType.psetName = 'cfg/'+Mode+'16Fl.py'
+      #config.Data.lumiMask = 'Fl16lumis.json'
+      #config.General.requestName = 'Run16Fl'+Tag+'_Legacy_mAOD'
+      #config.Data.inputDataset = DTLoc+'/Run2016F-17Jul2018-v1/MINIAOD'
+      #config.Data.unitsPerJob = 10
+      #submit(config)
 
-      # G16 Legacy ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'16G.py'
-      config.General.requestName = 'Run16G'+Tag+'_Legacy_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2016G-17Jul2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
+      ## G16 Legacy ReReco
+      #config.JobType.psetName = 'cfg/'+Mode+'16G.py'
+      #config.General.requestName = 'Run16G'+Tag+'_Legacy_mAOD'
+      #config.Data.inputDataset = DTLoc+'/Run2016G-17Jul2018-v1/MINIAOD'
+      #config.Data.unitsPerJob = 10
+      #submit(config)
 
       # H16 Legacy ReReco
       config.JobType.psetName = 'cfg/'+Mode+'16H.py'
