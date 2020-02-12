@@ -730,29 +730,29 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     if (fabs(ijet->eta()) > mMaxEta) continue;
     int jetNo = int(ijet-patJets->begin());
     if (ijet->pt() < (jetNo<=2 ? mMinPFPtThirdJet : mMinPFPt)) continue;
-    double scale = 1./ijet->jecFactor(0);
+    double scale = 1./(ijet->jecSetsAvailable() ? ijet->jecFactor(0) : 1.);
 
     // Keep track of pt and energy for PU stuff
-    double che = 0.0;
+    //double che = 0.0, poe = 0.0;
     double pue = 0.0; 
     // Track parameters by Juska. Not-so-useful for chs jets.
     int mpuTrk(0), mlvTrk(0), mjtTrk(0); // # of pile-up tracks & lead-vertex tracks & all tracks ## Juska
 
     if (mAK4) {
       // Loop through the PF candidates within the jet.
-      vector<double> used;
+      //vector<double> used;
       for (auto pidx = 0u; pidx < ijet->numberOfDaughters(); ++pidx) {
         auto dtr = dynamic_cast<const pat::PackedCandidate*>(ijet->daughter(pidx));
         if (dtr->charge()!=0) {
-          che += dtr->energy();
+          //che += dtr->energy();
           
           ++mjtTrk; 
           if (dtr->fromPV()==0) {
             // Note: dtr->pvAssociationQuality() is the modern alternative, but fromPV is the one used for CHS.
             // Still for some reason, not all fromPV==0 cases are removed. These events fit the old "betaStar" definition (not-from-PV).
             // Due to CHS, the trailing betaStar is a vanishing fraction (1/10k), so we don't store it anymore.
-            ++mpuTrk;
-            used.push_back(dtr->energy());
+            //++mpuTrk;
+            //used.push_back(dtr->energy());
           } else {
             ++mlvTrk;
           }
@@ -761,15 +761,20 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       // Loop through the pileup PF candidates within the jet.
       for (auto &pidx : jet2pu[jetNo]) {
         auto dtr = cands->at(pidx);
-        // We take the candidates that have not appeared before: these were removed by CHS
-        if (dtr.charge()!=0 and std::find(used.begin(),used.end(),dtr.energy())==used.end())
+        // We take the charged. candidates that have not appeared before: these were removed by CHS
+        if (dtr.charge()!=0) {
+          ++mpuTrk;
           pue += dtr.energy();
+          //if (std::find(used.begin(),used.end(),dtr.energy())==used.end())
+          //  pue += dtr.energy();
+        }
       }
     }
 
     QCDPFJet qcdJet;
 
-    float bPrime = (che ? pue/che : 0.);
+    // The fraction of CHS-removed PU (defined similarly as the other fractions, w.r.t. unscaled jet energy).
+    float bPrime = (pue/ijet->energy())*scale; 
     qcdJet.setBetaPrime(bPrime);
      
     // JEC uncertainty
@@ -816,10 +821,11 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     int cm       = ijet->chargedMultiplicity();
     // See, https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
     bool looseID = true, tightID = true;
+
     if (abseta <= 2.7) {
       tightID = nhf<0.90 and muf<0.80 and ((mRunYear=="2018") ?
                 (chm>0 and cemf<mULimCEF and nemf<0.99 and (abseta>=2.6 or (nemf<0.90 and npr>1 and chf>0))) :
-                (npr>1 and nemf<0.90 and (abseta>=2.4 or (chf>0 and chm>0 and cemf<mULimCEF))));
+                (npr>1 and nemf<0.90 and (abseta>2.4 or (chf>0 and chm>0 and cemf<mULimCEF))));
       looseID = (mRunYear=="2016") ? (npr>1 and nemf<0.99 and nhf<0.99 and (abseta>2.4 or (chf>0 and chm>0 and cemf<0.99))) : tightID; 
     } else if (abseta <= 3.0) {
       tightID = nemf<mULimNEF and nemf>mLLimNEF and nm>2 and nhf<mULimNHF;

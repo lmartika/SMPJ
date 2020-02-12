@@ -5,16 +5,16 @@
 # Configurable parameters #
 ###########################
 
-DOAK4=False
+DOAK4=True
 DOAK8=False
 DOZB=True
 
 # This should match GTags, triggerlists.py and filterlists.py
-RunYear='16' #16/17/18
+RunYear='18' #16/17/18
 # This should match GTags and filterlists.py
 Mode='dt' #dt/mc
 # This is only used locally here
-MC='hw' #py/hw/nu/mg
+MC='py' #py/hw/nu/mg
 
 # The global tags should be checked from time to time.
 # See: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions#Global_Tags_for_2016_legacy_data
@@ -27,8 +27,8 @@ GTags = {
     'mc' : "80X_mcRun2_asymptotic_2016_TrancheIV_v10"
   },
   '17' : {
-    'dt' : "94X_dataRun2_v11",
-    'mc' : "94X_mc2017_realistic_v17"
+    'dt' : "106X_dataRun2_v20",#"94X_dataRun2_v11",
+    'mc' : "106X_mc2017_realistic_v6"#"94X_mc2017_realistic_v17"
   },
   '18' : {
     'dt' : "102X_dataRun2_v11", 
@@ -216,11 +216,13 @@ def producer(era,jettype):
         f.write('cms.untracked.vstring()\n')
     elif RunYear=='17':
       if jettype=='zb':
-        f.write('ZBB17\n')
+        f.write('ZBDUL17\n')
       elif Mode=='dt':
-        f.write('JHTB17\n')
+        f.write('JHTDUL17\n')
       elif MC=='py':
-        f.write('QCD17P8CP5\n')
+        f.write('QCDUL17P8CP5\n')
+      elif MC=='nu':
+        f.write('QCDUL17NU\n')
       elif MC=='hw':
         f.write('QCD17HS1\n')
       elif MC=='mg':
@@ -229,9 +231,9 @@ def producer(era,jettype):
         f.write('cms.untracked.vstring()\n')
     elif RunYear=='18':
       if jettype=='zb':
-        f.write('JHTA18\n')
+        f.write('ZBAUL18\n')
       elif Mode=='dt':
-        f.write('JHTA18\n')
+        f.write('JHTAUL18\n')
       elif MC=='py':
         f.write('QCD18P8CP5\n')
       elif MC=='mg':

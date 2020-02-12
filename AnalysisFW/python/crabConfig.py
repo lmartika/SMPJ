@@ -4,13 +4,15 @@ config = config()
 ## Configurable parameters begin
 
 # Choose 16/17/18
-RunYear='16'
+RunYear='18'
+# Era
+Era='A'
 # Choose ak4/ak8, zb (DT only)
 Mode='zb'
 # Choose True for DT, False for MC
 DTMode=True
 # Choose py/pylong/hw/nu/mg (MC only)
-MCType = 'mg'
+MCType = 'nu'
 
 ## Configurable parameters end
 
@@ -29,16 +31,6 @@ ExtMode=False
 
 config.General.transferOutputs = True
 config.General.transferLogs = False
-
-if DTMode:
-  config.General.workArea = 'runs_dt'
-  config.Data.splitting = 'LumiBased'
-else:
-  if not ExtMode:
-    config.General.workArea = 'runs_mc'
-  else:
-    config.General.workArea = 'runs_extmc'
-  config.Data.splitting = 'FileBased'
 
 config.Data.inputDBS = 'global'
 config.Data.outLFNDirBase = '/store/user/hsiikone'
@@ -62,192 +54,41 @@ if __name__ == '__main__':
       print "Failed submitting task: %s" % (cle)
 
   if DTMode:
+    config.General.workArea = 'runs_dt'
+    config.Data.splitting = 'LumiBased'
+    config.JobType.psetName = 'cfg/'+Mode+RunYear+Era+'.py'
+    config.General.requestName = 'Run'+RunYear+Era+Tag
+    Ver = '1'
+    Campaign = ''
+    Jobs = 100
+    # UL ReReco
     if RunYear=='16':
-      # The files presented here are produced on CMSSW_9_4_9, original AODSIM is from 80X, not 94X
-
-      # The first sector (ver1 == original PromptReco-v1) is completely rejected by the json. 
-      # B16-ver1 Legacy ReReco
-      #config.JobType.psetName = 'cfg/'+Mode+'16BI.py'
-      #config.General.requestName = 'Run16B1'+Tag+'_Legacy_mAOD'
-      #config.Data.inputDataset = DTLoc+'/Run2016B-17Jul2018_ver1-v1/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-
-      ## B16-ver2 Legacy ReReco
-      #config.JobType.psetName = 'cfg/'+Mode+'16BII.py'
-      #config.General.requestName = 'Run16B2'+Tag+'_Legacy_mAOD'
-      #if Mode=='zb':
-      #  config.Data.inputDataset = DTLoc+'/Run2016B-17Jul2018_ver2-v1/MINIAOD'
-      #else:
-      #  config.Data.inputDataset = DTLoc+'/Run2016B-17Jul2018_ver2-v2/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-
-      ## C16 Legacy ReReco
-      #config.JobType.psetName = 'cfg/'+Mode+'16C.py'
-      #config.General.requestName = 'Run16C'+Tag+'_Legacy_mAOD'
-      #config.Data.inputDataset = DTLoc+'/Run2016C-17Jul2018-v1/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-
-      ## D16 Legacy ReReco
-      #config.JobType.psetName = 'cfg/'+Mode+'16D.py'
-      #config.General.requestName = 'Run16D'+Tag+'_Legacy_mAOD'
-      #config.Data.inputDataset = DTLoc+'/Run2016D-17Jul2018-v1/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-
-      ## E16 Legacy ReReco
-      #config.JobType.psetName = 'cfg/'+Mode+'16E.py'
-      #config.General.requestName = 'Run16E'+Tag+'_Legacy_mAOD'
-      #config.Data.inputDataset = DTLoc+'/Run2016E-17Jul2018-v1/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-
-      ## Fearly16 Legacy ReReco
-      #config.JobType.psetName = 'cfg/'+Mode+'16Fe.py'
+      # CMSSW ????: Era == ????
       #config.Data.lumiMask = 'Fe16lumis.json'
-      #config.General.requestName = 'Run16Fe'+Tag+'_Legacy_mAOD'
-      #config.Data.inputDataset = DTLoc+'/Run2016F-17Jul2018-v1/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-
-      ## Flate16 Legacy ReReco
-      #config.JobType.psetName = 'cfg/'+Mode+'16Fl.py'
       #config.Data.lumiMask = 'Fl16lumis.json'
-      #config.General.requestName = 'Run16Fl'+Tag+'_Legacy_mAOD'
-      #config.Data.inputDataset = DTLoc+'/Run2016F-17Jul2018-v1/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-
-      ## G16 Legacy ReReco
-      #config.JobType.psetName = 'cfg/'+Mode+'16G.py'
-      #config.General.requestName = 'Run16G'+Tag+'_Legacy_mAOD'
-      #config.Data.inputDataset = DTLoc+'/Run2016G-17Jul2018-v1/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-
-      # H16 Legacy ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'16H.py'
-      config.General.requestName = 'Run16H'+Tag+'_Legacy_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2016H-17Jul2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
+      config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_271036-284044_13TeV_ReReco_07Aug2017_Collisions16_JSON.txt'
     elif RunYear=='17':
-      # The files presented here are produced on CMSSW_9_4_5-9_4_7
-
-      # B17 March18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'17B.py'
-      config.General.requestName = 'Run17B'+Tag+'_Mar18_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2017B-31Mar2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
-      # C17 March18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'17C.py'
-      config.General.requestName = 'Run17C'+Tag+'_Mar18_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2017C-31Mar2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
-      # D17 March18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'17D.py'
-      config.General.requestName = 'Run17D'+Tag+'_Mar18_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2017D-31Mar2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
-      # E17 March18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'17E.py'
-      config.General.requestName = 'Run17E'+Tag+'_Mar18_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2017E-31Mar2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
-      # For Run2017F only, there is a fresher rereco
-      ## F17 March18 ReReco
-      #config.JobType.psetName = 'cfg/'+Mode+'17F.py'
-      #config.General.requestName = 'Run17F'+Tag+'_Mar18_mAOD'
-      #config.Data.inputDataset = DTLoc+'/Run2017F-31Mar2018-v1/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-
-      # F17 May18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'17F.py'
-      config.General.requestName = 'Run17F'+Tag+'_May18_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2017F-09May2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
-      # These are special runs performed in the end of 2017. Typically not used.
-      ## H17 Fall17 ReReco FSQJet2
-      #config.JobType.psetName = 'cfg/ak4ak817H.py'
-      #config.General.requestName = 'Run17H_FSQ2_Fall17_mAOD'
-      #config.Data.inputDataset = '/FSQJet2/Run2017H-17Nov2017-v1/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-      #
-      ## H17 Fall17 ReReco LowEGJet
-      #config.JobType.psetName = 'cfg/ak4ak817H.py'
-      #config.General.requestName = 'Run17H_LEG_Fall17_mAOD'
-      #config.Data.inputDataset = '/LowEGJet/Run2017H-17Nov2017-v2/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-      #
-      ## H17 Fall17 ReReco HighEGJet
-      #config.JobType.psetName = 'cfg/ak4ak817H.py'
-      #config.General.requestName = 'Run17H_HEG_Fall17_mAOD'
-      #config.Data.inputDataset = '/HighEGJet/Run2017H-17Nov2017-v1/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-      #
-      ## H17 Fall17 ReReco ZeroBias
-      #config.JobType.psetName = 'cfg/zb17H.py'
-      #config.General.requestName = 'Run17H_ZB_Fall17_mAOD'
-      #config.Data.inputDataset = '/ZeroBias/Run2017H-17Nov2017-v1/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-
+      # CMSSW 10_6_2: Era == B/C/D/E/F
+      config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1mod.txt'
+      Campaign = '09Aug2019_UL2017'
+      Jobs = 80
     elif RunYear=='18':
-      # The files presented here are produced on CMSSW_10_2_1-10_2_5
-
-      # A18-Sep18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'18A.py'
-      config.General.requestName = 'Run18A'+Tag+'_17Sep18RR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018A-17Sep2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
-      # B18-Sep18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'18B.py'
-      config.General.requestName = 'Run18B'+Tag+'_17Sep18RR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018B-17Sep2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
-      # C18-Sep18 ReReco
-      config.JobType.psetName = 'cfg/'+Mode+'18C.py'
-      config.General.requestName = 'Run18C'+Tag+'_17Sep18RR_mAOD1'
-      config.Data.inputDataset = DTLoc+'/Run2018C-17Sep2018-v1/MINIAOD'
-      config.Data.unitsPerJob = 10
-      submit(config)
-
-      # D18: PromptReco equal to ReReco in previous eras. D18-PR-v2 holds all the info. -v1 is very small.
-      config.JobType.psetName = 'cfg/'+Mode+'18D.py'
-      config.General.requestName = 'Run18D'+Tag+'_PR_mAOD'
-      config.Data.inputDataset = DTLoc+'/Run2018D-PromptReco-v2/MINIAOD'
-      config.Data.unitsPerJob = 25
-      submit(config)
-
-      # This is a special run.
-      #config.JobType.psetName = 'cfg/'+Mode+'18E.py'
-      #config.General.requestName = 'Run18E'+Tag+'_PR_mAOD'
-      #config.Data.inputDataset = DTLoc+'/Run2018E-PromptReco-v1/MINIAOD'
-      #config.Data.unitsPerJob = 10
-      #submit(config)
-
+      # CMSSW 10_6_4_patch1: Era == A/B/C/D
+      # ZB: A/B avail, HT: A/B/D avail
+      Ver = '2'
+      if Era=='D': Ver = '4'
+      config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
+      Campaign = '12Nov2019_UL2018'
+    config.Data.unitsPerJob = Jobs
+    config.Data.inputDataset = DTLoc+'/Run20'+RunYear+Era+'-'+Campaign+'-v'+Ver+'/MINIAOD'
+    submit(config)
   else:
+    if not ExtMode:
+      config.General.workArea = 'runs_mc'
+    else:
+      config.General.workArea = 'runs_extmc'
+    config.Data.splitting = 'FileBased'
+
     if RunYear=='16':
       # The files presented here are produced on CMSSW_9_4_9, original AODSIM is from 80X, not 94X
       if MCType=='nu':
@@ -551,13 +392,13 @@ if __name__ == '__main__':
       # The files presented here are produced on CMSSW_9_2_8-9_4_6
       if MCType=='nu': 
         # Neutrino Gun settings
-        config.jobtype.psetname = 'cfg/'+mode+'17nu.py'
+        config.JobType.psetName = 'cfg/'+Mode+'17nu.py'
 
         ##### neutrino gun
-        if not extmode:
-          config.general.requestname = 'QCD17'+Tag+'_SingleNu_PU2017_mc17r_v14'
-          config.data.inputdataset = '/SingleNeutrino/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.data.unitsperjob = 1
+        if not ExtMode:
+          config.General.requestName = 'QCD17'+Tag+'_SingleNu_PU2017_mc17r_v6_2'
+          config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM'
+          config.Data.unitsPerJob = 10
           submit(config)
 
       elif MCType=='hw':
@@ -573,18 +414,23 @@ if __name__ == '__main__':
 
       elif MCType=='py':
         # Pythia8 settings
-        config.jobtype.psetname = 'cfg/'+mode+'17py.py'
+        config.JobType.psetName = 'cfg/'+Mode+'17py.py'
 
         ##### Pythia 8 Flat
         if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_15to7k_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
+          config.General.requestName = 'QCD17'+Tag+'_P8CP5_15to7k_S19UL17_mc17r_v6_2'
+          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM'
+          config.Data.unitsPerJob = 20
+          submit(config)
+        else:
+          config.General.requestName = 'QCD17'+Tag+'_P8CP5_15to7k_S19UL17_mc17r_v6_2_e2'
+          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6_ext2-v2/MINIAODSIM'
           config.Data.unitsPerJob = 20
           submit(config)
 
       elif MCType=='pylong':
         # Pythia8 settings
-        config.jobtype.psetname = 'cfg/'+mode+'17py.py'
+        config.JobType.psetName = 'cfg/'+Mode+'17py.py'
 
         ##### Pythia 8 slices 15-30
         if not ExtMode:
@@ -877,7 +723,7 @@ if __name__ == '__main__':
 
       elif MCType=='pylong':
         # Pythia8 settings
-        config.jobtype.psetname = 'cfg/'+mode+'18py.py'
+        config.JobType.psetName = 'cfg/'+Mode+'18py.py'
 
         ##### Pythia 8 slices 15-30
         if not ExtMode:

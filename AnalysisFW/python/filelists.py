@@ -1,9 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 
-JHTA18 = cms.untracked.vstring(
- '/store/data/Run2018A/JetHT/MINIAOD/PromptReco-v1/000/316/219/00000/78A33133-E758-E811-823B-FA163E3E5B56.root '
-)
-
 JHTG16 = cms.untracked.vstring(
  '/store/data/Run2016G/JetHT/MINIAOD/17Jul2018-v1/90000/C01E5165-3992-E811-829C-0025905C3E38.root'
 )
@@ -60,6 +56,23 @@ ZBB17 = cms.untracked.vstring(
   '/store/data/Run2017B/ZeroBias/MINIAOD/31Mar2018-v1/30000/FE5B9607-7837-E811-82E7-EC0D9A8222CE.root'
 )
 
+QCDUL17P8CP5 = cms.untracked.vstring(
+  '/store/mc/RunIISummer19UL17MiniAOD/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/MINIAODSIM/106X_mc2017_realistic_v6-v2/100000/00F14449-0E85-FB42-87FA-AD7956E4714B.root'
+)
+
+QCDUL17NU = cms.untracked.vstring(
+  '/store/mc/RunIISummer19UL17MiniAOD/SingleNeutrino/MINIAODSIM/106X_mc2017_realistic_v6-v2/70000/F62C83FE-2284-4341-86FA-72B4F5F9AC17.root'
+)
+
+ZBDUL17 = cms.untracked.vstring(
+  '/store/data/Run2017D/ZeroBias/MINIAOD/09Aug2019_UL2017-v1/130000/67CA2AC6-0C4D-014D-97EC-EDD6E32FA504.root '
+)
+
+JHTDUL17 = cms.untracked.vstring(
+  '/store/data/Run2017D/JetHT/MINIAOD/09Aug2019_UL2017-v1/50000/F7CE3C72-66C1-CA4B-9742-57E6EA8664B8.root'
+#  '/store/data/Run2017C/JetHT/MINIAOD/09Aug2019_UL2017-v1/130000/328E6989-96F4-8543-9EA5-5AAAFC267960.root'
+)
+
 FSQ17 = cms.untracked.vstring(
   '/store/data/Run2017H/FSQJet2/MINIAOD/17Nov2017-v1/00000/D4DE8239-5E3E-E811-8069-002618FDA287.root'
 )
@@ -71,3 +84,17 @@ QCD18P8CP5 = cms.untracked.vstring(
 QCD18MG = cms.untracked.vstring(
   '/store/mc/RunIIAutumn18MiniAOD/QCD_HT100to200_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v1/60000/FD3F4D79-58BB-A442-BA89-66190498EFEB.root'
 )
+
+JHTA18 = cms.untracked.vstring(
+ '/store/data/Run2018A/JetHT/MINIAOD/PromptReco-v1/000/316/219/00000/78A33133-E758-E811-823B-FA163E3E5B56.root'
+)
+
+ZBAUL18 = cms.untracked.vstring(
+ '/store/data/Run2018A/ZeroBias/MINIAOD/12Nov2019_UL2018-v2/70000/FC349574-5961-CD43-8AD9-80F9CF7842DA.root'
+)
+
+JHTAUL18 = cms.untracked.vstring(
+ '/store/data/Run2018A/JetHT/MINIAOD/12Nov2019_UL2018-v2/270000/EA0E0A70-D4E2-BB40-B190-FBDE8B2AC53F.root'
+)
+ 
+
