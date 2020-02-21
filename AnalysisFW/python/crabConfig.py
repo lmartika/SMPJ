@@ -3,18 +3,26 @@ config = config()
 
 ## Configurable parameters begin
 
+JobsDt=55 #100
+TagTag='Fool'
 # Choose 16/17/18
-RunYear='18'
+RunYear='17'
 # Era
-Era='A'
+Era='C'
 # Choose ak4/ak8, zb (DT only)
-Mode='zb'
+Mode='ak4'
 # Choose True for DT, False for MC
 DTMode=True
 # Choose py/pylong/hw/nu/mg (MC only)
 MCType = 'nu'
 
+# In case of pylong (0-14) or mg (0-8)
+RangeIdx = 0
+
 ## Configurable parameters end
+
+PtRanges = ['15to30','30to50','50to80','80to120','120to170','170to300','300to470','470to600','600to800','800to1000','1000to1400','1400to1800','1800to2400','2400to3200','3200toInf']
+HTRanges = ['HT50to100','HT100to200','HT200to300','HT300to500','HT500to700','HT700to1000','HT1000to1500','HT1500to2000','HT2000toInf']
 
 Tag=''
 DTLoc='/JetHT'
@@ -56,11 +64,11 @@ if __name__ == '__main__':
   if DTMode:
     config.General.workArea = 'runs_dt'
     config.Data.splitting = 'LumiBased'
+    config.Data.unitsPerJob = JobsDt
     config.JobType.psetName = 'cfg/'+Mode+RunYear+Era+'.py'
-    config.General.requestName = 'Run'+RunYear+Era+Tag
+    config.General.requestName = 'Run'+RunYear+Era+Tag+TagTag
     Ver = '1'
     Campaign = ''
-    Jobs = 100
     # UL ReReco
     if RunYear=='16':
       # CMSSW ????: Era == ????
@@ -71,7 +79,6 @@ if __name__ == '__main__':
       # CMSSW 10_6_2: Era == B/C/D/E/F
       config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1mod.txt'
       Campaign = '09Aug2019_UL2017'
-      Jobs = 80
     elif RunYear=='18':
       # CMSSW 10_6_4_patch1: Era == A/B/C/D
       # ZB: A/B avail, HT: A/B/D avail
@@ -79,7 +86,6 @@ if __name__ == '__main__':
       if Era=='D': Ver = '4'
       config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
       Campaign = '12Nov2019_UL2018'
-    config.Data.unitsPerJob = Jobs
     config.Data.inputDataset = DTLoc+'/Run20'+RunYear+Era+'-'+Campaign+'-v'+Ver+'/MINIAOD'
     submit(config)
   else:
@@ -135,154 +141,6 @@ if __name__ == '__main__':
           config.Data.unitsPerJob = 25
           submit(config)
 
-        ##### Pythia 8 slices 30-50
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_30to50_v3'
-          config.Data.inputDataset = '/QCD_Pt_30to50_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 50-80
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_50to80_v3'
-          config.Data.inputDataset = '/QCD_Pt_50to80_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 80-120
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_80to120_v3'
-          config.Data.inputDataset = '/QCD_Pt_80to120_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_80to120_v3_ext'
-          config.Data.inputDataset = '/QCD_Pt_80to120_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext2-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 120-170
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_120to170_v3'
-          config.Data.inputDataset = '/QCD_Pt_120to170_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_120to170_v3_ext'
-          config.Data.inputDataset = '/QCD_Pt_120to170_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 5
-          submit(config)
-
-        ##### Pythia 8 slices 170-300
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_170to300_v3'
-          config.Data.inputDataset = '/QCD_Pt_170to300_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_170to300_v3_ext'
-          config.Data.inputDataset = '/QCD_Pt_170to300_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 300-470
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_300to470_v3'
-          config.Data.inputDataset = '/QCD_Pt_300to470_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 20
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_300to470_v3_ext'
-          config.Data.inputDataset = '/QCD_Pt_300to470_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 20
-          submit(config)
-
-        ##### Pythia 8 slices 470-600
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_470to600_v3'
-          config.Data.inputDataset = '/QCD_Pt_470to600_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 5
-          submit(config)
-
-        ##### Pythia 8 slices 600-800
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_600to800_v3'
-          config.Data.inputDataset = '/QCD_Pt_600to800_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_600to800_v3_ext'
-          config.Data.inputDataset = '/QCD_Pt_600to800_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 800-1000
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_800to1000_v3'
-          config.Data.inputDataset = '/QCD_Pt_800to1000_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_800to1000_v3_ext'
-          config.Data.inputDataset = '/QCD_Pt_800to1000_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 20
-          submit(config)
-
-        ##### Pythia 8 slices 1000-1400
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_1000to1400_v3'
-          config.Data.inputDataset = '/QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 5
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_1000to1400_v3_ext'
-          config.Data.inputDataset = '/QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 1400-1800
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_1400to1800_v3'
-          config.Data.inputDataset = '/QCD_Pt_1400to1800_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_1400to1800_v3_ext'
-          config.Data.inputDataset = '/QCD_Pt_1400to1800_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 5
-          submit(config)
-
-        ##### Pythia 8 slices 1800-2400
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_1800to2400_v3'
-          config.Data.inputDataset = '/QCD_Pt_1800to2400_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_1800to2400_v3_ext'
-          config.Data.inputDataset = '/QCD_Pt_1800to2400_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 5
-          submit(config)
-
-        ##### Pythia 8 slices 2400-3200
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_2400to3200_v3'
-          config.Data.inputDataset = '/QCD_Pt_2400to3200_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_2400to3200_v3_ext'
-          config.Data.inputDataset = '/QCD_Pt_2400to3200_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 3200-Inf
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_P8M1_3200toInf_v3'
-          config.Data.inputDataset = '/QCD_Pt_3200toInf_TuneCUETP8M1_13TeV_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 5
-          submit(config)
-
       elif MCType=='mg':
         # Madgraph + Pythia8 settings
         config.JobType.psetName = 'cfg/'+Mode+'16mg.py'
@@ -294,97 +152,6 @@ if __name__ == '__main__':
           config.Data.unitsPerJob = 10
           submit(config)
         
-        ##### Madgraph + Pythia8 slices 100-200
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT100to200_v3'
-          config.Data.inputDataset = '/QCD_HT100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 200-300
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT200to300_v3'
-          config.Data.inputDataset = '/QCD_HT200to300_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT200to300_v3_ext'
-          config.Data.inputDataset = '/QCD_HT200to300_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 300-500
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT300to500_v3'
-          config.Data.inputDataset = '/QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT300to500_v3_ext'
-          config.Data.inputDataset = '/QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 500-700
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT500to700_v3'
-          config.Data.inputDataset = '/QCD_HT500to700_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT500to700_v3_ext'
-          config.Data.inputDataset = '/QCD_HT500to700_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 700-1000
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT700to1000_v3'
-          config.Data.inputDataset = '/QCD_HT700to1000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT700to1000_v3_ext'
-          config.Data.inputDataset = '/QCD_HT700to1000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 1000-1500
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT1000to1500_v3'
-          config.Data.inputDataset = '/QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT1000to1500_v3_ext'
-          config.Data.inputDataset = '/QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 1500-2000
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT1500to2000_v3'
-          config.Data.inputDataset = '/QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT1500to2000_v3_ext'
-          config.Data.inputDataset = '/QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 2000-Inf
-        if not ExtMode:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT2000toInf_v3'
-          config.Data.inputDataset = '/QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_HT2000toInf_v3_ext'
-          config.Data.inputDataset = '/QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
       else:
         print "Unknown MC Type, ", MCType
 
@@ -407,8 +174,8 @@ if __name__ == '__main__':
 
         # Herwig++ Flat
         if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_HS1_15to7k_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCUETHS1_Flat_13TeV_herwigpp/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
+          config.General.requestName = 'QCD17'+Tag+'_HS1_15to7k_mc17r_v6_2'
+          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCUETHS1_Flat_13TeV_herwigpp/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM'
           config.Data.unitsPerJob = 10
           submit(config)
 
@@ -432,148 +199,10 @@ if __name__ == '__main__':
         # Pythia8 settings
         config.JobType.psetName = 'cfg/'+Mode+'17py.py'
 
-        ##### Pythia 8 slices 15-30
+        ##### Pythia 8 Pthat slices
         if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_15to30_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_15to30_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 30-50
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_30to50_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_30to50_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 50-80
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_50to80_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_50to80_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_50to80_mc17r_v14_ext'
-          config.Data.inputDataset = '/QCD_Pt_50to80_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 80-120
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_80to120_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_80to120_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_80to120_mc17r_v14_ext'
-          config.Data.inputDataset = '/QCD_Pt_80to120_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 120-170
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_120to170_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_120to170_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 170-300
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_170to300_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_170to300_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_170to300_mc17r_v14_ext'
-          config.Data.inputDataset = '/QCD_Pt_170to300_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 300-470
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_300to470_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_300to470_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_300to470_mc17r_v14_ext'
-          config.Data.inputDataset = '/QCD_Pt_300to470_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 470-600
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_470to600_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 600-800
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_600to800_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_600to800_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_600to800_mc17r_v14_ext'
-          config.Data.inputDataset = '/QCD_Pt_600to800_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 800-1000
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_800to1000_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_800to1000_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_800to1000_mc17r_v14_ext'
-          config.Data.inputDataset = '/QCD_Pt_800to1000_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 1000-1400
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_1000to1400_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_1000to1400_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_1000to1400_mc17r_v14_ext'
-          config.Data.inputDataset = '/QCD_Pt_1000to1400_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Pythia 8 slices 1400-1800
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_1400to1800_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_1400to1800_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_1400to1800_mc17r_v14_ext'
-          config.Data.inputDataset = '/QCD_Pt_1400to1800_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 1800-2400
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_1800to2400_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_1800to2400_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 2400-3200
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_2400to3200_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_2400to3200_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 3200-Inf
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_P8CP5_3200toInf_mc17r_v14'
-          config.Data.inputDataset = '/QCD_Pt_3200toInf_TuneCP5_13TeV_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
+          config.General.requestName = 'QCD17'+Tag+'_P8CP5_'+PtRanges[RangeIdx]+'_S19UL17_mc17r_v6_2'
+          config.Data.inputDataset = '/QCD_Pt_'+PtRanges[RangeIdx]+'_TuneCP5_13TeV_pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM'
           config.Data.unitsPerJob = 10
           submit(config)
 
@@ -581,109 +210,13 @@ if __name__ == '__main__':
         # Madgraph + Pythia8 settings
         config.JobType.psetName = 'cfg/'+Mode+'17mg.py'
 
-        ##### Madgraph + Pythia8 slices 50-100
+        ##### Madgraph + Pythia8 HT slices
         if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT50to100_mc17r_v14'
-          config.Data.inputDataset = '/QCD_HT50to100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
+          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_'+HTRanges[RangeIdx]+'_S19UL17_mc17r_v6_2'
+          config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM'
           config.Data.unitsPerJob = 10
           submit(config)
         
-        ##### Madgraph + Pythia8 slices 100-200
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT100to200_mc17r_v14'
-          config.Data.inputDataset = '/QCD_HT100to200_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT100to200_mc17r_v14_ext'
-          config.Data.inputDataset = '/QCD_HT100to200_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 200-300
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT200to300_mc17r_v14_npmx'
-          config.Data.inputDataset = '/QCD_HT200to300_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT200to300_mc17r_v14'
-          config.Data.inputDataset = '/QCD_HT200to300_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 300-500
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT300to500_mc17r_v14_npmx'
-          config.Data.inputDataset = '/QCD_HT300to500_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT300to500_mc17r_v14'
-          config.Data.inputDataset = '/QCD_HT300to500_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 500-700
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT500to700_mc17r_v14'
-          config.Data.inputDataset = '/QCD_HT500to700_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT500to700_mc17r_v14_opmx'
-          config.Data.inputDataset = '/QCD_HT500to700_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_old_pmx_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 700-1000
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT700to1000_mc17r_v14_npmx'
-          config.Data.inputDataset = '/QCD_HT700to1000_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT700to1000_mc17r_v14'
-          config.Data.inputDataset = '/QCD_HT700to1000_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 1000-1500
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT1000to1500_mc17r_v14_npmx'
-          config.Data.inputDataset = '/QCD_HT1000to1500_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT1000to1500_mc17r_v14'
-          config.Data.inputDataset = '/QCD_HT1000to1500_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 1500-2000
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT1500to2000_mc17r_v14'
-          config.Data.inputDataset = '/QCD_HT1500to2000_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT1500to2000_mc17r_v14_opmx'
-          config.Data.inputDataset = '/QCD_HT1500to2000_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_old_pmx_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 2000-Inf
-        if not ExtMode:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT2000toInf_mc17r_v14'
-          config.Data.inputDataset = '/QCD_HT2000toInf_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_HT2000toInf_mc17r_v14_opmx'
-          config.Data.inputDataset = '/QCD_HT2000toInf_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_old_pmx_94X_mc2017_realistic_v14-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
       else:
         print "Unknown MC Type, ", MCType
 
@@ -694,8 +227,8 @@ if __name__ == '__main__':
 
         ##### Neutrino Gun
         if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_SingleNu_mc18r_v15'
-          config.Data.inputDataset = '/SingleNeutrino/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM'
+          config.General.requestName = 'QCD18'+Tag+'_SingleNu_mc18r_v11_L1v1_v2'
+          config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
           config.Data.unitsPerJob = 1
           submit(config)
 
@@ -705,8 +238,8 @@ if __name__ == '__main__':
 
         # Herwig7 Flat
         if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_CH2_15to7k_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCH2_Flat_13TeV_herwig7/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
+          config.General.requestName = 'QCD18'+Tag+'_CH2_15to7k_mc18r_v11_L1v1_v2'
+          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCH2_Flat_13TeV_herwig7/RunIISummer19UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
           config.Data.unitsPerJob = 10
           submit(config)
 
@@ -716,8 +249,8 @@ if __name__ == '__main__':
         
         # Pythia 8 Flat
         if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v1/MINIAODSIM'
+          config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc18r_v11_L1v1_v2'
+          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIISummer19UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
           config.Data.unitsPerJob = 10
           submit(config)
 
@@ -725,208 +258,24 @@ if __name__ == '__main__':
         # Pythia8 settings
         config.JobType.psetName = 'cfg/'+Mode+'18py.py'
 
-        ##### Pythia 8 slices 15-30
+        ##### Pythia 8 Pthat slices
         if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to30_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_15to30_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 30-50
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_30to50_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_30to50_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 50-80
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_50to80_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_50to80_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_50to80_mc18r_v15_ext'
-          config.Data.inputDataset = '/QCD_Pt_50to80_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 80-120
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_80to120_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_80to120_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 120-170
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_120to170_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_120to170_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 170-300
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_170to300_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_170to300_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 300-470
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_300to470_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_300to470_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 470-600
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_470to600_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_470to600_mc18r_v15_ext'
-          config.Data.inputDataset = '/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 600-800
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_600to800_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_600to800_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 800-1000
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_800to1000_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_800to1000_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 1000-1400
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_1000to1400_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_1000to1400_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Pythia 8 slices 1400-1800
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_1400to1800_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_1400to1800_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_1400to1800_mc18r_v15_ext'
-          config.Data.inputDataset = '/QCD_Pt_1400to1800_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 1800-2400
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_1800to2400_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_1800to2400_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_1800to2400_mc18r_v15_ext'
-          config.Data.inputDataset = '/QCD_Pt_1800to2400_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 2400-3200
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_2400to3200_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_2400to3200_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_2400to3200_mc18r_v15_ext'
-          config.Data.inputDataset = '/QCD_Pt_2400to3200_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
-        ##### Pythia 8 slices 3200-Inf
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_3200toInf_mc18r_v15'
-          config.Data.inputDataset = '/QCD_Pt_3200toInf_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        else:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_3200toInf_mc18r_v15_ext'
-          config.Data.inputDataset = '/QCD_Pt_3200toInf_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext2-v2/MINIAODSIM'
+          config.General.requestName = 'QCD17'+Tag+'_P8CP5_'+PtRanges[RangeIdx]+'_S19UL17_mc18r_v11_L1v1_v2'
+          config.Data.inputDataset = '/QCD_Pt_'+PtRanges[RangeIdx]+'_TuneCP5_13TeV_pythia8/RunIISummer19UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
           config.Data.unitsPerJob = 10
           submit(config)
 
       elif MCType=='mg':
         # Madgraph + Pythia8 settings
-        config.JobType.psetName = 'cfg/'+Mode+'18mg.py'
+        config.JobType.psetName = 'cfg/'+Mode+'17mg.py'
 
-        ##### Madgraph + Pythia8 slices 50-100
+        ##### Madgraph + Pythia8 HT slices
         if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_MgMLMP8_HT50to100_mc18r_v15'
-          config.Data.inputDataset = '/QCD_HT50to100_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
+          config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_'+HTRanges[RangeIdx]+'_S19UL17_mc18r_v11_L1v1_v2'
+          config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer19UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
           config.Data.unitsPerJob = 10
           submit(config)
         
-        ##### Madgraph + Pythia8 slices 100-200
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_MgMLMP8_HT100to200_mc18r_v15'
-          config.Data.inputDataset = '/QCD_HT100to200_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 200-300
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_MgMLMP8_HT200to300_mc18r_v15'
-          config.Data.inputDataset = '/QCD_HT200to300_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 300-500
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_MgMLMP8_HT300to500_mc18r_v15'
-          config.Data.inputDataset = '/QCD_HT300to500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 500-700
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_MgMLMP8_HT500to700_mc18r_v15'
-          config.Data.inputDataset = '/QCD_HT500to700_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 700-1000
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_MgMLMP8_HT700to1000_mc18r_v15'
-          config.Data.inputDataset = '/QCD_HT700to1000_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 1000-1500
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_MgMLMP8_HT1000to1500_mc18r_v15'
-          config.Data.inputDataset = '/QCD_HT1000to1500_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 1500-2000
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_MgMLMP8_HT1500to2000_mc18r_v15'
-          config.Data.inputDataset = '/QCD_HT1500to2000_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-        
-        ##### Madgraph + Pythia8 slices 2000-Inf
-        if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_MgMLMP8_HT2000toInf_mc18r_v15'
-          config.Data.inputDataset = '/QCD_HT2000toInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-          config.Data.unitsPerJob = 10
-          submit(config)
-
       else:
         print "Unknown MC Type, ", MCType
 
