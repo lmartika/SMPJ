@@ -802,7 +802,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     
     double chf   = ijet->chargedHadronEnergyFraction();
     double nhf   = ijet->neutralHadronEnergyFraction();// + ijet->HFHadronEnergyFraction();
-    double nemf   = ijet->neutralEmEnergyFraction(); // equals to deprecated phf but has HF info too
+    double nemf  = ijet->neutralEmEnergyFraction(); // equals to deprecated phf but has HF info too
     double cemf  = ijet->chargedEmEnergyFraction(); // equals to deprecated elf
     double muf   = ijet->muonEnergyFraction();
     double hf_hf = ijet->HFHadronEnergyFraction();
