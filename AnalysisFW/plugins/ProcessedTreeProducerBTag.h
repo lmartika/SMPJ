@@ -86,6 +86,11 @@ using namespace reco;
 using namespace std;
 using namespace trigger;
 
+class GenEventInfoProduct;
+class GenLumiInfoHeader;
+class LHEEventProduct;
+class LHERunInfoProduct;
+
 class ProcessedTreeProducerBTag : public edm::EDAnalyzer
 {
 public:
@@ -96,6 +101,7 @@ public:
   virtual void beginRun(edm::Run const &, edm::EventSetup const& iSetup);
   virtual void analyze(edm::Event const& evt, edm::EventSetup const& iSetup);
   virtual void endJob();
+  virtual void beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const& set);
   ~ProcessedTreeProducerBTag() {}
 private:
   // Configurable parameters
@@ -144,6 +150,15 @@ private:
   edm::EDGetTokenT<edm::ValueMap<float>>                   mQGAx2Token;
   edm::EDGetTokenT<edm::ValueMap<int>>                     mQGMulToken;
   edm::EDGetTokenT<edm::ValueMap<float>>                   mQGPtDToken;
+
+  edm::InputTag                                            mGenEventSrc_;
+  edm::EDGetTokenT<GenEventInfoProduct>                    mGenEventToken_;
+  edm::EDGetTokenT<GenLumiInfoHeader>                      mLumiHeaderToken_;
+
+  edm::InputTag                                            mLHEEventSrc_;
+  edm::EDGetTokenT<LHEEventProduct>                        mLHEEventToken_;
+  edm::EDGetTokenT<LHERunInfoProduct>                      mLHEInfoToken_;
+
   // TRIGGER & FILTER // 
   bool                                                     mDiscardFilter;
   bool                                                     mTrigSimple;

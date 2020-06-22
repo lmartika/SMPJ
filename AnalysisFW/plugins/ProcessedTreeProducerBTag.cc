@@ -1,5 +1,10 @@
 #include "SMPJ/AnalysisFW/plugins/ProcessedTreeProducerBTag.h"
 
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenLumiInfoHeader.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
+
 ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cfg):
   mSaveWeights(                                                                                      cfg.getParameter<bool>("saveWeights")),
   mAK4(                                                                                     cfg.getUntrackedParameter<bool>("AK4",false)),
@@ -60,11 +65,21 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   mHLTPrescale(cfg, consumesCollector(), *this)
 {
   if (mAK4) {
-    mQGLToken = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood"));
+    mQGLToken   = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood"));
     mQGAx2Token = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2"));
-    mQGMulToken = consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult"));
+    mQGMulToken = consumes<edm::ValueMap<int>>  (edm::InputTag("QGTagger", "mult"));
     mQGPtDToken = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "ptD"));
   }
+  if (mIsMCarlo and mMCType==0) {
+    mGenEventSrc_     = edm::InputTag("generator");
+    mGenEventToken_   = mayConsume<GenEventInfoProduct>                       (mGenEventSrc_);
+    mLumiHeaderToken_ = mayConsume<GenLumiInfoHeader, edm::BranchType::InLumi>(mGenEventSrc_);
+
+    mLHEEventSrc_   = edm::InputTag("externalLHEProducer");
+    mLHEEventToken_ = mayConsume<LHEEventProduct>                          (mLHEEventSrc_);
+    mLHEInfoToken_  = mayConsume<LHERunInfoProduct, edm::BranchType::InRun>(mLHEEventSrc_);
+  }
+
   mTree = fs->make<TTree>("ProcessedTree","ProcessedTree");
   mEvent = new QCDEvent();
   mTree->Branch("events","QCDEvent",&mEvent);
@@ -266,8 +281,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   qEvtHdr.setEvt(event.id().event());
   qEvtHdr.setLumi(event.luminosityBlock());
   qEvtHdr.setBunch(event.bunchCrossing());
-  float refR = 0.4;
-  if (!mAK4) refR = 0.8;
+  float refR = mAK4 ? 0.4 : 0.8;
   
   //-------------- Beam Spot ------------------------------------------
   Handle<reco::BeamSpot> beamSpot;
@@ -278,6 +292,21 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   //-------------- HCAL Noise Summary ---------------------------------
   if (mIsMCarlo) {
     qEvtHdr.setHCALNoiseNoMinZ(true);
+
+    if (mMCType==0) {
+      edm::Handle<GenEventInfoProduct> genEventInfo;
+      event.getByToken(mGenEventToken_, genEventInfo);
+
+      if (genEventInfo.isValid()) {
+        //cout << "Hup" << endl;
+        //for (unsigned int i = 0; i < genEventInfo->weights().size(); ++i)
+        //  cout << genEventInfo->weights()[i] << endl;
+        const unsigned int startf = 2, starti = 24, offset = 6;
+        const auto &ws = genEventInfo->weights();
+        for (unsigned int i = 0; i < offset; ++i) qEvtHdr.setPSWeight(i       ,ws[i+startf]/ws[1]);
+        for (unsigned int i = 0; i < offset; ++i) qEvtHdr.setPSWeight(i+offset,ws[i+starti]/ws[1]);
+      }
+    }
   } else {
     Handle<bool> noiseSummary_NoMinZ;
     event.getByToken(mHBHENoiseFilterResultNoMinZLabel, noiseSummary_NoMinZ);
@@ -863,9 +892,9 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     qcdJet.pfBTag_CombInclSecVtxV2_ = ijet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
     qcdJet.pfBTag_CombMVAV2_ = ijet->bDiscriminator("pfCombinedMVAV2BJetTags");
 
-    float QGL = -1;
+    float QGL   = -1;
     float QGAx2 = -1;
-    int QGMul = -1;
+    int QGMul   = -1;
     float QGPtD = -1;
     // QGL variables only relevant for AK4
     if (mAK4) {
@@ -967,6 +996,20 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   //-------------- fill the tree --------------------------------------
   mTree->Fill();
 }
+
+void ProcessedTreeProducerBTag::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const& set) {
+  if (mIsMCarlo and mMCType==0) {
+    edm::Handle<GenLumiInfoHeader> header;
+    iLumi.getByToken(mLumiHeaderToken_, header);
+    cout << header->configDescription() << endl;
+    const auto &lheHead = header->lheHeaders();
+    for (const auto &head : lheHead) cout << " " << head.first << " " << head.second << endl;
+
+    const auto &wNames = header->weightNames();
+    for (const auto &wn : wNames) cout << "  " << wn << endl;
+  }
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////
 DEFINE_FWK_MODULE(ProcessedTreeProducerBTag);

@@ -24,6 +24,7 @@ class QCDEventHdr
       void setHCALNoiseNoMinZ(bool fNoise) {mHCALNoiseNoMinZ = fNoise;}
       void setPU(int fNBX, int fOOTPUEarly, int fOOTPULate, int fINTPU) {mNBX = fNBX; mOOTPUEarly = fOOTPUEarly; mOOTPULate = fOOTPULate; mINTPU = fINTPU;}
       void setTrPu(float fTrPu) {mTrPu = fTrPu;} // setting the true PU 
+      void setPSWeight(int idx, float wgt) { mPSWeights[idx] = wgt; }
       //------------ Get methods ------------------------------
       int runNo()            const {return mRun;} 
       long long int event()  const {return mEvent;} 
@@ -91,6 +92,8 @@ class QCDEventHdr
         float mPthat;
         //---- simulation weight ----------------------
         float mWeight;
+        //---- shower weight ----------------------
+        float mPSWeights[12];
         //---- median CALO pt density -----------------
         float mCaloRho;
         //---- median PF pt density -------------------
