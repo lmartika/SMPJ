@@ -4,20 +4,20 @@ config = config()
 ## Configurable parameters begin
 
 JobsDt=55 #100
-TagTag='Fool'
+TagTag=''
 # Choose 16/17/18
-RunYear='17'
+RunYear='18'
 # Era
-Era='C'
+Era='B'
 # Choose ak4/ak8, zb (DT only)
 Mode='ak4'
 # Choose True for DT, False for MC
-DTMode=True
+DTMode=False
 # Choose py/pylong/hw/nu/mg (MC only)
 MCType = 'nu'
 
 # In case of pylong (0-14) or mg (0-8)
-RangeIdx = 0
+RangeIdx = 1
 
 ## Configurable parameters end
 
@@ -83,9 +83,17 @@ if __name__ == '__main__':
       # CMSSW 10_6_4_patch1: Era == A/B/C/D
       # ZB: A/B avail, HT: A/B/D avail
       Ver = '2'
-      if Era=='D': Ver = '4'
       config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
       Campaign = '12Nov2019_UL2018'
+      if Mode=='ak4':
+        if Era=='C':
+          Campaign += '_rsb'
+          Ver = '1'
+        if Era=='D': Ver = '4'
+      elif Mode=='zb':
+        if Era=='C' or Era=='D':
+          Campaign += '_rsb'
+          Ver = '1'
     config.Data.inputDataset = DTLoc+'/Run20'+RunYear+Era+'-'+Campaign+'-v'+Ver+'/MINIAOD'
     submit(config)
   else:
@@ -213,7 +221,7 @@ if __name__ == '__main__':
         ##### Madgraph + Pythia8 HT slices
         if not ExtMode:
           config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_'+HTRanges[RangeIdx]+'_S19UL17_mc17r_v6_2'
-          config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM'
+          config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_PSWeights_13TeV-madgraphMLM-pythia8/RunIISummer19UL17MiniAOD-106X_mc2017_realistic_v6-v2/MINIAODSIM'
           config.Data.unitsPerJob = 10
           submit(config)
         
@@ -228,7 +236,8 @@ if __name__ == '__main__':
         ##### Neutrino Gun
         if not ExtMode:
           config.General.requestName = 'QCD18'+Tag+'_SingleNu_mc18r_v11_L1v1_v2'
-          config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
+          #config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
+          config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL18MiniAOD-FlatPU0to70_106X_upgrade2018_realistic_v11_L1v1-v1/MINIAODSIM'
           config.Data.unitsPerJob = 1
           submit(config)
 
@@ -249,8 +258,10 @@ if __name__ == '__main__':
         
         # Pythia 8 Flat
         if not ExtMode:
-          config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc18r_v11_L1v1_v2'
-          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIISummer19UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
+          config.General.requestName = 'QCD18'+Tag+'_P8CP5_15to7k_mc18r_v11_L1v1_v2s'
+          #config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIISummer19UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
+          #config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIISummer19UL18MiniAOD-FlatPU0to70_106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
+          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIISummer19UL18MiniAOD-FlatPU0to70_106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
           config.Data.unitsPerJob = 10
           submit(config)
 
@@ -272,7 +283,7 @@ if __name__ == '__main__':
         ##### Madgraph + Pythia8 HT slices
         if not ExtMode:
           config.General.requestName = 'QCD17'+Tag+'_MgMLMP8_'+HTRanges[RangeIdx]+'_S19UL17_mc18r_v11_L1v1_v2'
-          config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer19UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
+          config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_PSWeights_13TeV-madgraphMLM-pythia8/RunIISummer19UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
           config.Data.unitsPerJob = 10
           submit(config)
         

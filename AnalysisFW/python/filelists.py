@@ -64,8 +64,24 @@ QCDUL17NU = cms.untracked.vstring(
   '/store/mc/RunIISummer19UL17MiniAOD/SingleNeutrino/MINIAODSIM/106X_mc2017_realistic_v6-v2/70000/F62C83FE-2284-4341-86FA-72B4F5F9AC17.root'
 )
 
+ZBBUL17 = cms.untracked.vstring(
+  '/store/data/Run2017B/ZeroBias/MINIAOD/09Aug2019_UL2017-v1/50000/D07AD09F-0463-7B43-B4EF-FD29E4CA5D0D.root'
+)
+
+ZBCUL17 = cms.untracked.vstring(
+  '/store/data/Run2017C/ZeroBias/MINIAOD/09Aug2019_UL2017-v1/50000/FE22660B-0B16-E34E-BDEA-B84326F55B61.root'
+)
+
 ZBDUL17 = cms.untracked.vstring(
-  '/store/data/Run2017D/ZeroBias/MINIAOD/09Aug2019_UL2017-v1/130000/67CA2AC6-0C4D-014D-97EC-EDD6E32FA504.root '
+  '/store/data/Run2017D/ZeroBias/MINIAOD/09Aug2019_UL2017-v1/130000/087CA264-F0F4-CB4A-8BB6-980BC3269BCA.root'
+)
+
+ZBEUL17 = cms.untracked.vstring(
+  '/store/data/Run2017E/ZeroBias/MINIAOD/09Aug2019_UL2017-v1/130000/AC9C245B-1F6C-6248-BEB1-B3B1DB81C03B.root'
+)
+
+ZBFUL17 = cms.untracked.vstring(
+  '/store/data/Run2017F/ZeroBias/MINIAOD/09Aug2019_UL2017-v1/50000/F60FCB4F-0251-C54A-A12A-65A1FC34A933.root'
 )
 
 JHTDUL17 = cms.untracked.vstring(
@@ -83,6 +99,12 @@ QCD18P8CP5 = cms.untracked.vstring(
 
 QCD18MG = cms.untracked.vstring(
   '/store/mc/RunIIAutumn18MiniAOD/QCD_HT100to200_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v1/60000/FD3F4D79-58BB-A442-BA89-66190498EFEB.root'
+)
+
+QCDUL18P8CP5 = cms.untracked.vstring(
+#  '/store/mc/RunIISummer19UL18MiniAOD/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/MINIAODSIM/FlatPU0to70_106X_upgrade2018_realistic_v11_L1v1-v2/40000/F8EE4D72-7A79-A54E-B3A9-5DCBDE4FF8CE.root'
+#  '/store/mc/RunIISummer19UL18MiniAOD/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/MINIAODSIM/FlatPU0to70_106X_upgrade2018_realistic_v11_L1v1-v2/40000/E15DB014-9F37-7145-AA67-23E13B978E15.root'
+  '/store/mc/RunIISummer19UL18MiniAOD/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/MINIAODSIM/FlatPU0to70_106X_upgrade2018_realistic_v11_L1v1-v2/240000/EA3B1C7C-711B-1D4F-B3EA-801BACD83BC2.root'
 )
 
 JHTA18 = cms.untracked.vstring(
