@@ -5,34 +5,22 @@
 # Configurable parameters #
 ###########################
 
-DOAK4=True
-DOAK8=False
-DOZB=True
-
-# This should match GTags, triggerlists.py and filterlists.py
-RunYear='18' #16/17/18
-# This should match GTags and filterlists.py
-Mode='mc' #dt/mc
-# This is only used locally here
-MC='py' #py/hw/nu/mg
-
 # The global tags should be checked from time to time.
 # See: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions#Global_Tags_for_2016_legacy_data
 # However, the info on this page is not always up-to-date.
 # If in doubt, use the browser https://cms-conddb.cern.ch/cmsDbBrowser/index/Prod
-
 GTags = {
   '16' : {
     'dt' : "80X_dataRun2_2016LegacyRepro_v4",
     'mc' : "80X_mcRun2_asymptotic_2016_TrancheIV_v10"
   },
   '17' : {
-    'dt' : "106X_dataRun2_v20",#"94X_dataRun2_v11",
-    'mc' : "106X_mc2017_realistic_v6"#"94X_mc2017_realistic_v17"
+    'dt' : "106X_dataRun2_v28",
+    'mc' : "106X_mc2017_realistic_v6"
   },
   '18' : {
-    'dt' : "102X_dataRun2_v11", 
-    'mc' : "102X_upgrade2018_realistic_v19"
+    'dt' : "106X_dataRun2_v28",#"102X_dataRun2_v11", 
+    'mc' : "106X_upgrade2018_realistic_v11_L1v1"#"102X_upgrade2018_realistic_v19"
   }
 }
 
@@ -40,8 +28,6 @@ GTags = {
 # Lists #
 #########
 
-# Global tag is set
-GTag = GTags[RunYear][Mode]
 # MET filters are fetched
 from filterlists import *
 # Triggers are fetched
@@ -78,6 +64,7 @@ process = [
   '#! Conditions',
   '#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
   'process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")',
+  'from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag',
   'process.load("Configuration.EventContent.EventContent_cff")',
   'process.load("Configuration.StandardSequences.GeometryRecoDB_cff")',
   'process.load("Configuration.StandardSequences.MagneticField_38T_cff")',
@@ -166,7 +153,7 @@ ecalBad = [
 ]
 
 # jettype: 'ak4', 'ak8', 'zb'
-def producer(era,jettype):
+def producer(RunYear,era,jettype,Mode):
   fname="cfg/"+jettype+RunYear+era+".py"
   with open(fname, 'w') as f:
     # Import lines
@@ -177,15 +164,19 @@ def producer(era,jettype):
     for line in process:
       f.write(line+'\n')
     f.write('\n')
-    # Global tag
-    f.write('process.GlobalTag.globaltag = "'+GTag+'"\n\n')
+    # Global tag is set
+    GTag = GTags[RunYear][Mode]
+    f.write('process.GlobalTag.globaltag = "'+GTag+'"\n')
+    if GTag=='DEFAULT':
+      f.write('process.GlobalTag = GlobalTag(process.GlobalTag, "auto:run2_' + ('data' if Mode=='dt' else 'mc') + '" )\n')
+    f.write('\n')
     # Triggers:
     ## Active
     f.write('triggers=')
     if Mode=='dt':
       f.write('trglist["'+RunYear+'"]["'+era+'"]["'+jettype+'"]\n\n')
     else:
-      f.write('cms.vstring()\n\n')
+      f.write('trglist["'+RunYear+'"]["mc"]["'+jettype+'"]\n\n')
     ## Followed
     f.write('follows=')
     if Mode=='dt' and jettype!='zb':
@@ -194,9 +185,9 @@ def producer(era,jettype):
       f.write('cms.vstring()\n\n')
     # MET filters
     f.write('filters=fltlist["'+RunYear+'"]["'+Mode+'"]\n\n')
-    if RunYear!='16':
-      for line in ecalBad:
-        f.write(line+'\n')
+    #if RunYear!='16':
+    #  for line in ecalBad:
+    #    f.write(line+'\n')
     # Testing input files
     f.write('inFiles=')
     if RunYear=='16':
@@ -318,8 +309,8 @@ def producer(era,jettype):
     f.write("  saveWeights     = cms.bool(False)\n")
     f.write(")\n\n")
     f.write("process.path = cms.Path(")
-    if RunYear!='16':
-      f.write("process.ecalBadCalibReducedMINIAODFilter*\n                        ")
+    #if RunYear!='16':
+    #  f.write("process.ecalBadCalibReducedMINIAODFilter*\n                        ")
     if jettype!='ak8':
       f.write("process.QGTagger*\n                        ")
     if Mode=="dt":
@@ -334,16 +325,13 @@ def producer(era,jettype):
       f.write(line+'\n')
 
 # Produce the run files
-if Mode=='dt':
+for RunYear in ['16','17','18']:
   for era in trglist[RunYear]:
-    if DOAK4:
-      producer(era,'ak4')
-    if DOAK8:
-      producer(era,'ak8')
-    if DOZB:
-      producer(era,'zb')
-else:
-  if DOAK4:
-    producer(MC,'ak4')
-  if DOAK8:
-    producer(MC,'ak8')
+    if era!='mc':
+      producer(RunYear,era,'zb','dt')
+      producer(RunYear,era,'ak4','dt')
+      producer(RunYear,era,'ak8','dt')
+    else:
+      for MC in ['py','nu','hw','mg']:
+        producer(RunYear,MC,'ak4','mc')
+        producer(RunYear,MC,'ak8','mc')

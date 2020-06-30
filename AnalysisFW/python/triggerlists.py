@@ -4,6 +4,15 @@ import FWCore.ParameterSet.Config as cms
 
 trglist = {
   '16' : { 
+    "mc" : {
+      'ak4' : cms.vstring("HLT_PFJet40_v0","HLT_PFJet60_v0","HLT_PFJet80_v0","HLT_PFJet140_v0","HLT_PFJet200_v0","HLT_PFJet260_v0","HLT_PFJet320_v0","HLT_PFJet400_v0","HLT_PFJet450_v0","HLT_PFJet500_v0"),
+      'ak8' : cms.vstring(),
+      #'ak8' : cms.vstring("HLT_AK8PFJet40_v0","HLT_AK8PFJet60_v0","HLT_AK8PFJet80_v0","HLT_AK8PFJet140_v0","HLT_AK8PFJet200_v0","HLT_AK8PFJet260_v0","HLT_AK8PFJet320_v0","HLT_AK8PFJet400_v0","HLT_AK8PFJet450_v0","HLT_AK8PFJet500_v0"),
+      'zb' : cms.vstring("HLT_ZeroBias_v0")
+      #'ak4' : cms.vstring("HLT_PFJet40_v4","HLT_PFJet60_v4","HLT_PFJet80_v4","HLT_PFJet140_v4","HLT_PFJet200_v4","HLT_PFJet260_v4","HLT_PFJet320_v4","HLT_PFJet400_v4","HLT_PFJet450_v4","HLT_PFJet500_v4"),
+      #'ak8' : cms.vstring(),
+      #'zb'  : cms.vstring("HLT_ZeroBias_v2")
+    },
     # This does not pass the DATACERT and AK8 triggers are missing
     "BI" : {
       'ak4' : cms.vstring("HLT_PFJet40_v0","HLT_PFJet60_v0","HLT_PFJet80_v0","HLT_PFJet140_v0","HLT_PFJet200_v0","HLT_PFJet260_v0","HLT_PFJet320_v0","HLT_PFJet400_v0","HLT_PFJet450_v0","HLT_PFJet500_v0"),
@@ -88,6 +97,15 @@ trglist = {
     }
   },
   '17' : {
+    'mc' : {
+      'ak4' : cms.vstring("HLT_PFJet40_v0","HLT_PFJet60_v0","HLT_PFJet80_v0","HLT_PFJet140_v0","HLT_PFJet200_v0","HLT_PFJet260_v0","HLT_PFJet320_v0","HLT_PFJet400_v0","HLT_PFJet450_v0","HLT_PFJet500_v0","HLT_PFJet550_v0"),
+      'ak8' : cms.vstring(),
+      #'ak8' : cms.vstring("HLT_AK8PFJet40_v0","HLT_AK8PFJet60_v0","HLT_AK8PFJet80_v0","HLT_AK8PFJet140_v0","HLT_AK8PFJet200_v0","HLT_AK8PFJet260_v0","HLT_AK8PFJet320_v0","HLT_AK8PFJet400_v0","HLT_AK8PFJet450_v0","HLT_AK8PFJet500_v0","HLT_AK8PFJet550_v0"),
+      'zb' : cms.vstring("HLT_ZeroBias_v0")
+      #'ak4' : cms.vstring("HLT_PFJet40_v10","HLT_PFJet40_v11","HLT_PFJet40_v12","HLT_PFJet60_v10","HLT_PFJet60_v11","HLT_PFJet60_v12","HLT_PFJet80_v10","HLT_PFJet80_v11","HLT_PFJet80_v9","HLT_PFJet140_v10","HLT_PFJet140_v9","HLT_PFJet200_v10","HLT_PFJet200_v9","HLT_PFJet260_v10","HLT_PFJet260_v11","HLT_PFJet320_v10","HLT_PFJet320_v11","HLT_PFJet400_v10","HLT_PFJet400_v11","HLT_PFJet450_v10","HLT_PFJet450_v11","HLT_PFJet450_v12","HLT_PFJet500_v10","HLT_PFJet500_v11","HLT_PFJet500_v12","HLT_PFJet550_v1","HLT_PFJet550_v2"),
+      #'ak8' : cms.vstring("HLT_AK8PFJet40_v6","HLT_AK8PFJet40_v7","HLT_AK8PFJet60_v5","HLT_AK8PFJet60_v6","HLT_AK8PFJet80_v5","HLT_AK8PFJet80_v6","HLT_AK8PFJet140_v5","HLT_AK8PFJet140_v6","HLT_AK8PFJet200_v5","HLT_AK8PFJet200_v6","HLT_AK8PFJet260_v6","HLT_AK8PFJet260_v7","HLT_AK8PFJet320_v6","HLT_AK8PFJet320_v7","HLT_AK8PFJet400_v6","HLT_AK8PFJet400_v7","HLT_AK8PFJet450_v6","HLT_AK8PFJet450_v7","HLT_AK8PFJet500_v6","HLT_AK8PFJet500_v7","HLT_AK8PFJet550_v1","HLT_AK8PFJet550_v2"),
+      #'zb' : cms.vstring("HLT_ZeroBias_v5")
+    },
     'B' : {
       'ak4' : cms.vstring("HLT_PFJet40_v0","HLT_PFJet60_v0","HLT_PFJet80_v0","HLT_PFJet140_v0","HLT_PFJet200_v0","HLT_PFJet260_v0","HLT_PFJet320_v0","HLT_PFJet400_v0","HLT_PFJet450_v0","HLT_PFJet500_v0","HLT_PFJet550_v0"),
       'ak8' : cms.vstring(),
@@ -144,6 +162,15 @@ trglist = {
     },
   },
   '18' : {
+    'mc' : {
+      'ak4' : cms.vstring("HLT_PFJet40_v0","HLT_PFJet60_v0","HLT_PFJet80_v0","HLT_PFJet140_v0","HLT_PFJet200_v0","HLT_PFJet260_v0","HLT_PFJet320_v0","HLT_PFJet400_v0","HLT_PFJet450_v0","HLT_PFJet500_v0","HLT_PFJet550_v0"),
+      'ak8' : cms.vstring(),
+      #'ak8' : cms.vstring("HLT_AK8PFJet40_v0","HLT_AK8PFJet60_v0","HLT_AK8PFJet80_v0","HLT_AK8PFJet140_v0","HLT_AK8PFJet200_v0","HLT_AK8PFJet260_v0","HLT_AK8PFJet320_v0","HLT_AK8PFJet400_v0","HLT_AK8PFJet450_v0","HLT_AK8PFJet500_v0","HLT_AK8PFJet550_v0"),
+      'zb' : cms.vstring("HLT_ZeroBias_v0")
+      #'ak4' : cms.vstring("HLT_PFJet40_v19","HLT_PFJet40_v20","HLT_PFJet40_v21","HLT_PFJet60_v19","HLT_PFJet60_v20","HLT_PFJet60_v21","HLT_PFJet80_v18","HLT_PFJet80_v19","HLT_PFJet80_v20","HLT_PFJet140_v17","HLT_PFJet140_v18","HLT_PFJet140_v19","HLT_PFJet200_v17","HLT_PFJet200_v18","HLT_PFJet200_v19","HLT_PFJet260_v18","HLT_PFJet260_v19","HLT_PFJet260_v20","HLT_PFJet320_v18","HLT_PFJet320_v19","HLT_PFJet320_v20","HLT_PFJet400_v18","HLT_PFJet400_v19","HLT_PFJet400_v20","HLT_PFJet450_v19","HLT_PFJet450_v20","HLT_PFJet450_v21","HLT_PFJet500_v19","HLT_PFJet500_v20","HLT_PFJet500_v21","HLT_PFJet550_v10","HLT_PFJet550_v11","HLT_PFJet550_v9"),
+      #'ak8' : cms.vstring("HLT_AK8PFJet40_v14","HLT_AK8PFJet40_v15","HLT_AK8PFJet40_v16","HLT_AK8PFJet60_v13","HLT_AK8PFJet60_v14","HLT_AK8PFJet60_v15","HLT_AK8PFJet80_v13","HLT_AK8PFJet80_v14","HLT_AK8PFJet80_v15","HLT_AK8PFJet140_v13","HLT_AK8PFJet140_v14","HLT_AK8PFJet140_v15","HLT_AK8PFJet200_v13","HLT_AK8PFJet200_v14","HLT_AK8PFJet200_v15","HLT_AK8PFJet260_v14","HLT_AK8PFJet260_v15","HLT_AK8PFJet260_v16","HLT_AK8PFJet320_v14","HLT_AK8PFJet320_v15","HLT_AK8PFJet320_v16","HLT_AK8PFJet400_v14","HLT_AK8PFJet400_v15","HLT_AK8PFJet400_v16","HLT_AK8PFJet450_v14","HLT_AK8PFJet450_v15","HLT_AK8PFJet450_v16","HLT_AK8PFJet500_v14","HLT_AK8PFJet500_v15","HLT_AK8PFJet500_v16","HLT_AK8PFJet550_v10","HLT_AK8PFJet550_v11","HLT_AK8PFJet550_v9"),
+      #'zb' : cms.vstring("HLT_ZeroBias_v6")
+    },
     'A' : {
       'ak4' : cms.vstring("HLT_PFJet40_v0","HLT_PFJet60_v0","HLT_PFJet80_v0","HLT_PFJet140_v0","HLT_PFJet200_v0","HLT_PFJet260_v0","HLT_PFJet320_v0","HLT_PFJet400_v0","HLT_PFJet450_v0","HLT_PFJet500_v0","HLT_PFJet550_v0"),
       'ak8' : cms.vstring(),

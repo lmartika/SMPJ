@@ -19,26 +19,26 @@ fltlist = {
     'dt' : cms.vstring(
       "Flag_goodVertices","Flag_globalSuperTightHalo2016Filter","Flag_HBHENoiseFilter","Flag_HBHENoiseIsoFilter",
       "Flag_EcalDeadCellTriggerPrimitiveFilter","Flag_BadPFMuonFilter",
-      "Flag_eeBadScFilter",
-      "Flag_ecalBadCalibReducedMINIAODFilter"
+      "Flag_eeBadScFilter"#,
+#      "Flag_ecalBadCalibReducedMINIAODFilter"
     ),
     'mc' : cms.vstring(
       "Flag_goodVertices","Flag_globalSuperTightHalo2016Filter","Flag_HBHENoiseFilter","Flag_HBHENoiseIsoFilter",
-      "Flag_EcalDeadCellTriggerPrimitiveFilter","Flag_BadPFMuonFilter",
-      "Flag_ecalBadCalibReducedMINIAODFilter"
+      "Flag_EcalDeadCellTriggerPrimitiveFilter","Flag_BadPFMuonFilter"#,
+#      "Flag_ecalBadCalibReducedMINIAODFilter"
     )
   },
   '18' : { # 10_1_X and further
     'dt' : cms.vstring(
       "Flag_goodVertices","Flag_globalSuperTightHalo2016Filter","Flag_HBHENoiseFilter","Flag_HBHENoiseIsoFilter",
       "Flag_EcalDeadCellTriggerPrimitiveFilter","Flag_BadPFMuonFilter",
-      "Flag_eeBadScFilter",
-      "Flag_ecalBadCalibReducedMINIAODFilter"
+      "Flag_eeBadScFilter"#,
+#      "Flag_ecalBadCalibReducedMINIAODFilter"
     ),
     'mc' : cms.vstring(
       "Flag_goodVertices","Flag_globalSuperTightHalo2016Filter","Flag_HBHENoiseFilter","Flag_HBHENoiseIsoFilter",
-      "Flag_EcalDeadCellTriggerPrimitiveFilter","Flag_BadPFMuonFilter",
-      "Flag_ecalBadCalibReducedMINIAODFilter"
+      "Flag_EcalDeadCellTriggerPrimitiveFilter","Flag_BadPFMuonFilter"#,
+#      "Flag_ecalBadCalibReducedMINIAODFilter"
     )
   }
 }

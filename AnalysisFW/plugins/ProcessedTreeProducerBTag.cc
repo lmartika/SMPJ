@@ -105,19 +105,26 @@ void ProcessedTreeProducerBTag::beginJob() {
     mULimNEF = 1.01; // Dummy value
     mLLimNHF = -0.01; // Dummy value
     mULimNHF = 0.98;
-  } else if (mRunYear=="2017") {
-    // See, https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2017
+  } else if (mRunYear=="2017" or mRunYear=="2018") {
+    // UL, see https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVUL
     mULimCEF = 0.80;
-    mLLimNEF = 0.02;
+    mLLimNEF = 0.01;
     mULimNEF = 0.99;
-    mLLimNHF = 0.02;
+    mLLimNHF = 0.2;
     mULimNHF = 1.01; // Dummy value
-  } else if (mRunYear=="2018") {
-    mULimCEF = 0.80;
-    mLLimNEF = 0.02;
-    mULimNEF = 0.99;
-    mLLimNHF = 0.20;
-    mULimNHF = 1.01; // Dummy value
+  //} else if (mRunYear=="2017") {
+  //  // See, https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2017
+  //  mULimCEF = 0.80;
+  //  mLLimNEF = 0.02;
+  //  mULimNEF = 0.99;
+  //  mLLimNHF = 0.02;
+  //  mULimNHF = 1.01; // Dummy value
+  //} else if (mRunYear=="2018") {
+  //  mULimCEF = 0.80;
+  //  mLLimNEF = 0.02;
+  //  mULimNEF = 0.99;
+  //  mLLimNHF = 0.20;
+  //  mULimNHF = 1.01; // Dummy value
   }
   cout << "Run year " << mRunYear << " using the following JetID limit parameter values:" << endl;
   cout << "Up cef " << mULimCEF << endl;
@@ -163,8 +170,6 @@ void ProcessedTreeProducerBTag::beginRun(edm::Run const & iRun, edm::EventSetup 
   // Additional steps to be performed first time in the analysis loop!
   // For MC, this means only updating MET Filter info
   mNewTrigs = true;
-
-  if (mIsMCarlo) return;
 
   cout << "New trigger menu found!!!" << endl;
 
@@ -318,7 +323,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   // Update the filter positions only when the trigger menu has changed.
   // These steps cannot be taken within "beginRun", as event.triggerNames() is not available there. 
   if (mNewTrigs) {
-    if (mIsMCarlo) mNewTrigs = false; // In data, this is set to false later.
+    //if (mIsMCarlo) mNewTrigs = false; // In data, this is set to false later.
 
     cout << "Found MET filters:" << endl;
     mFilterPAT = false;
@@ -413,11 +418,100 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
 
   mEvent->setFltDecision(Filtered);
 
-  //-------------- Trigger Info (exlusively Data) --------------------- 
-  if (!mIsMCarlo) {
-    vector<int>                         L1Prescales, HLTPrescales, Fired;
+  //-------------------------- Trigger Info --------------------------- 
+  edm::Handle<edm::TriggerResults> triggerBits;
+  event.getByToken(mTriggerBits,triggerBits);
+  const edm::TriggerNames &names = event.triggerNames(*triggerBits);
+  
+  vector<int> L1Prescales, HLTPrescales, Fired;
+  map<string, vector<LorentzVector> > vvHLT;
+
+  // Fetching prescales
+  edm::Handle<pat::PackedTriggerPrescales> triggerPrescales;
+  event.getByToken(mTriggerPrescales,      triggerPrescales);
+  edm::Handle<pat::PackedTriggerPrescales> triggerPrescalesL1Min;
+  event.getByToken(mTriggerPrescalesL1Min, triggerPrescalesL1Min);
+  edm::Handle<pat::PackedTriggerPrescales> triggerPrescalesL1Max;
+  event.getByToken(mTriggerPrescalesL1Max, triggerPrescalesL1Max);
+
+  // When the triggers are changed, check that the info we got from hltConfig matches with that from event.triggerNames
+  if (mNewTrigs) {
+    mNewTrigs = false;
+    if ((!trigCheck(names,mTriggerNames,mTriggerIndex,true) or !trigCheck(names,mTriggerNamesFlw,mTriggerIndexFlw,false))) {
+      mSatisfactory = false;
+      return;
+    }
+  }
+
+  // Trigger counts
+  unsigned fire = 0;
+  // Primary triggers
+  for (auto itrig = 0u; itrig<mTriggerNames.size(); ++itrig) {
+    int tIdx = mTriggerIndex[itrig]; 
+    if (tIdx<0) continue; // We skip the triggers not present (perfectly normal!)
+    const string &tName = mTriggerNames[itrig];
+
+    if (mTrigSimple) {
+      const auto &tIndex2 = mTriggerIndexMap[tName];
+      for (unsigned itrig2 = 0; itrig2 < tIndex2.size(); ++itrig2) {
+        const auto &tIdx2 = tIndex2[itrig2];
+        if (triggerBits->accept(tIdx2)) {
+          L1Prescales.push_back(max(triggerPrescalesL1Max->getPrescaleForIndex(tIdx2),triggerPrescalesL1Min->getPrescaleForIndex(tIdx2)));
+          HLTPrescales.push_back(triggerPrescales->getPrescaleForIndex(tIdx2));
+          mTriggerPassHisto->Fill(tName.c_str(),1);
+          Fired.push_back(itrig);
+          ++fire;
+          if (mTrigObjs and vvHLT.find(tName)==vvHLT.end()) vvHLT[tName] = vector<LorentzVector>();
+        }
+      } 
+    } else {
+      if (triggerBits->accept(tIdx)) {
+        L1Prescales.push_back(max(triggerPrescalesL1Max->getPrescaleForIndex(tIdx),triggerPrescalesL1Min->getPrescaleForIndex(tIdx)));
+        HLTPrescales.push_back(triggerPrescales->getPrescaleForIndex(tIdx));
+        mTriggerPassHisto->Fill(tName.c_str(),1);
+        Fired.push_back(itrig);
+        ++fire;
+        if (mTrigObjs and vvHLT.find(tName)==vvHLT.end()) vvHLT[tName] = vector<LorentzVector>();
+      }
+    }
+  }
+
+  // When the primary trigger has not fired, check if a "followed" secondary trigger has fired
+  if (!mIsMCarlo and fire==0) {
+    bool nofireoth = true;
+    for (auto itrig = 0u; itrig<mTriggerIndexFlw.size(); ++itrig) {
+      int tIdx = mTriggerIndexFlw[itrig]; 
+      if (tIdx<0) continue; // Skip the triggers not present (perfectly normal!)
+
+      if (mTrigSimple) {
+        const auto &tIndex2 = mTriggerIndexMap[mTriggerNamesFlw[itrig]];
+        for (unsigned itrig2 = 0; itrig2 < tIndex2.size(); ++itrig2) {
+          const auto &tIdx2 = tIndex2[itrig2];
+          if (triggerBits->accept(tIdx2)) {
+            nofireoth = false;
+            break;
+          }
+        }
+        if (!nofireoth) break;
+      } else {
+        if (triggerBits->accept(tIdx)) {
+          nofireoth = false;
+          break;
+        }
+      }
+    }
+    // If none of the actively/passively monitored triggers have fired, skip this as a redundant event
+    if (nofireoth) return;
+  } // Primary trigger not fired
+
+  // Saving the info to the event
+  mEvent->setTrigDecision(Fired);
+  mEvent->setPrescales(L1Prescales,HLTPrescales);
+
+  //-------------- Trigger Object Info (exlusively Data) --------------- 
+  // The trigger objects are saved only when the actively monitored trigger has fired (in ZB events we pay no attention)
+  if (mTrigObjs and !mIsMCarlo and !mZB and fire>0) {
     vector<vector<LorentzVector> >      qL1Objs, qHLTObjs;  
-    map<string, vector<LorentzVector> > vvHLT;
     
     // Fetching data using tokens.
     edm::Handle<pat::TriggerObjectStandAloneCollection> triggerHLTObjs;
@@ -426,139 +520,55 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     event.getByToken(mTriggerL1Objs,                    triggerL1Objs);
     edm::Handle<BXVector<l1t::EtSum> >                  triggerL1HTObjs;
     event.getByToken(mTriggerL1HTObjs,                  triggerL1HTObjs);
-    edm::Handle<pat::PackedTriggerPrescales>            triggerPrescales;
-    event.getByToken(mTriggerPrescales,                 triggerPrescales);
-    edm::Handle<pat::PackedTriggerPrescales>            triggerPrescalesL1Min;
-    event.getByToken(mTriggerPrescalesL1Min,            triggerPrescalesL1Min);
-    edm::Handle<pat::PackedTriggerPrescales>            triggerPrescalesL1Max;
-    event.getByToken(mTriggerPrescalesL1Max,            triggerPrescalesL1Max);
- 
-    edm::Handle<edm::TriggerResults> triggerBits;
-    event.getByToken(mTriggerBits,triggerBits);
-    const edm::TriggerNames &names = event.triggerNames(*triggerBits);
-    
-    // When the triggers are changed, check that the info we got from hltConfig matches with that from event.triggerNames
-    if (mNewTrigs) {
-      mNewTrigs = false;
-      if ((!trigCheck(names,mTriggerNames,mTriggerIndex,true) or !trigCheck(names,mTriggerNamesFlw,mTriggerIndexFlw,false))) {
-        mSatisfactory = false;
-        return;
-      }
-    }
 
-    // Trigger counts
-    unsigned fire = 0;
-    // Primary triggers
-    for (auto itrig = 0u; itrig<mTriggerNames.size(); ++itrig) {
-      int tIdx = mTriggerIndex[itrig]; 
-      if (tIdx<0) continue; // We skip the triggers not present (perfectly normal!)
-      const string &tName = mTriggerNames[itrig];
-
-      if (mTrigSimple) {
-        const auto &tIndex2 = mTriggerIndexMap[tName];
-        for (unsigned itrig2 = 0; itrig2 < tIndex2.size(); ++itrig2) {
-          const auto &tIdx2 = tIndex2[itrig2];
-          if (triggerBits->accept(tIdx2)) {
-            L1Prescales.push_back(max(triggerPrescalesL1Max->getPrescaleForIndex(tIdx2),triggerPrescalesL1Min->getPrescaleForIndex(tIdx2)));
-            HLTPrescales.push_back(triggerPrescales->getPrescaleForIndex(tIdx2));
-            mTriggerPassHisto->Fill(tName.c_str(),1);
-            Fired.push_back(itrig);
-            ++fire;
-            if (mTrigObjs and vvHLT.find(tName)==vvHLT.end()) vvHLT[tName] = vector<LorentzVector>();
+    // HLT sector
+    regex pfjet(Form("HLT_%sPFJet([0-9]*)_v([0-9]*)",mAK4 ? "" : "AK8"));
+    for (pat::TriggerObjectStandAlone obj : *triggerHLTObjs) { // note: not "const &" since we want to call unpackPathNames
+      obj.unpackPathNames(names);
+      vector<string> pathNamesAll  = obj.pathNames(false);
+      vector<string> pathNamesLast = obj.pathNames(true);
+      if (pathNamesAll.size()==0) continue; 
+      
+      for (unsigned hpn = 0, npn = pathNamesAll.size(); hpn < npn; ++hpn) {
+        string tName = pathNamesAll[hpn];
+        if (regex_match(tName,pfjet)) {
+          TLorentzVector P4;
+          P4.SetPtEtaPhiM(obj.pt(),obj.eta(),obj.phi(),obj.mass());
+          string refName = tName;
+          if (mTrigSimple) {
+            if (mTriggerNamesIndexMap.count(tName)==0) {
+              cout << "Trigger name not found in trigger name map!" << endl;
+              mSatisfactory = false;
+              return;
+            }
+            unsigned refIdx = mTriggerNamesIndexMap[tName];
+            if (refIdx<mTriggerNames.size()) {
+              refName = mTriggerNames[refIdx];
+            } else {
+              cout << "Trigger index too big in trigger name map!" << endl;
+              mSatisfactory = false;
+              return;
+            }
           }
-        } 
-      } else {
-        if (triggerBits->accept(tIdx)) {
-          L1Prescales.push_back(max(triggerPrescalesL1Max->getPrescaleForIndex(tIdx),triggerPrescalesL1Min->getPrescaleForIndex(tIdx)));
-          HLTPrescales.push_back(triggerPrescales->getPrescaleForIndex(tIdx));
-          mTriggerPassHisto->Fill(tName.c_str(),1);
-          Fired.push_back(itrig);
-          ++fire;
-          if (mTrigObjs and vvHLT.find(tName)==vvHLT.end()) vvHLT[tName] = vector<LorentzVector>();
+          vvHLT[refName].emplace_back(P4.Px(),P4.Py(),P4.Pz(),P4.E());
         }
       }
     }
-    // When the primary trigger has not fired, check if a "followed" secondary trigger has fired
-    if (fire==0) {
-      bool nofireoth = true;
-      for (auto itrig = 0u; itrig<mTriggerIndexFlw.size(); ++itrig) {
-        int tIdx = mTriggerIndexFlw[itrig]; 
-        if (tIdx<0) continue; // Skip the triggers not present (perfectly normal!)
+    // HLT objects are added collectively, after we have went through all the objects
+    for (auto &trg : Fired) qHLTObjs.push_back(vvHLT[mTriggerNames[trg]]); 
 
-        if (mTrigSimple) {
-          const auto &tIndex2 = mTriggerIndexMap[mTriggerNamesFlw[itrig]];
-          for (unsigned itrig2 = 0; itrig2 < tIndex2.size(); ++itrig2) {
-            const auto &tIdx2 = tIndex2[itrig2];
-            if (triggerBits->accept(tIdx2)) {
-              nofireoth = false;
-              break;
-            }
-          }
-          if (!nofireoth) break;
-        } else {
-          if (triggerBits->accept(tIdx)) {
-            nofireoth = false;
-            break;
-          }
-        }
-      }
-      // If none of the actively/passively monitored triggers have fired, skip this as a redundant event
-      if (nofireoth) return;
-    } // Primary trigger not fired
+    // L1 sector: jets
+    vector<LorentzVector> vvL1;
+    for (auto obj = triggerL1Objs->begin(0); obj != triggerL1Objs->end(0); ++obj) {
+      TLorentzVector P4;
+      P4.SetPtEtaPhiM(obj->pt(),obj->eta(),obj->phi(),obj->mass());
+      vvL1.emplace_back(P4.Px(),P4.Py(),P4.Pz(),P4.E());
+    }
+    qL1Objs.push_back(vvL1);
 
-    // The trigger objects are saved only when the actively monitored trigger has fired (in ZB events we pay no attention)
-    if (mTrigObjs and !mZB and fire>0) {
-      // HLT sector
-      regex pfjet(Form("HLT_%sPFJet([0-9]*)_v([0-9]*)",mAK4 ? "" : "AK8"));
-      for (pat::TriggerObjectStandAlone obj : *triggerHLTObjs) { // note: not "const &" since we want to call unpackPathNames
-        obj.unpackPathNames(names);
-        vector<string> pathNamesAll  = obj.pathNames(false);
-        vector<string> pathNamesLast = obj.pathNames(true);
-        if (pathNamesAll.size()==0) continue; 
-        
-        for (unsigned hpn = 0, npn = pathNamesAll.size(); hpn < npn; ++hpn) {
-          string tName = pathNamesAll[hpn];
-          if (regex_match(tName,pfjet)) {
-            TLorentzVector P4;
-            P4.SetPtEtaPhiM(obj.pt(),obj.eta(),obj.phi(),obj.mass());
-            string refName = tName;
-            if (mTrigSimple) {
-              if (mTriggerNamesIndexMap.count(tName)==0) {
-                cout << "Trigger name not found in trigger name map!" << endl;
-                mSatisfactory = false;
-                return;
-              }
-              unsigned refIdx = mTriggerNamesIndexMap[tName];
-              if (refIdx<mTriggerNames.size()) {
-                refName = mTriggerNames[refIdx];
-              } else {
-                cout << "Trigger index too big in trigger name map!" << endl;
-                mSatisfactory = false;
-                return;
-              }
-            }
-            vvHLT[refName].emplace_back(P4.Px(),P4.Py(),P4.Pz(),P4.E());
-          }
-        }
-      }
-      // HLT objects are added collectively, after we have went through all the objects
-      for (auto &trg : Fired) qHLTObjs.push_back(vvHLT[mTriggerNames[trg]]); 
-
-      // L1 sector: jets
-      vector<LorentzVector> vvL1;
-      for (auto obj = triggerL1Objs->begin(0); obj != triggerL1Objs->end(0); ++obj) {
-        TLorentzVector P4;
-        P4.SetPtEtaPhiM(obj->pt(),obj->eta(),obj->phi(),obj->mass());
-        vvL1.emplace_back(P4.Px(),P4.Py(),P4.Pz(),P4.E());
-      }
-      qL1Objs.push_back(vvL1);
-    } // mTrigObjs and !mZB
-    // Saving the info to the event
-    mEvent->setTrigDecision(Fired);
-    mEvent->setPrescales(L1Prescales,HLTPrescales);
     mEvent->setL1Obj(qL1Objs);
     mEvent->setHLTObj(qHLTObjs);
-  } // !mIsMCarlo
+  } // !mIsMCarlo mTrigObjs and !mZB
   
   //-------------- Vertex Info ----------------------------------------
   Handle<reco::VertexCollection> recVtxs;
@@ -851,13 +861,15 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     // See, https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
     bool looseID = true, tightID = true;
 
+    const bool is16 = (mRunYear=="2016");
     if (abseta <= 2.7) {
-      tightID = nhf<0.90 and muf<0.80 and ((mRunYear=="2018") ?
-                (chm>0 and cemf<mULimCEF and nemf<0.99 and (abseta>=2.6 or (nemf<0.90 and npr>1 and chf>0))) :
+      tightID = nhf<0.90 and muf<0.80 and (!is16 ?
+                (chm>0 and cemf<mULimCEF and nemf<0.99 and (abseta>2.6 or (nemf<0.90 and npr>1 and chf>0))) :
                 (npr>1 and nemf<0.90 and (abseta>2.4 or (chf>0 and chm>0 and cemf<mULimCEF))));
-      looseID = (mRunYear=="2016") ? (npr>1 and nemf<0.99 and nhf<0.99 and (abseta>2.4 or (chf>0 and chm>0 and cemf<0.99))) : tightID; 
+      looseID = is16 ? (npr>1 and nemf<0.99 and nhf<0.99 and (abseta>2.4 or (chf>0 and chm>0 and cemf<0.99))) : tightID; 
     } else if (abseta <= 3.0) {
-      tightID = nemf<mULimNEF and nemf>mLLimNEF and nm>2 and nhf<mULimNHF;
+      int LNM = is16 ? 2 : 1; 
+      tightID = nemf<mULimNEF and nemf>mLLimNEF and nm>LNM and nhf<mULimNHF;
       looseID = tightID;
     } else {
       tightID = nemf<0.90 and nm>10 and nhf>mLLimNHF;
