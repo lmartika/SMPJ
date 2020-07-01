@@ -174,13 +174,13 @@ def producer(RunYear,era,jettype,Mode):
     ## Active
     f.write('triggers=')
     if Mode=='dt':
-      f.write('trglist["'+RunYear+'"]["'+era+'"]["'+jettype+'"]\n\n')
+      f.write('trglist["'+RunYear+'"]["dt"]["'+jettype+'"]\n\n')
     else:
       f.write('trglist["'+RunYear+'"]["mc"]["'+jettype+'"]\n\n')
     ## Followed
     f.write('follows=')
     if Mode=='dt' and jettype!='zb':
-      f.write('trglist["'+RunYear+'"]["'+era+'"]["ak'+('4' if jettype=='ak8' else '8')+'"]\n\n')
+      f.write('trglist["'+RunYear+'"]["dt"]["ak'+('4' if jettype=='ak8' else '8')+'"]\n\n')
     else:
       f.write('cms.vstring()\n\n')
     # MET filters
@@ -327,11 +327,12 @@ def producer(RunYear,era,jettype,Mode):
 # Produce the run files
 for RunYear in ['16','17','18']:
   for era in trglist[RunYear]:
-    if era!='mc':
-      producer(RunYear,era,'zb','dt')
-      producer(RunYear,era,'ak4','dt')
-      producer(RunYear,era,'ak8','dt')
-    else:
+    if era=='mc':
       for MC in ['py','nu','hw','mg']:
         producer(RunYear,MC,'ak4','mc')
         producer(RunYear,MC,'ak8','mc')
+    elif era!='dt':
+      producer(RunYear,era,'zb','dt')
+      producer(RunYear,era,'ak4','dt')
+      producer(RunYear,era,'ak8','dt')
+

@@ -477,7 +477,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   }
 
   // When the primary trigger has not fired, check if a "followed" secondary trigger has fired
-  if (!mIsMCarlo and fire==0) {
+  if (fire==0) {
     bool nofireoth = true;
     for (auto itrig = 0u; itrig<mTriggerIndexFlw.size(); ++itrig) {
       int tIdx = mTriggerIndexFlw[itrig]; 
