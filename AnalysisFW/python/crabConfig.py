@@ -8,7 +8,6 @@ if len(sys.argv)<5:
   sys.exit()
 args = sys.argv
 
-TagTag='qq'
 # Choose 16/17/18
 RunYear=args[1]
 # Era
@@ -20,15 +19,16 @@ Mode=args[3]
 DTMode=False
 # Choose py/pylong/hw/nu/mg (MC only)
 MCType='py'
-if args[4]=='dt':
-  DTMode=True
-else:
-  MCType = args[4]
+if args[4]=='dt': DTMode=True
+else: MCType = args[4]
 
 # In case of pylong (0-14) or mg (0-8)
 RangeIdx = 0 
-if len(sys.argv)>5:
-  RangeIdx = int(args[5])
+if len(sys.argv)>5: RangeIdx = int(args[5])
+
+# Extra identifier
+TagTag=''
+if len(sys.argv)>6: TagTag = args[6]
 
 print(RunYear,Era,Mode,DTMode,MCType,RangeIdx)
 ## Configurable parameters end

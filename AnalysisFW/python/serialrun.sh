@@ -6,11 +6,17 @@
 # 4: Choose dt/py/pylong/hw/nu/mg (MC only)
 # 5: In case of pylong (0-14) or mg (0-8)
 
-#source /afs/cern.ch/user/h/hsiikone/.bashrc
-#cmsenv
-#init1
-#init2
-#init3
+python crabConfig.py '17' 'B' 'ak4' 'dt'
+python crabConfig.py '17' 'C' 'ak4' 'dt'
+python crabConfig.py '17' 'D' 'ak4' 'dt'
+python crabConfig.py '17' 'E' 'ak4' 'dt'
+python crabConfig.py '17' 'F' 'ak4' 'dt'
+python crabConfig.py '17' 'B' 'zb' 'dt'
+python crabConfig.py '17' 'C' 'zb' 'dt'
+python crabConfig.py '17' 'D' 'zb' 'dt'
+python crabConfig.py '17' 'E' 'zb' 'dt'
+python crabConfig.py '17' 'F' 'zb' 'dt'
+
 #python crabConfig.py '18' 'A' 'ak4' 'dt'
 #python crabConfig.py '18' 'B' 'ak4' 'dt'
 #python crabConfig.py '18' 'C' 'ak4' 'dt'
@@ -20,9 +26,9 @@
 #python crabConfig.py '18' 'C' 'zb' 'dt'
 #python crabConfig.py '18' 'D' 'zb' 'dt'
 
-#python crabConfig.py '17' 'B' 'ak4' 'nu'
-python crabConfig.py '17' 'B' 'ak4' 'py'
-#python crabConfig.py '17' 'B' 'ak4' 'hw'
+#python crabConfig.py '17' 'X' 'ak4' 'nu'
+#python crabConfig.py '17' 'X' 'ak4' 'py'
+#python crabConfig.py '17' 'X' 'ak4' 'hw'
 
 #for i in $(seq 0 8);
 #do
