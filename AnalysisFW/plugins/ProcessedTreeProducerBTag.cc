@@ -36,7 +36,7 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   // GEN
   mIsMCarlo(                                                                                cfg.getUntrackedParameter<bool>("isMCarlo",false)),
   mUseGenInfo(                                                                              cfg.getUntrackedParameter<bool>("useGenInfo",false)),
-  mMCType(                                                                                   cfg.getUntrackedParameter<int>("mcType",0)), // 0 for Pythia, 1 for Herwig++
+  mMCType(                                                                                   cfg.getUntrackedParameter<int>("mcType",0)), // 0 for Pythia, 1 for Herwig
   mGenJetsName(mayConsume<GenJetCollection>(                                       cfg.getUntrackedParameter<edm::InputTag>("genjets",edm::InputTag("")))),
   mGenParticles(consumes<reco::GenParticleCollection>(                             cfg.getUntrackedParameter<edm::InputTag>("GenParticles",edm::InputTag("")))),
   mEventInfo(consumes<GenEventInfoProduct>(                                        cfg.getUntrackedParameter<edm::InputTag>("EventInfo",edm::InputTag("")))),
@@ -78,6 +78,9 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
     mLHEEventSrc_   = edm::InputTag("externalLHEProducer");
     mLHEEventToken_ = mayConsume<LHEEventProduct>                          (mLHEEventSrc_);
     mLHEInfoToken_  = mayConsume<LHERunInfoProduct, edm::BranchType::InRun>(mLHEEventSrc_);
+
+    mPSWeightHisto = fs->make<TH1F>("PSWeights","PSWeights",1,0,1);
+    mPSWeightHisto->SetBit(TH1::kUserContour);
   }
 
   mTree = fs->make<TTree>("ProcessedTree","ProcessedTree");
@@ -88,7 +91,6 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   mTriggerPassHisto = fs->make<TH1F>("TriggerPass","TriggerPass",1,0,1);
   mTriggerPassHisto->SetBit(TH1::kUserContour);
   mFilterActiveHisto = fs->make<TH1F>("FilterActive","FilterActive",1,0,1); 
-  mFilterActiveHisto->SetBit(TH1::kUserContour);
 
   mULimCEF = 0; mULimNEF = 0; mLLimNEF = 0; mULimNHF = 0; mLLimNHF = 0;
 }
@@ -303,13 +305,8 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
       event.getByToken(mGenEventToken_, genEventInfo);
 
       if (genEventInfo.isValid()) {
-        //cout << "Hup" << endl;
-        //for (unsigned int i = 0; i < genEventInfo->weights().size(); ++i)
-        //  cout << genEventInfo->weights()[i] << endl;
-        const unsigned int startf = 2, starti = 24, offset = 6;
         const auto &ws = genEventInfo->weights();
-        for (unsigned int i = 0; i < offset; ++i) qEvtHdr.setPSWeight(i       ,ws[i+startf]/ws[1]);
-        for (unsigned int i = 0; i < offset; ++i) qEvtHdr.setPSWeight(i+offset,ws[i+starti]/ws[1]);
+        for (size_t i = 0; i < ws.size(); ++i) qEvtHdr.setPSWeight(i,ws[i]);
       }
     }
   } else {
@@ -997,6 +994,7 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   // MET T1 is available by default in MINIAOD
   const pat::MET &mett1 = pfmett1->front();
   qPFMet_t1.setVar(mett1.et(),mett1.sumEt(),mett1.phi());
+  //auto mettt1 = mett1.corP2(pat::MET::Type1);
   // MET T0 is obtained through a custom patch
   auto mett0 = mett1.corP2(pat::MET::RawChs);
   qPFMet_t0.setVar(mett0.pt(),mett1.corSumEt(pat::MET::RawChs),mett0.phi());
@@ -1004,6 +1002,11 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
   auto mett0t1 = mett1.corP2(pat::MET::Type01);
   qPFMet_t0t1.setVar(mett0t1.pt(),mett1.corSumEt(pat::MET::Type01),mett0t1.phi());
   mEvent->setPFMET(qPFMet_t1,qPFMet_t0,qPFMet_t0t1);
+  //cout << "Def:  " << mett1.px() << " " << mett1.py() << endl;
+  //cout << "T1:   " << mettt1.px << " " << mettt1.py << endl;
+  //cout << "T0:   " << mett0.px << " " << mett0.py << endl;
+  //cout << "T0T1: " << mett0t1.px << " " << mett0t1.py << endl;
+  
  
   //-------------- fill the tree --------------------------------------
   mTree->Fill();
@@ -1018,7 +1021,7 @@ void ProcessedTreeProducerBTag::beginLuminosityBlock(edm::LuminosityBlock const&
     for (const auto &head : lheHead) cout << " " << head.first << " " << head.second << endl;
 
     const auto &wNames = header->weightNames();
-    for (const auto &wn : wNames) cout << "  " << wn << endl;
+    for (const auto &wn : wNames) mPSWeightHisto->Fill(wn.c_str(),1);
   }
 }
 

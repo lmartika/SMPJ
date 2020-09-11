@@ -54,6 +54,7 @@
 #include "DataFormats/L1Trigger/interface/BXVector.h"
 #include "DataFormats/L1Trigger/interface/Jet.h"
 #include "DataFormats/L1Trigger/interface/EtSum.h"
+
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "HLTrigger/HLTcore/interface/HLTPrescaleProvider.h"
@@ -68,6 +69,7 @@
 
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
+
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 
@@ -196,7 +198,7 @@ private:
 
   edm::Service<TFileService>                               fs;
   TTree                                                   *mTree;
-  TH1F                                                    *mTriggerPassHisto,*mTriggerNamesHisto,*mFilterActiveHisto;
+  TH1F                                                    *mTriggerPassHisto,*mTriggerNamesHisto,*mFilterActiveHisto,*mPSWeightHisto;
   QCDEvent                                                *mEvent;
 
   vector<int>           mGenFlavour;

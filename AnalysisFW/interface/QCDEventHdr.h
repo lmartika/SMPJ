@@ -3,6 +3,8 @@
 #ifndef QCDEventHdr_h
 #define QCDEventHdr_h
 
+#include <vector>
+
 class QCDEventHdr 
 {
     public:
@@ -24,7 +26,10 @@ class QCDEventHdr
       void setHCALNoiseNoMinZ(bool fNoise) {mHCALNoiseNoMinZ = fNoise;}
       void setPU(int fNBX, int fOOTPUEarly, int fOOTPULate, int fINTPU) {mNBX = fNBX; mOOTPUEarly = fOOTPUEarly; mOOTPULate = fOOTPULate; mINTPU = fINTPU;}
       void setTrPu(float fTrPu) {mTrPu = fTrPu;} // setting the true PU 
-      void setPSWeight(int idx, float wgt) { mPSWeights[idx] = wgt; }
+      void setPSWeight(size_t idx, float wgt) {
+        if (idx < mPSWeights.size()) mPSWeights[idx] = wgt;
+        else mPSWeights.push_back(wgt);
+      }
       //------------ Get methods ------------------------------
       int runNo()            const {return mRun;} 
       long long int event()  const {return mEvent;} 
@@ -93,7 +98,7 @@ class QCDEventHdr
         //---- simulation weight ----------------------
         float mWeight;
         //---- shower weight ----------------------
-        float mPSWeights[12];
+        std::vector<float> mPSWeights;
         //---- median CALO pt density -----------------
         float mCaloRho;
         //---- median PF pt density -------------------
