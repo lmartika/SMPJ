@@ -5,6 +5,9 @@
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
 
+// Some compilers do not automatically understand this.
+using std::size_t;
+
 ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cfg):
   mSaveWeights(                                                                                      cfg.getParameter<bool>("saveWeights")),
   mAK4(                                                                                     cfg.getUntrackedParameter<bool>("AK4",false)),
@@ -836,10 +839,13 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     qcdJet.setUncSrc(uncSrc);
     qcdJet.setArea(ijet->jetArea());
     
-    double chf   = ijet->chargedHadronEnergyFraction();
-    double nhf   = ijet->neutralHadronEnergyFraction();// + ijet->HFHadronEnergyFraction();
-    double nemf  = ijet->neutralEmEnergyFraction(); // equals to deprecated phf but has HF info too
-    double cemf  = ijet->chargedEmEnergyFraction(); // equals to deprecated elf
+    // This is a mixture of PF specific and more generic functions.
+    // Not entirely logical (e.g. cemf instead of electron),
+    // but these are the tags used by the jet ID's.
+    double nhf   = ijet->neutralHadronEnergyFraction(); // includes hf hadrons
+    double nemf  = ijet->neutralEmEnergyFraction();     // = phf + hfemf 
+    double chf   = ijet->chargedHadronEnergyFraction(); // only for barrel
+    double cemf  = ijet->chargedEmEnergyFraction();     // = elf
     double muf   = ijet->muonEnergyFraction();
     double hf_hf = ijet->HFHadronEnergyFraction();
     double hf_phf= ijet->HFEMEnergyFraction();

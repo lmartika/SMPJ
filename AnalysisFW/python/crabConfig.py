@@ -87,14 +87,22 @@ if __name__ == '__main__':
     Campaign = ''
     # UL ReReco
     if RunYear=='16':
-      # CMSSW 10_6_8_patch1: Era == B/C/D/E/F/Fl/G/H
-      Campaign = '21Feb2020_UL2016'
+      # CMSSW 10_6_8_patch1: Era == Be/Bl/C/D/E/Fe/Fl/G/H
+      if Era=='Be':
+        Campaign = '21Feb2020_ver1_UL2016'
+        Era = 'B'
+      elif Era=='Bl':
+        Campaign = '21Feb2020_ver2_UL2016'
+        Era = 'B'
+      else:
+        Campaign = '21Feb2020_UL2016'
       # HIP issue mitigation
-      if Era=='B' or Era=='C' or Era=='D' or Era=='E' or Era=='F':
+      if Era=='B' or Era=='C' or Era=='D' or Era=='E' or Era=='Fe':
         Campaign += '_HIPM'
       # Late F produced without HIP mitigation
+      if Era=='Fe': Era = 'F'
       if Era=='Fl': Era = 'F'
-      config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_271036-284044_13TeV_ReReco_07Aug2017_Collisions16_JSON.txt'
+      config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt'
     elif RunYear=='17':
       # CMSSW 10_6_2: Era == B/C/D/E/F
       config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSONmod.txt'
@@ -133,30 +141,18 @@ if __name__ == '__main__':
     if RunYear=='16':
       if MCType=='nu':
         ##### Neutrino Gun
-        config.General.requestName = 'QCD16'+Tag+'_SingleNu_v3'
-        if not ExtMode:
-          # The tag "magnetOff" here does not imply anything meaningful. These ntuples are used to monitor pileup.
-          config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
-        else:
-          Good = False
+        config.General.requestName = 'QCD16'+Tag+'_SingleNu_S19UL16_mcr2a_v13_2'
+        config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
 
       elif MCType=='hw':
         ##### Herwig7 Flat
         config.General.requestName = 'QCD16'+Tag+'_CH3_15to7k_S19UL16_mcr2a_v13_2'
-
-        if not ExtMode:
-          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCH3_Flat_13TeV_herwig7/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
-        else:
-          Good = False
+        config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCH3_Flat_13TeV_herwig7/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
 
       elif MCType=='py':
         ##### Pythia 8 Flat
         config.General.requestName = 'QCD16'+Tag+'_CP5_15to7k_S19UL16_mcr2a_v13_2'
-
-        if not ExtMode:
-          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
-        else:
-          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
+        config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
 
       elif MCType=='pylong':
         ##### Pythia 8 Pthat slices
