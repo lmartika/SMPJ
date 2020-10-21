@@ -94,49 +94,9 @@ ProcessedTreeProducerBTag::ProcessedTreeProducerBTag(edm::ParameterSet const& cf
   mTriggerPassHisto = fs->make<TH1F>("TriggerPass","TriggerPass",1,0,1);
   mTriggerPassHisto->SetBit(TH1::kUserContour);
   mFilterActiveHisto = fs->make<TH1F>("FilterActive","FilterActive",1,0,1); 
-
-  mULimCEF = 0; mULimNEF = 0; mLLimNEF = 0; mULimNHF = 0; mLLimNHF = 0;
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 void ProcessedTreeProducerBTag::beginJob() {
-  // Jet ID settings. General page:
-  // https://twiki.cern.ch/twiki/bin/view/CMS/JetID#Recommendations_for_13_TeV_2018
-  // These should be checked from time to time.
-  // We prefer using (Tight)LepVeto, which is the most conservative JetID.
-  if (mRunYear=="2016") {
-    // See, https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016
-    mULimCEF = 0.90;
-    mLLimNEF = 0.01;
-    mULimNEF = 1.01; // Dummy value
-    mLLimNHF = -0.01; // Dummy value
-    mULimNHF = 0.98;
-  } else if (mRunYear=="2017" or mRunYear=="2018") {
-    // UL, see https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVUL
-    mULimCEF = 0.80;
-    mLLimNEF = 0.01;
-    mULimNEF = 0.99;
-    mLLimNHF = 0.2;
-    mULimNHF = 1.01; // Dummy value
-  //} else if (mRunYear=="2017") {
-  //  // See, https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2017
-  //  mULimCEF = 0.80;
-  //  mLLimNEF = 0.02;
-  //  mULimNEF = 0.99;
-  //  mLLimNHF = 0.02;
-  //  mULimNHF = 1.01; // Dummy value
-  //} else if (mRunYear=="2018") {
-  //  mULimCEF = 0.80;
-  //  mLLimNEF = 0.02;
-  //  mULimNEF = 0.99;
-  //  mLLimNHF = 0.20;
-  //  mULimNHF = 1.01; // Dummy value
-  }
-  cout << "Run year " << mRunYear << " using the following JetID limit parameter values:" << endl;
-  cout << "Up cef " << mULimCEF << endl;
-  cout << "Up nef " << mULimNEF << endl;
-  cout << "Up nhf " << mULimNHF << endl;
-  cout << "Lo nef " << mLLimNEF << endl;
-  cout << "Lo nhf " << mLLimNHF << endl;
   // Generic boolean indicators
   mSatisfactory = true;
   mNewTrigs = false;
@@ -856,28 +816,26 @@ void ProcessedTreeProducerBTag::analyze(edm::Event const& event, edm::EventSetup
     int phm      = ijet->photonMultiplicity();
     int elm      = ijet->electronMultiplicity();
     int mum      = ijet->muonMultiplicity();
-    int npr      = ijet->chargedMultiplicity() + ijet->neutralMultiplicity();
 
     float abseta = fabs(ijet->eta());
     int nm       = ijet->neutralMultiplicity();
     int cm       = ijet->chargedMultiplicity();
+    int npr      = cm + nm;
     // See, https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
-    bool looseID = true, tightID = true;
+    bool tightID = true;
 
-    const bool is16 = (mRunYear=="2016");
-    if (abseta <= 2.7) {
-      tightID = nhf<0.90 and muf<0.80 and (!is16 ?
-                (chm>0 and cemf<mULimCEF and nemf<0.99 and (abseta>2.6 or (nemf<0.90 and npr>1 and chf>0))) :
-                (npr>1 and nemf<0.90 and (abseta>2.4 or (chf>0 and chm>0 and cemf<mULimCEF))));
-      looseID = is16 ? (npr>1 and nemf<0.99 and nhf<0.99 and (abseta>2.4 or (chf>0 and chm>0 and cemf<0.99))) : tightID; 
-    } else if (abseta <= 3.0) {
-      int LNM = is16 ? 2 : 1; 
-      tightID = nemf<mULimNEF and nemf>mLLimNEF and nm>LNM and nhf<mULimNHF;
-      looseID = tightID;
-    } else {
-      tightID = nemf<0.90 and nm>10 and nhf>mLLimNHF;
-      looseID = tightID;
-    }
+    // For the UL campaigns, the Jet IDs are provided in a purely hard-coded format:
+    // https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID13TeVUL
+    if (abseta <= 2.6)
+      tightID = cemf<0.8 and cm>0 and chf>0 and npr>1 and nemf<0.9 and muf<0.8 and nhf<0.9;
+    else if (abseta <= 2.7)
+      tightID = cemf<0.8 and cm>0 and nemf<0.99 and muf<0.8 and nhf<0.9;
+    else if (abseta <= 3.0)
+      tightID = nemf<0.99 and nemf>0.01 and nm>1;
+    else
+      tightID = nemf<0.90 and nm>10 and nhf>0.2;
+    // Provided for backwards compatibility
+    bool looseID = tightID;
      
     qcdJet.setLooseID(looseID);
     qcdJet.setTightID(tightID);

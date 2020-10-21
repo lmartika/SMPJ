@@ -15,12 +15,12 @@ trglist = {
       #'ak8' : cms.vstring("HLT_AK8PFJet40_v0","HLT_AK8PFJet60_v0","HLT_AK8PFJet80_v0","HLT_AK8PFJet140_v0","HLT_AK8PFJet200_v0","HLT_AK8PFJet260_v0","HLT_AK8PFJet320_v0","HLT_AK8PFJet400_v0","HLT_AK8PFJet450_v0","HLT_AK8PFJet500_v0"),
       'zb' : cms.vstring("HLT_ZeroBias_v0")
     },
-    "BI" : { # This does not pass the DATACERT and AK8 triggers are missing 
+    "Be" : { # This does not pass the DATACERT and AK8 triggers are missing 
       'ak4' : cms.vstring("HLT_PFJet40_v4","HLT_PFJet60_v4","HLT_PFJet80_v4","HLT_PFJet140_v4","HLT_PFJet200_v4","HLT_PFJet260_v4","HLT_PFJet320_v4","HLT_PFJet400_v4","HLT_PFJet450_v4","HLT_PFJet500_v4"),
       'ak8' : cms.vstring(),
       'zb'  : cms.vstring("HLT_ZeroBias_v2")
     },
-    "BII" : {
+    "Bl" : {
       'ak4' : cms.vstring("HLT_PFJet40_v4","HLT_PFJet40_v5","HLT_PFJet60_v4","HLT_PFJet60_v5","HLT_PFJet80_v4","HLT_PFJet80_v5","HLT_PFJet140_v4","HLT_PFJet140_v5","HLT_PFJet200_v4","HLT_PFJet200_v5","HLT_PFJet260_v4","HLT_PFJet260_v5","HLT_PFJet320_v4","HLT_PFJet320_v5","HLT_PFJet400_v4","HLT_PFJet400_v5","HLT_PFJet450_v4","HLT_PFJet450_v5","HLT_PFJet500_v4","HLT_PFJet500_v5"),
       'ak8' : cms.vstring("HLT_AK8PFJet40_v1","HLT_AK8PFJet60_v1","HLT_AK8PFJet80_v1","HLT_AK8PFJet140_v1","HLT_AK8PFJet200_v1","HLT_AK8PFJet260_v1","HLT_AK8PFJet320_v1","HLT_AK8PFJet400_v1","HLT_AK8PFJet450_v1","HLT_AK8PFJet500_v1"),
       'zb' : cms.vstring("HLT_ZeroBias_v2","HLT_ZeroBias_v3")

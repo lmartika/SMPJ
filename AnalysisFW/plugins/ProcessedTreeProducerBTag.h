@@ -107,11 +107,6 @@ public:
   ~ProcessedTreeProducerBTag() {}
 private:
   // Configurable parameters
-  float           mULimCEF; // Not to be set by the user
-  float           mULimNEF; // Not to be set by the user
-  float           mULimNHF; // Not to be set by the user
-  float           mLLimNEF; // Not to be set by the user
-  float           mLLimNHF; // Not to be set by the user
   bool            mSaveWeights; // Not to be set by the user
   bool            mAK4;
   bool            mZB;
