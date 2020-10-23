@@ -88,6 +88,7 @@ if __name__ == '__main__':
     # UL ReReco
     if RunYear=='16':
       # CMSSW 10_6_8_patch1: Era == Be/Bl/C/D/E/Fe/Fl/G/H
+      config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt'
       if Era=='Be':
         Campaign = '21Feb2020_ver1_UL2016'
         Era = 'B'
@@ -102,7 +103,6 @@ if __name__ == '__main__':
       # Late F produced without HIP mitigation
       if Era=='Fe': Era = 'F'
       if Era=='Fl': Era = 'F'
-      config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt'
     elif RunYear=='17':
       # CMSSW 10_6_2: Era == B/C/D/E/F
       config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSONmod.txt'
@@ -110,8 +110,8 @@ if __name__ == '__main__':
       if Era=='F': config.Data.unitsPerJob = 80
     elif RunYear=='18':
       # CMSSW 10_6_4_patch1: Era == A/B/C/D
-      Ver = '2'
       config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
+      Ver = '2'
       Campaign = '12Nov2019_UL2018'
       if Era=='A':   config.Data.unitsPerJob = 100
       elif Era=='D': config.Data.unitsPerJob = 160
