@@ -179,7 +179,7 @@ if __name__ == '__main__':
         ##### Pythia 8 Pthat slices
         if DoPreVFP:
           config.General.requestName = 'QCD16'+Tag+'_CP5_'+PtRanges[RangeIdx]+'_S19UL16_mcr2a_PreVFP_v8_2'+TagTag
-          config.Data.inputDataset = '/QCD_Pt_'+PtRanges[RangeIdx]+'_TuneCP5_13TeV_pythia8/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_preVFP_v8-v2/MINIAODSIM'
+          config.Data.inputDataset = '/QCD_Pt_'+PtRanges[RangeIdx]+'_TuneCP5_13TeV_pythia8/RunIISummer19UL16MiniAODAPV-106X_mcRun2_asymptotic_preVFP_v8-v2/MINIAODSIM'
         else:
           config.General.requestName = 'QCD16'+Tag+'_CP5_'+PtRanges[RangeIdx]+'_S19UL16_mcr2a_v13_2'+TagTag
           config.Data.inputDataset = '/QCD_Pt_'+PtRanges[RangeIdx]+'_TuneCP5_13TeV_pythia8/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
@@ -188,7 +188,7 @@ if __name__ == '__main__':
         ##### Madgraph + Pythia8 HT slices
         if DoPreVFP:
           config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_'+HTRanges[RangeIdx]+'_S19UL16_mcr2a_PreVFP_v8_1'+TagTag
-          config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_PSWeights_13TeV-madgraphMLM-pythia8/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_preVFP_v8-v1/MINIAODSIM'
+          config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_PSWeights_13TeV-madgraphMLM-pythia8/RunIISummer19UL16MiniAODAPV-106X_mcRun2_asymptotic_preVFP_v8-v1/MINIAODSIM'
         else:
           config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_'+HTRanges[RangeIdx]+'_S19UL16_mcr2a_v13_2'+TagTag
           config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_PSWeights_13TeV-madgraphMLM-pythia8/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'

@@ -7,18 +7,19 @@
 # 5: In case of pylong (0-14) or mg (0-8)
 
 # For data samples: choose ak4/zb (ak8 possible, but not used)
-MODE='zb' #'ak4'
+MODE='ak4'
+#MODE='zb'
 
 # Note: Be (B-ver1) is completely rejected by gtag
 ##python crabConfig.py '16' 'Be' '$MODE' 'dt'
-python crabConfig.py '16' 'Bl' $MODE 'dt'
-python crabConfig.py '16' 'C' $MODE 'dt'
-python crabConfig.py '16' 'D' $MODE 'dt'
-python crabConfig.py '16' 'E' $MODE 'dt'
-python crabConfig.py '16' 'Fe' $MODE 'dt'
-python crabConfig.py '16' 'Fl' $MODE 'dt'
-python crabConfig.py '16' 'G' $MODE 'dt'
-python crabConfig.py '16' 'H' $MODE 'dt'
+#python crabConfig.py '16' 'Bl' $MODE 'dt'
+#python crabConfig.py '16' 'C' $MODE 'dt'
+#python crabConfig.py '16' 'D' $MODE 'dt'
+#python crabConfig.py '16' 'E' $MODE 'dt'
+#python crabConfig.py '16' 'Fe' $MODE 'dt'
+#python crabConfig.py '16' 'Fl' $MODE 'dt'
+#python crabConfig.py '16' 'G' $MODE 'dt'
+#python crabConfig.py '16' 'H' $MODE 'dt'
 
 #python crabConfig.py '16' 'e' 'ak4' 'hw'
 #python crabConfig.py '16' 'l' 'ak4' 'hw'
@@ -26,12 +27,14 @@ python crabConfig.py '16' 'H' $MODE 'dt'
 #python crabConfig.py '16' 'l' 'ak4' 'nu'
 #python crabConfig.py '16' 'e' 'ak4' 'py'
 #python crabConfig.py '16' 'l' 'ak4' 'py'
+#python crabConfig.py '16' 'eext' 'ak4' 'py'
+#python crabConfig.py '16' 'lext' 'ak4' 'py'
 
-#for i in $(seq 0 8);
-#do
-#    python crabConfig.py '18' 'e' 'ak4' 'mg' $i
-#    python crabConfig.py '18' 'l' 'ak4' 'mg' $i
-#done
+for i in $(seq 0 8);
+do
+    python crabConfig.py '16' 'e' 'ak4' 'mg' $i
+#    python crabConfig.py '16' 'l' 'ak4' 'mg' $i
+done
 
 #python crabConfig.py '17' 'B' $MODE 'dt' 0 'qq' 
 #python crabConfig.py '17' 'C' $MODE 'dt' 0 'qq'
