@@ -12,9 +12,9 @@
 # Ultra Legacy summary: https://twiki.cern.ch/twiki/bin/view/CMS/PdmVRun2LegacyAnalysisSummaryTable
 GTags = {
   '16' : {
-    'dt' : "106X_dataRun2_v28",
-    'mc' : "106X_mcRun2_asymptotic_v13",
-    'mcPreVFP' : "106X_mcRun2_asymptotic_preVFP_v8"
+    'dt' : "106X_dataRun2_v32",
+    'mc' : "106X_mcRun2_asymptotic_v15",
+    'mcPreVFP' : "106X_mcRun2_asymptotic_preVFP_v9"
   },
   '17' : {
     'dt' : "106X_dataRun2_v28",

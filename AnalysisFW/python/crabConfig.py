@@ -58,6 +58,8 @@ config.General.transferLogs = False
 config.Data.inputDBS = 'global'
 config.Data.outLFNDirBase = '/store/user/hsiikone'
 config.Data.publication = False
+# Temporary flag for UL16 datasets in production
+config.Data.allowNonValidInputDataset = True
 
 config.JobType.pluginName = 'Analysis'
 config.Site.storageSite = 'T2_FI_HIP'
