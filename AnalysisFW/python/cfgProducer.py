@@ -1,35 +1,12 @@
 # This is a handy handle for producing crab parameter files
 # -*- coding: utf-8 -*-
 
-###########################
-# Configurable parameters #
-###########################
-
-# The global tags should be checked from time to time.
-# See: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions#Global_Tags_for_2016_legacy_data
-# However, the info on this page is not always up-to-date.
-# If in doubt, use the browser https://cms-conddb.cern.ch/cmsDbBrowser/index/Prod
-# Ultra Legacy summary: https://twiki.cern.ch/twiki/bin/view/CMS/PdmVRun2LegacyAnalysisSummaryTable
-GTags = {
-  '16' : {
-    'dt' : "106X_dataRun2_v32",
-    'mc' : "106X_mcRun2_asymptotic_v15",
-    'mcPreVFP' : "106X_mcRun2_asymptotic_preVFP_v9"
-  },
-  '17' : {
-    'dt' : "106X_dataRun2_v28",
-    'mc' : "106X_mc2017_realistic_v6"
-  },
-  '18' : {
-    'dt' : "106X_dataRun2_v28", 
-    'mc' : "106X_upgrade2018_realistic_v11_L1v1"
-  }
-}
-
 #########
 # Lists #
 #########
 
+# Global tags
+from gtaglists import *
 # MET filters are fetched
 from filterlists import *
 # Triggers are fetched
@@ -55,6 +32,7 @@ importer = [
   'from PhysicsTools.PatAlgos.patTemplate_cfg import *',
   'from PhysicsTools.JetMCAlgos.AK4PFJetsMCFlavourInfos_cfi import ak4JetFlavourInfos',
   'import sys\n',
+  'from gtaglists import *',
   'from triggerlists import *',
   'from filterlists import *',
   'from filelists import *\n',
@@ -125,39 +103,10 @@ logging = [
   'process.options.allowUnscheduled = cms.untracked.bool(True)',
 ]
 
-ecalBad = [
-  'process.load("RecoMET.METFilters.ecalBadCalibFilter_cfi")',
-  '',
-  'baddetEcallist = cms.vuint32(',
-  '    [872439604,872422825,872420274,872423218,',
-  '     872423215,872416066,872435036,872439336,',
-  '     872420273,872436907,872420147,872439731,',
-  '     872436657,872420397,872439732,872439339,',
-  '     872439603,872422436,872439861,872437051,',
-  '     872437052,872420649,872421950,',
-  '     872437185,872422564,872421566,872421695,',
-  '     872421955,872421567,872437184,872421951,',
-  '     872421694,872437056,872437057,872437313,',
-  '     872438182,872438951,872439990,872439864,# NEW',
-  '     872439609,872437181,872437182,872437053,',
-  '     872436794,872436667,872436536,872421541,',
-  '     872421413,872421414,872421031,872423083,',
-  '     872421439])',
-  '',
-  'process.ecalBadCalibReducedMINIAODFilter = cms.EDFilter(',
-  '    "EcalBadCalibFilter",',
-  '    EcalRecHitSource = cms.InputTag("reducedEgamma:reducedEERecHits"),',
-  '    ecalMinEt        = cms.double(50.),',
-  '    baddetEcal    = baddetEcallist,',
-  '    taggingMode = cms.bool(True),',
-  '    debug = cms.bool(False)',
-  '    )',
-]
-
 # jettype: 'ak4', 'ak8', 'zb'
 def producer(RunYear,era,jettype,Mode):
   add='PreVFP' if len(Mode)!=2 else ''
-  fname="cfg/"+jettype+RunYear+era+add+".py"
+  fname="cfg/"+jettype+RunYear+('' if era=='dt' else era)+add+".py"
   with open(fname, 'w') as f:
     # Import lines
     for line in importer:
@@ -189,9 +138,6 @@ def producer(RunYear,era,jettype,Mode):
       f.write('cms.vstring()\n\n')
     # MET filters
     f.write('filters=fltlist["'+RunYear+'"]["'+Mode+'"]\n\n')
-    #if RunYear!='16':
-    #  for line in ecalBad:
-    #    f.write(line+'\n')
     # Testing input files
     f.write('inFiles=')
     if RunYear=='16':
@@ -313,8 +259,6 @@ def producer(RunYear,era,jettype,Mode):
     f.write("  saveWeights     = cms.bool(False)\n")
     f.write(")\n\n")
     f.write("process.path = cms.Path(")
-    #if RunYear!='16':
-    #  f.write("process.ecalBadCalibReducedMINIAODFilter*\n                        ")
     if jettype!='ak8':
       f.write("process.QGTagger*\n                        ")
     if Mode=="dt":
@@ -330,15 +274,12 @@ def producer(RunYear,era,jettype,Mode):
 
 # Produce the run files
 for RunYear in ['16','17','18']:
-  for era in trglist[RunYear]:
-    if era=='mc':
-      for MC in ['py','nu','hw','mg']:
-        producer(RunYear,MC,'ak4','mc')
-        producer(RunYear,MC,'ak8','mc')
-        if RunYear=='16':
-          producer(RunYear,MC,'ak4','mcPreVFP')
-          producer(RunYear,MC,'ak8','mcPreVFP')
-    elif era!='dt':
-      producer(RunYear,era,'zb','dt')
-      producer(RunYear,era,'ak4','dt')
-      producer(RunYear,era,'ak8','dt')
+  for MC in ['py','nu','hw','mg']:
+    producer(RunYear,MC,'ak4','mc')
+    producer(RunYear,MC,'ak8','mc')
+    if RunYear=='16':
+      producer(RunYear,MC,'ak4','mcPreVFP')
+      producer(RunYear,MC,'ak8','mcPreVFP')
+  producer(RunYear,'dt','zb','dt')
+  producer(RunYear,'dt','ak4','dt')
+  producer(RunYear,'dt','ak8','dt')
