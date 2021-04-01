@@ -77,7 +77,8 @@ if __name__ == '__main__':
       # CMSSW 10_6_2: Era == B/C/D/E/F
       config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSONmod.txt'
       Campaign = '09Aug2019_UL2017'
-      if Era=='F': config.Data.unitsPerJob = 80
+      if Era=='C': Campaign += '_MiniAODv2'
+      elif Era=='F': config.Data.unitsPerJob = 80
     elif RunYear=='18':
       # CMSSW 10_6_4_patch1: Era == A/B/C/D
       config.Data.lumiMask = '/afs/cern.ch/user/h/hsiikone/work/certificates/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
@@ -98,8 +99,14 @@ if __name__ == '__main__':
     config.Data.unitsPerJob = 10
 
     # Neutrino Gun settings
-    config.JobType.psetName = 'cfg/had'+RunYear+MCType[:2]+(("PreVFP" if RunYear=='16' else "HEM") if IsEarly else "")+'.py'
-    config.General.requestName = 'PartsRun'+RunYear+MCType+Tag
+    add = ""
+    split = ""
+    if RunYear=='16':
+      split = "_PreVFP" if IsEarly else "_PostVFP" 
+      add = "PreVFP" if IsEarly else ""
+    elif RunYear=='18': split = "" if IsEarly else "_HEM"
+    config.JobType.psetName = 'cfg/had'+RunYear+MCType+add+'.py'
+    config.General.requestName = 'PartsRun'+RunYear+MCType+split+Tag
     if RunYear=='16':
       if MCType=='nu':
         ##### Neutrino Gun
