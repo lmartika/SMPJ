@@ -2,15 +2,25 @@ from CRABClient.UserUtilities import config
 config = config()
 
 ## Configurable parameters begin
+import sys
+
+args = sys.argv
+if len(args)<3:
+  sys.exit()
+
 Tag=''
-# Choose 16/17/18
-RunYear='17'
-# Era
-Era='F'
-# Choose True for DT, False for MC
-DTMode=False
-# Choose nu (others not implemented)
+# Choose 16/17/18 (for MC, 16e/16l and 18e/18l)
+RunYear=args[1]
+# Era or MC Type
+Era=args[2]
+
+# True for DT, False for MC
+DTMode=True
+# Choose py/hw/nu/mg (MC only, only nu is implemented)
 MCType='nu'
+if Era=='nu' or Era=='py' or Era=='hw' or Era=='mg':
+  DTMode = False
+  MCType = Era
 
 config.General.transferOutputs = True
 config.General.transferLogs = False
@@ -82,37 +92,38 @@ if __name__ == '__main__':
     config.Data.inputDataset = '/ZeroBias/Run20'+RunYear+Era+'-'+Campaign+'-v'+Ver+'/MINIAOD'
   else:
     config.General.workArea = 'runs_mc'
-    DoPreVFP = RunYear=='16' and Era[0]=='e'
+    IsEarly = RunYear[2:]=='e' # For 16 and 18, we have 'early' and 'late' campaigns (MC only)
+    RunYear = RunYear[:2] # Stripping the early/late tags
     config.Data.splitting = 'FileBased'
     config.Data.unitsPerJob = 10
 
     # Neutrino Gun settings
-    config.JobType.psetName = 'cfg/had'+RunYear+MCType[:2]+("PreVFP" if DoPreVFP else "")+'.py'
+    config.JobType.psetName = 'cfg/had'+RunYear+MCType[:2]+(("PreVFP" if RunYear=='16' else "HEM") if IsEarly else "")+'.py'
     config.General.requestName = 'PartsRun'+RunYear+MCType+Tag
     if RunYear=='16':
       if MCType=='nu':
         ##### Neutrino Gun
-        if DoPreVFP:
+        if IsEarly:
           config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL16MiniAODAPV-106X_mcRun2_asymptotic_preVFP_v8_ext3-v2/MINIAODSIM'
         else:
           config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
       elif MCType=='py': # Not implemented
         ##### Pythia 8 Flat
-        if DoPreVFP:
+        if IsEarly:
           config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIISummer19UL16MiniAODAPV-106X_mcRun2_asymptotic_preVFP_v8_ext1-v2/MINIAODSIM'
         else:
           config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
         Good=False
       elif MCType=='hw': # Not implemented
         ##### Herwig7 Flat
-        if DoPreVFP:
+        if IsEarly:
           config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCH3_Flat_13TeV_herwig7/RunIISummer19UL16MiniAODAPV-106X_mcRun2_asymptotic_preVFP_v8-v4/MINIAODSIM'
         else:
           config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCH3_Flat_13TeV_herwig7/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
         Good=False
       elif MCType=='mg': # Not implemented
         ##### Madgraph + Pythia8 HT slices
-        if DoPreVFP:
+        if IsEarly:
           config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_PSWeights_13TeV-madgraphMLM-pythia8/RunIISummer19UL16MiniAODAPV-106X_mcRun2_asymptotic_preVFP_v8-v1/MINIAODSIM'
         else:
           config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_PSWeights_13TeV-madgraphMLM-pythia8/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
@@ -134,13 +145,15 @@ if __name__ == '__main__':
         Good=False
     elif RunYear=='18':
       if MCType=='nu':
-        config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL18MiniAOD-FlatPU0to70_106X_upgrade2018_realistic_v11_L1v1-v1/MINIAODSIM'
-        #config.General.requestName += '_HEM'
-        #config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL18MiniAOD-FlatPU0to70_UL18HEMreReco_106X_upgrade2018_realistic_v11_L1v1-v1/MINIAODSIM'
+        if IsEarly:
+          config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL18MiniAOD-FlatPU0to70_106X_upgrade2018_realistic_v11_L1v1-v1/MINIAODSIM'
+        else:
+          config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL18MiniAOD-FlatPU0to70_UL18HEMreReco_106X_upgrade2018_realistic_v11_L1v1-v1/MINIAODSIM'
       elif MCType=='py':
-        config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIISummer19UL18MiniAOD-FlatPU0to70_106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
-        #config.General.requestName += '_HEM' 
-        #config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIISummer19UL18MiniAOD-FlatPU0to70_UL18HEMreReco_106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
+        if IsEarly:
+          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIISummer19UL18MiniAOD-FlatPU0to70_106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
+        else:
+          config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIISummer19UL18MiniAOD-FlatPU0to70_UL18HEMreReco_106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM'
         Good=False
       elif MCType=='hw':
         # Herwig7 Flat

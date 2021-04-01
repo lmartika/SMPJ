@@ -88,7 +88,6 @@ public:
   using LorentzVector = reco::Particle::LorentzVector;
 
   ProcessedHadrons(edm::ParameterSet const& cfg) :
-    mIsMCarlo(                                                   cfg.getUntrackedParameter<bool>("isMCarlo",false)),
     mGenParticles(consumes<reco::GenParticleCollection>(cfg.getUntrackedParameter<edm::InputTag>("packedGenParticles",edm::InputTag("")))),
     mCands(mayConsume<pat::PackedCandidateCollection>(                             edm::InputTag("packedPFCandidates"))),
     // Trigger
@@ -122,7 +121,6 @@ private:
   bool            mSatisfactory;
 
   // GEN //
-  bool                                                     mIsMCarlo;
   bool                                                     mNewTrigs;
   edm::EDGetTokenT<reco::GenParticleCollection>            mGenParticles;
   edm::EDGetTokenT<pat::PackedCandidateCollection>         mCands;
@@ -179,10 +177,7 @@ void ProcessedHadrons::beginRun(edm::Run const & iRun, edm::EventSetup const& iS
   cout << "Running on global tag " << mHLTConfig.globalTag() << "!!!" << endl;
 
   // Additional steps to be performed first time in the analysis loop!
-  // For MC, this means only updating MET Filter info
   mNewTrigs = true;
-
-  if (mIsMCarlo) return;
 
   cout << "New trigger menu found!!!" << endl;
 

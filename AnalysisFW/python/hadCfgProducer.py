@@ -60,7 +60,7 @@ process = [
 ]
 
 inputs = [
-  'process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))\n',
+  'process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))\n',
   'process.source = cms.Source("PoolSource", fileNames = inFiles )\n',
   '#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
   '#! Services',
