@@ -88,6 +88,7 @@ public:
   using LorentzVector = reco::Particle::LorentzVector;
 
   ProcessedHadrons(edm::ParameterSet const& cfg) :
+    mIsMCarlo(                                                   cfg.getUntrackedParameter<bool>("isMCarlo",false)),
     mGenParticles(consumes<reco::GenParticleCollection>(cfg.getUntrackedParameter<edm::InputTag>("packedGenParticles",edm::InputTag("")))),
     mCands(mayConsume<pat::PackedCandidateCollection>(                             edm::InputTag("packedPFCandidates"))),
     // Trigger
@@ -121,30 +122,31 @@ private:
   bool            mSatisfactory;
 
   // GEN //
-  bool                                                     mNewTrigs;
-  edm::EDGetTokenT<reco::GenParticleCollection>            mGenParticles;
-  edm::EDGetTokenT<pat::PackedCandidateCollection>         mCands;
+  bool                                             mIsMCarlo;
+  bool                                             mNewTrigs;
+  edm::EDGetTokenT<reco::GenParticleCollection>    mGenParticles;
+  edm::EDGetTokenT<pat::PackedCandidateCollection> mCands;
 
   // TRIGGER & FILTER // 
-  bool                                                     mTrigObjs;
-  bool                                                     mFilterPAT;
-  vector<int>                                              mFilterMissing;
-  const vector<string>                                     mFilterNames;
-  vector<int>                                              mFilterIndex;
-  edm::EDGetTokenT<edm::TriggerResults>                    mFilterBitsRECO;
-  edm::EDGetTokenT<edm::TriggerResults>                    mFilterBitsPAT;
-  const vector<string>                                     mTriggerNames;
-  edm::EDGetTokenT<edm::TriggerResults>                    mTriggerBits;
-  map<string,vector<string>>                               mTriggerNamesMap;
-  map<string,int>                                          mTriggerNamesIndexMap;
-  vector<int>                                              mTriggerIndex;
-  map<string,vector<int>>                                  mTriggerIndexMap;
+  bool                                             mTrigObjs;
+  bool                                             mFilterPAT;
+  vector<int>                                      mFilterMissing;
+  const vector<string>                             mFilterNames;
+  vector<int>                                      mFilterIndex;
+  edm::EDGetTokenT<edm::TriggerResults>            mFilterBitsRECO;
+  edm::EDGetTokenT<edm::TriggerResults>            mFilterBitsPAT;
+  const vector<string>                             mTriggerNames;
+  edm::EDGetTokenT<edm::TriggerResults>            mTriggerBits;
+  map<string,vector<string>>                       mTriggerNamesMap;
+  map<string,int>                                  mTriggerNamesIndexMap;
+  vector<int>                                      mTriggerIndex;
+  map<string,vector<int>>                          mTriggerIndexMap;
   // MISC //
-  HLTConfigProvider                                        mHLTConfig;
-  //HLTPrescaleProvider                                      mHLTPrescale;
+  HLTConfigProvider                                mHLTConfig;
+  //HLTPrescaleProvider                              mHLTPrescale;
 
-  edm::Service<TFileService>                               fs;
-  TTree                                                   *mTree;
+  edm::Service<TFileService>                       fs;
+  TTree                                           *mTree;
     
   float mPt;
   float mEta;
@@ -320,7 +322,8 @@ void ProcessedHadrons::analyze(edm::Event const& event, edm::EventSetup const& i
       if (triggerBits->accept(tIdx2)) ++fire;
     } 
   }
-  if (fire==0) return;
+  // It seems that the ZB trigger is active only 50% of the time, so we suppress trigger features for now
+  if (!mIsMCarlo and fire==0) return;
   
   // PF Candidates (for beta calculus)
   edm::Handle<pat::PackedCandidateCollection> cands;

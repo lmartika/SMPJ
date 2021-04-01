@@ -96,7 +96,7 @@ if __name__ == '__main__':
     IsEarly = RunYear[2:]=='e' # For 16 and 18, we have 'early' and 'late' campaigns (MC only)
     RunYear = RunYear[:2] # Stripping the early/late tags
     config.Data.splitting = 'FileBased'
-    config.Data.unitsPerJob = 10
+    config.Data.unitsPerJob = 1
 
     # Neutrino Gun settings
     add = ""
