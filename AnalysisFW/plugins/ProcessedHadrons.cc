@@ -99,6 +99,8 @@ public:
     mTriggerBits(                                  mayConsume<edm::TriggerResults>(edm::InputTag("TriggerResults","","HLT")))
   {
     mTree = fs->make<TTree>("ProcessedTree","ProcessedTree");
+    mTree->Branch("prescale", &mPrescale, "prescale/F");
+    mTree->Branch("PtTrk", &mPtTrk, "PtTrk/F");
     mTree->Branch("Pt", &mPt, "Pt/F");
     mTree->Branch("Eta", &mEta, "Eta/F");
     mTree->Branch("Phi", &mPhi, "Phi/F");
@@ -148,6 +150,8 @@ private:
   edm::Service<TFileService>                       fs;
   TTree                                           *mTree;
     
+  float mPrescale;
+  float mPtTrk;
   float mPt;
   float mEta;
   float mPhi;
@@ -340,6 +344,7 @@ void ProcessedHadrons::analyze(edm::Event const& event, edm::EventSetup const& i
   for (auto cidx = 0u; cidx<cands->size(); ++cidx) {
     const auto &c = cands->at(cidx);
     // Prescale system for particles between 0.5 and 8 GeV 
+    mPrescale = 1.;
     if (c.pt()<8) {
       double rand = engine.flat();
       if (c.pt()<6) {
@@ -350,14 +355,15 @@ void ProcessedHadrons::analyze(edm::Event const& event, edm::EventSetup const& i
                 if (c.pt()<2) {
                   if (c.pt()<1) {
                     if (c.pt()<0.5) continue;
-                    else if (rand>0.0001) continue;
-                  } else if (rand>0.001) continue;
-                } else if (rand>0.01) continue;
-              } else if (rand>0.03125) continue;
-            } else if (rand>0.0625) continue;
-          } else if (rand>0.125) continue;
-        } else if (rand>0.25) continue;
-      } else if (rand>0.5) continue;
+                    else mPrescale = 0.0001;
+                  } else mPrescale = 0.001;
+                } else mPrescale = 0.01;
+              } else mPrescale = 0.03125;
+            } else mPrescale = 0.0625;
+          } else mPrescale = 0.125;
+        } else mPrescale = 0.25;
+      } else mPrescale = 0.5;
+      if (rand>mPrescale) continue;
     }
     if (c.isPhoton() or c.isElectron() or c.isMuon()) continue;
     //if (fabs(c.pdgId())!=211) continue;
@@ -372,7 +378,9 @@ void ProcessedHadrons::analyze(edm::Event const& event, edm::EventSetup const& i
     //ha *= c.energy();
     //ea *= c.energy();
     //eb *= c.energy();
-    //cout << c.pt() << " " << c.pdgId() << " " << eb << "/" << ea << " " << hb << "/" << ha << endl;
+    //cout << eb << "/" << ea << " " << hb << "/" << ha << endl;
+    //cout << "Good: " << c.pdgId() << " " << c.pt() << " " << c.ptTrk() << " " << c.ptTrk()/c.pt() << endl;
+    mPtTrk = c.ptTrk();
     mPt  = c.pt();
     mEta = c.eta();
     mPhi = c.phi();
