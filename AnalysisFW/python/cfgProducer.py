@@ -204,7 +204,7 @@ def producer(RunYear,era,jettype,Mode):
       elif MC=='hw':
         f.write('QCD16Mor17HS1\n')
       elif MC=='mg':
-        f.write('QCD16MG\n')
+        f.write('QCDUL16MG\n')
       elif MC=='nu':
         f.write('QCD16NU\n')
       else:

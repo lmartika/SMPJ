@@ -56,7 +56,7 @@ config.General.transferOutputs = True
 config.General.transferLogs = False
 
 config.Data.inputDBS = 'global'
-config.Data.outLFNDirBase = '/store/user/hsiikone'
+config.Data.outLFNDirBase = '/store/user/lamartik/'
 config.Data.publication = False
 # Temporary flag for UL16 datasets in production
 config.Data.allowNonValidInputDataset = True
@@ -145,11 +145,11 @@ if __name__ == '__main__':
       if MCType=='nu':
         ##### Neutrino Gun
         if DoPreVFP:
-          config.General.requestName = 'QCD16'+Tag+'_SingleNu_S19UL16_mcr2a_PreVFP_v8_e3_2'
-          config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL16MiniAODAPV-106X_mcRun2_asymptotic_preVFP_v8_ext3-v2/MINIAODSIM'
+          config.General.requestName = 'QCD16'+Tag+'_SingleNu_S20UL16_mcr2a_PreVFP_v8_e1_2'
+          config.Data.inputDataset = '/SingleNeutrino/RunIISummer20UL16MiniAODAPV-FlatPU0to75_106X_mcRun2_asymptotic_preVFP_v8_ext1-v2/MINIAODSIM'
         else:
-          config.General.requestName = 'QCD16'+Tag+'_SingleNu_S19UL16_mcr2a_v13_2'
-          config.Data.inputDataset = '/SingleNeutrino/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
+          config.General.requestName = 'QCD16'+Tag+'_SingleNu_S20UL16_mcr2a_v13_2'
+          config.Data.inputDataset = '/SingleNeutrino/RunIISummer20UL16MiniAOD-FlatPU0to70_106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
 
       elif MCType=='hw':
         ##### Herwig7 Flat
@@ -164,18 +164,18 @@ if __name__ == '__main__':
         ##### Pythia 8 Flat
         if DoPreVFP:
           if not ExtMode:
-            config.General.requestName = 'QCD16'+Tag+'_CP5_15to7k_S19UL16_mcr2a_PreVFP_v8_e1_2'
-            config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIISummer19UL16MiniAODAPV-106X_mcRun2_asymptotic_preVFP_v8_ext1-v2/MINIAODSIM'
+            config.General.requestName = 'QCD16'+Tag+'_CP5_15to7k_S20UL16_mcr2a_PreVFP_v8_2'
+            config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIISummer20UL16MiniAODAPV-FlatPU0to75_106X_mcRun2_asymptotic_preVFP_v8-v2/MINIAODSIM'
           else:
             config.General.requestName = 'QCD16'+Tag+'_CP5_15to7k_S19UL16_mcr2a_PreVFP_v8_e1_2'
             config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIISummer19UL16MiniAODAPV-106X_mcRun2_asymptotic_preVFP_v8_ext1-v2/MINIAODSIM'
         else:
           if not ExtMode:
-            config.General.requestName = 'QCD16'+Tag+'_CP5_15to7k_S19UL16_mcr2a_v13_2'
-            config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
+            config.General.requestName = 'QCD16'+Tag+'_CP5_15to7k_S20UL16_mcr2a_v13_1'
+            config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat2018_13TeV_pythia8/RunIISummer20UL16MiniAOD-FlatPU0to70_106X_mcRun2_asymptotic_v13-v1/MINIAODSIM'
           else:
-            config.General.requestName = 'QCD16'+Tag+'_CP5_15to7k_S19UL16_mcr2a_v13_2'
-            config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
+            config.General.requestName = 'QCD16'+Tag+'_CP5_15to7k_S20UL16_mcr2a_v13_2'
+            config.Data.inputDataset = '/QCD_Pt-15to7000_TuneCP5_Flat_13TeV_pythia8/RunIISummer20UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
 
       elif MCType=='pylong':
         ##### Pythia 8 Pthat slices
@@ -189,11 +189,11 @@ if __name__ == '__main__':
       elif MCType=='mg':
         ##### Madgraph + Pythia8 HT slices
         if DoPreVFP:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_'+HTRanges[RangeIdx]+'_S19UL16_mcr2a_PreVFP_v8_1'+TagTag
-          config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_PSWeights_13TeV-madgraphMLM-pythia8/RunIISummer19UL16MiniAODAPV-106X_mcRun2_asymptotic_preVFP_v8-v1/MINIAODSIM'
+          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_'+HTRanges[RangeIdx]+'_S20UL16_mcr2a_PreVFP_v8_1'+TagTag
+          config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_PSWeights_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODAPV-106X_mcRun2_asymptotic_preVFP_v8-v1/MINIAODSIM'
         else:
-          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_'+HTRanges[RangeIdx]+'_S19UL16_mcr2a_v13_2'+TagTag
-          config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_PSWeights_13TeV-madgraphMLM-pythia8/RunIISummer19UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM'
+          config.General.requestName = 'QCD16'+Tag+'_MgMLMP8_'+HTRanges[RangeIdx]+'_S20UL16_mcr2a_v13_1'+TagTag
+          config.Data.inputDataset = '/QCD_'+HTRanges[RangeIdx]+'_TuneCP5_PSWeights_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAOD-106X_mcRun2_asymptotic_v13-v1/MINIAODSIM'
 
     elif RunYear=='17':
       if MCType=='nu': 
