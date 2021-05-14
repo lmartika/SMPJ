@@ -83,7 +83,7 @@ if __name__ == '__main__':
     config.General.workArea = 'runs_dt'
     config.Data.splitting = 'LumiBased'
     config.Data.unitsPerJob = 55 
-    config.JobType.psetName = 'cfg/'+Mode+RunYear+Era+'.py'
+    config.JobType.psetName = 'cfg/'+Mode+RunYear+'.py'
     config.General.requestName = 'Run'+RunYear+Era+Tag+TagTag
     Ver = '1'
     Campaign = ''

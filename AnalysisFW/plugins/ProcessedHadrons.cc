@@ -8,6 +8,8 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "FWCore/Common/interface/TriggerResultsByName.h"
+#include "FWCore/Utilities/interface/Exception.h"
+#include "FWCore/Utilities/interface/RandomNumberGenerator.h"
 
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
@@ -59,6 +61,8 @@
 #include "PhysicsTools/PatExamples/interface/BTagPerformance.h"
 #include "PhysicsTools/PatExamples/interface/PatBTagCommonHistos.h"
 
+#include "CLHEP/Random/RandomEngine.h"
+
 #include <iostream>
 #include <sstream>
 #include <istream>
@@ -84,18 +88,19 @@ public:
   using LorentzVector = reco::Particle::LorentzVector;
 
   ProcessedHadrons(edm::ParameterSet const& cfg) :
-    mIsMCarlo(                                                                                cfg.getUntrackedParameter<bool>("isMCarlo",false)),
-    mGenParticles(consumes<reco::GenParticleCollection>(                             cfg.getUntrackedParameter<edm::InputTag>("packedGenParticles",edm::InputTag("")))),
-    mCands(mayConsume<pat::PackedCandidateCollection>(                                                          edm::InputTag("packedPFCandidates"))),
+    mIsMCarlo(                                                   cfg.getUntrackedParameter<bool>("isMCarlo",false)),
+    mGenParticles(consumes<reco::GenParticleCollection>(cfg.getUntrackedParameter<edm::InputTag>("packedGenParticles",edm::InputTag("")))),
+    mCands(mayConsume<pat::PackedCandidateCollection>(                             edm::InputTag("packedPFCandidates"))),
     // Trigger
-    mFilterNames(                                                                 cfg.getParameter<std::vector<std::string> >("filterName")),
-    mFilterBitEcal(mayConsume<bool>(                                                                            edm::InputTag("ecalBadCalibReducedMINIAODFilter"))),
-    mFilterBitsRECO(                                                            mayConsume<edm::TriggerResults>(edm::InputTag("TriggerResults","","RECO"))),
-    mFilterBitsPAT(                                                             mayConsume<edm::TriggerResults>(edm::InputTag("TriggerResults","","PAT"))),
-    mTriggerNames(                                                                cfg.getParameter<std::vector<std::string> >("triggerName")),
-    mTriggerBits(                                                               mayConsume<edm::TriggerResults>(edm::InputTag("TriggerResults","","HLT")))
+    mFilterNames(                                    cfg.getParameter<std::vector<std::string> >("filterName")),
+    mFilterBitsRECO(                               mayConsume<edm::TriggerResults>(edm::InputTag("TriggerResults","","RECO"))),
+    mFilterBitsPAT(                                mayConsume<edm::TriggerResults>(edm::InputTag("TriggerResults","","PAT"))),
+    mTriggerNames(                                   cfg.getParameter<std::vector<std::string> >("triggerName")),
+    mTriggerBits(                                  mayConsume<edm::TriggerResults>(edm::InputTag("TriggerResults","","HLT")))
   {
     mTree = fs->make<TTree>("ProcessedTree","ProcessedTree");
+    mTree->Branch("prescale", &mPrescale, "prescale/F");
+    mTree->Branch("PtTrk", &mPtTrk, "PtTrk/F");
     mTree->Branch("Pt", &mPt, "Pt/F");
     mTree->Branch("Eta", &mEta, "Eta/F");
     mTree->Branch("Phi", &mPhi, "Phi/F");
@@ -119,34 +124,34 @@ private:
   bool            mSatisfactory;
 
   // GEN //
-  bool                                                     mIsMCarlo;
-  bool                                                     mNewTrigs;
-  edm::EDGetTokenT<reco::GenParticleCollection>            mGenParticles;
-  edm::EDGetTokenT<pat::PackedCandidateCollection>         mCands;
+  bool                                             mIsMCarlo;
+  bool                                             mNewTrigs;
+  edm::EDGetTokenT<reco::GenParticleCollection>    mGenParticles;
+  edm::EDGetTokenT<pat::PackedCandidateCollection> mCands;
 
   // TRIGGER & FILTER // 
-  bool                                                     mTrigObjs;
-  bool                                                     mFilterPAT;
-  int                                                      mFilterEcalBad;
-  vector<int>                                              mFilterMissing;
-  const vector<string>                                     mFilterNames;
-  vector<int>                                              mFilterIndex;
-  edm::EDGetTokenT<bool>                                   mFilterBitEcal;
-  edm::EDGetTokenT<edm::TriggerResults>                    mFilterBitsRECO;
-  edm::EDGetTokenT<edm::TriggerResults>                    mFilterBitsPAT;
-  const vector<string>                                     mTriggerNames;
-  edm::EDGetTokenT<edm::TriggerResults>                    mTriggerBits;
-  map<string,vector<string>>                               mTriggerNamesMap;
-  map<string,int>                                          mTriggerNamesIndexMap;
-  vector<int>                                              mTriggerIndex;
-  map<string,vector<int>>                                  mTriggerIndexMap;
+  bool                                             mTrigObjs;
+  bool                                             mFilterPAT;
+  vector<int>                                      mFilterMissing;
+  const vector<string>                             mFilterNames;
+  vector<int>                                      mFilterIndex;
+  edm::EDGetTokenT<edm::TriggerResults>            mFilterBitsRECO;
+  edm::EDGetTokenT<edm::TriggerResults>            mFilterBitsPAT;
+  const vector<string>                             mTriggerNames;
+  edm::EDGetTokenT<edm::TriggerResults>            mTriggerBits;
+  map<string,vector<string>>                       mTriggerNamesMap;
+  map<string,int>                                  mTriggerNamesIndexMap;
+  vector<int>                                      mTriggerIndex;
+  map<string,vector<int>>                          mTriggerIndexMap;
   // MISC //
-  HLTConfigProvider                                        mHLTConfig;
-  //HLTPrescaleProvider                                      mHLTPrescale;
+  HLTConfigProvider                                mHLTConfig;
+  //HLTPrescaleProvider                              mHLTPrescale;
 
-  edm::Service<TFileService>                               fs;
-  TTree                                                   *mTree;
+  edm::Service<TFileService>                       fs;
+  TTree                                           *mTree;
     
+  float mPrescale;
+  float mPtTrk;
   float mPt;
   float mEta;
   float mPhi;
@@ -178,10 +183,7 @@ void ProcessedHadrons::beginRun(edm::Run const & iRun, edm::EventSetup const& iS
   cout << "Running on global tag " << mHLTConfig.globalTag() << "!!!" << endl;
 
   // Additional steps to be performed first time in the analysis loop!
-  // For MC, this means only updating MET Filter info
   mNewTrigs = true;
-
-  if (mIsMCarlo) return;
 
   cout << "New trigger menu found!!!" << endl;
 
@@ -205,7 +207,7 @@ bool ProcessedHadrons::trigUpdate(const vector<string> &tNames, vector<int> &tIn
     tmpName.pop_back();
     regex trgversions(Form("%s([0-9]*)",tmpName.c_str()));
     if (tName.back()!='0' and tmpName.back()!='v') {
-      cout << "In the 'simpleTrigs = True' mode the trigger names should end with 'v0'! Please correct!" << endl;
+      cout << "In the simpleTrigs mode the trigger names should end with 'v0'! Please correct!" << endl;
       return false;
     }
     // Loop through all the hlt names with any version number matching the generic trigger type.
@@ -232,6 +234,7 @@ bool ProcessedHadrons::trigUpdate(const vector<string> &tNames, vector<int> &tIn
 void ProcessedHadrons::analyze(edm::Event const& event, edm::EventSetup const& iSetup) {
   // If the trigger information is not satisfactory, we should not enter the event analysis.
   if (!mSatisfactory) return;
+
 
   //-------------- Filter Info ---------------------------------------- 
 
@@ -271,16 +274,10 @@ void ProcessedHadrons::analyze(edm::Event const& event, edm::EventSetup const& i
       if (mFilterMissing.size() < mFilterNames.size()) break;
     }
     cout << "Using MET filters from " << (mFilterPAT ? "PAT" : "RECO") << endl;
-    mFilterEcalBad = -1;
     if (mFilterMissing.size()>0) {
       for (auto &fltpos : mFilterMissing) {
         auto &flt = mFilterNames[fltpos];
-        if (flt == "Flag_ecalBadCalibReducedMINIAODFilter") {
-          cout << "MET filter " << flt << " requires special attention." << endl;
-          mFilterEcalBad = fltpos;
-        } else {
-          cout << "MET filter " << flt << " missing :(" << endl;
-        }
+        cout << "MET filter " << flt << " missing :(" << endl;
       }
     }
   }
@@ -297,15 +294,7 @@ void ProcessedHadrons::analyze(edm::Event const& event, edm::EventSetup const& i
     string flt2;
     bool reject = false;
     if (fltIdx<0) {
-      if (mFilterEcalBad>=0 and iflt == abs(mFilterEcalBad)) {
-        // This filter needs to be fetched separately.
-        edm::Handle<bool> filterBitEcal;
-        event.getByToken(mFilterBitEcal,filterBitEcal);
-        reject =  !(*filterBitEcal);
-        flt2 = "Flag_ecalBadCalibReducedMINIAODFilter";
-      } else {
-        continue; // If a filter was not found, we skip it
-      }
+      continue; // If a filter was not found, we skip it
     } else {
       reject = !filterBits->accept(fltIdx);
       flt2 = filterNames.triggerName(fltIdx);
@@ -323,32 +312,59 @@ void ProcessedHadrons::analyze(edm::Event const& event, edm::EventSetup const& i
   //-------------- Trigger Info (exlusively Data) --------------------- 
   edm::Handle<edm::TriggerResults> triggerBits;
   event.getByToken(mTriggerBits,triggerBits);
-  if (!mIsMCarlo) {
-    // Trigger counts
-    unsigned fire = 0;
-    // Primary triggers
-    for (auto itrig = 0u; itrig<mTriggerNames.size(); ++itrig) {
-      int tIdx = mTriggerIndex[itrig]; 
-      if (tIdx<0) continue; // We skip the triggers not present (perfectly normal!)
-      const string &tName = mTriggerNames[itrig];
+  // Trigger counts
+  unsigned fire = 0;
+  // Primary triggers
+  for (auto itrig = 0u; itrig<mTriggerNames.size(); ++itrig) {
+    int tIdx = mTriggerIndex[itrig]; 
+    if (tIdx<0) continue; // We skip the triggers not present (perfectly normal!)
+    const string &tName = mTriggerNames[itrig];
 
-      const auto &tIndex2 = mTriggerIndexMap[tName];
-      for (unsigned itrig2 = 0; itrig2 < tIndex2.size(); ++itrig2) {
-        const auto &tIdx2 = tIndex2[itrig2];
-        if (triggerBits->accept(tIdx2)) ++fire;
-      } 
-    }
-    if (fire==0) return;
-  } // !mIsMCarlo
+    const auto &tIndex2 = mTriggerIndexMap[tName];
+    for (unsigned itrig2 = 0; itrig2 < tIndex2.size(); ++itrig2) {
+      const auto &tIdx2 = tIndex2[itrig2];
+      if (triggerBits->accept(tIdx2)) ++fire;
+    } 
+  }
+  // It seems that the ZB trigger is active only 50% of the time, so we suppress trigger features for now
+  if (!mIsMCarlo and fire==0) return;
   
   // PF Candidates (for beta calculus)
   edm::Handle<pat::PackedCandidateCollection> cands;
   event.getByToken(mCands, cands);
 
+  // Rng
+  //cout << "Setting up the rng!" << endl;
+  edm::Service<edm::RandomNumberGenerator> rng;
+  CLHEP::HepRandomEngine& engine = rng->getEngine(event.streamID());
+  //cout << "Rng setup successful!" << endl;
+  //cout << "A random number: " << engine.flat() << endl;
+
   // Pick the PF candidates removed by CHS (fromPV==0)
   for (auto cidx = 0u; cidx<cands->size(); ++cidx) {
     const auto &c = cands->at(cidx);
-    if (c.pt()<5) continue;
+    // Prescale system for particles between 0.5 and 8 GeV 
+    mPrescale = 1.;
+    if (c.pt()<8) {
+      double rand = engine.flat();
+      if (c.pt()<6) {
+        if (c.pt()<5) {
+          if (c.pt()<4) {
+            if (c.pt()<3.5) {
+              if (c.pt()<3) {
+                if (c.pt()<2) {
+                  if (c.pt()<1) {
+                    if (c.pt()<0.5) continue;
+                    else mPrescale = 0.0001;
+                  } else mPrescale = 0.001;
+                } else mPrescale = 0.01;
+              } else mPrescale = 0.03125;
+            } else mPrescale = 0.0625;
+          } else mPrescale = 0.125;
+        } else mPrescale = 0.25;
+      } else mPrescale = 0.5;
+      if (rand>mPrescale) continue;
+    }
     if (c.isPhoton() or c.isElectron() or c.isMuon()) continue;
     //if (fabs(c.pdgId())!=211) continue;
     if (!c.isIsolatedChargedHadron()) continue;
@@ -362,7 +378,9 @@ void ProcessedHadrons::analyze(edm::Event const& event, edm::EventSetup const& i
     //ha *= c.energy();
     //ea *= c.energy();
     //eb *= c.energy();
-    //cout << c.pt() << " " << c.pdgId() << " " << eb << "/" << ea << " " << hb << "/" << ha << endl;
+    //cout << eb << "/" << ea << " " << hb << "/" << ha << endl;
+    //cout << "Good: " << c.pdgId() << " " << c.pt() << " " << c.ptTrk() << " " << c.ptTrk()/c.pt() << endl;
+    mPtTrk = c.ptTrk();
     mPt  = c.pt();
     mEta = c.eta();
     mPhi = c.phi();
